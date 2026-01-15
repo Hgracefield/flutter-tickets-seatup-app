@@ -354,5 +354,8 @@ $RECYCLE.BIN/
 lib/util/global_data.dart
 Python/config.py
 *.pyc
+*.cmake
+*.cc
+*.swift
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,flutter,android,dart,visualstudiocode,node
