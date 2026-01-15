@@ -37,17 +37,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
-  # GetX
-  get: ^4.7.3
-  
+    
   # Flutter Slidable
   flutter_slidable: ^4.0.3
-  
-  # SQLite
-  sqflite: ^2.4.2
-  
-  # Path for SQLite
-  path: ^1.9.1
+
   
   # GPS
   geocoding: ^4.0.0
@@ -63,6 +56,7 @@ dependencies:
   firebase_core: ^4.3.0
   firebase_storage: ^13.0.5
   cloud_firestore: ^6.1.1
+  google_sign_in: ^7.2.0 # <=========== 구글 로그인을 위한 패키지
   
   # Get Storage
   get_storage: ^2.1.1
@@ -78,6 +72,20 @@ dependencies:
 
   # flutter_stripe(신용카드 결제)
   flutter_stripe: ^12.1.1
+
+  # ============ 이하는 추가 패키지
+  # image_picker 
+  image_picker: ^1.2.1 
+
+  # google map 
+  google_maps_flutter: ^2.14.0
+
+  # toss
+  tosspayments_widget_sdk_flutter: ^2.1.2
+
+  # card swipe
+  card_swiper: ^3.0.1
+
 
 dev_dependencies:
   flutter_test:
