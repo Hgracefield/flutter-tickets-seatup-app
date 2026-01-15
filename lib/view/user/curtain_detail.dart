@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class PerformanceDetail extends StatelessWidget {
-  const PerformanceDetail({super.key});
+class CurtainDetail extends StatelessWidget {
+  const CurtainDetail({super.key});
 
   @override
   Widget build(BuildContext context) {
