@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
-import 'package:seatup_app/view/app_route/app_router.dart';
 
-class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+class RouterPage extends StatelessWidget {
+  const RouterPage({super.key});
 
   @override
   Widget build(BuildContext context) {
