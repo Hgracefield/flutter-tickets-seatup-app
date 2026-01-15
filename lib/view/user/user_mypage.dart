@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class AdminPerformanceEdit extends StatelessWidget {
-  const AdminPerformanceEdit({super.key});
+class UserMypage extends StatelessWidget {
+  const UserMypage({super.key});
 
   @override
   Widget build(BuildContext context) {
