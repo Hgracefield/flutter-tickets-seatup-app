@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:seatup_app/firebase_options.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
-import 'package:seatup_app/view/app_route/main_page.dart';
+import 'package:seatup_app/view/app_route/app_router.dart';
+import 'package:seatup_app/view/app_route/router_page.dart';
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await GetStorage.init();
@@ -25,9 +25,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       initialRoute: AppRoute.main,
+      onGenerateRoute: AppRouter.generate,
       showSemanticsDebugger: false,
-      // onGenerateRoute: AppRouter.generate,
-      home: const MainPage(), // 추후 삭제 연결
+      home: const RouterPage(), // 추후 삭제 연결
     );
   }
 }
