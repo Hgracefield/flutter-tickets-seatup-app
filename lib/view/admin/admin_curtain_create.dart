@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/vm/type_provider.dart';
 
 class AdminPerformanceCreate extends ConsumerWidget {
   const AdminPerformanceCreate({super.key});
@@ -32,8 +33,8 @@ class AdminPerformanceCreate extends ConsumerWidget {
                   const SizedBox(height: 20),
                   
                   // [설명] Riverpod의 .when을 사용하여 로딩/에러/데이터 상태에 따른 화면 처리
-                  productAsync.when(
-                    data: (productList) => _buildProductTable(productList, vmHandler),
+                  typeAsync.when(
+                    data: (typeList) => _buildProductTable(typeList, vmHandler),
                     error: (err, stack) => Center(child: Text("에러 발생: $err")),
                     loading: () => const Center(child: CircularProgressIndicator()),
                   ),
@@ -47,12 +48,12 @@ class AdminPerformanceCreate extends ConsumerWidget {
   }
 
   // 테이블 헤더와 데이터 렌더링
-  Widget _buildProductTable(productList, vmHandler) {
+  Widget _buildProductTable(typeList, vmHandler) {
     return Expanded(
       child: ListView.builder(
-        itemCount: productList.length,
+        itemCount: typeList.length,
         itemBuilder: (context, index) {
-          final product = productList[index];
+          final type = typeList[index];
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 4),
             padding: const EdgeInsets.all(12),
@@ -63,15 +64,15 @@ class AdminPerformanceCreate extends ConsumerWidget {
             child: Row(
               children: [
                 Checkbox(value: false, onChanged: (val){}),
-                Expanded(child: Text(product.type, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.title, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.location, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.place, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.grade, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.area, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.showDate, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.showTime, textAlign: TextAlign.center)),
-                Expanded(child: Text(product.showCast, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
+                Expanded(child: Text(type.type_name, textAlign: TextAlign.center)),
+                Expanded(child: Text(type.type_create_date, textAlign: TextAlign.center)),
+                // Expanded(child: Text(product.location, textAlign: TextAlign.center)),
+                // Expanded(child: Text(product.place, textAlign: TextAlign.center)),
+                // Expanded(child: Text(product.grade, textAlign: TextAlign.center)),
+                // Expanded(child: Text(product.area, textAlign: TextAlign.center)),
+                // Expanded(child: Text(product.showDate, textAlign: TextAlign.center)),
+                // Expanded(child: Text(product.showTime, textAlign: TextAlign.center)),
+                // Expanded(child: Text(product.showCast, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
                 ElevatedButton(
                   onPressed: () {
                     // [설명] 수정 버튼 클릭 시 vmHandler.updateProduct() 호출 로직 연결
