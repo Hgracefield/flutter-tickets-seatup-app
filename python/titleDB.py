@@ -8,16 +8,14 @@ router = APIRouter()
 def connect():
     return pymysql.connect(
         host=config.DB_HOST,
+        port=config.DB_PORT,
         user=config.DB_USER,
         password=config.DB_PASSWORD,
         database=config.DB_NAME,
         charset=config.DB_CHARSET,
-        autocommit=True,
-    ),
-print("DB_CONNECT:", config.DB_HOST, config.DB_USER, config.DB_NAME, type(config.DB_NAME))
-
+        autocommit=True
+    )
     
-
 
 @router.get("/select")
 async def select():
