@@ -3,6 +3,7 @@ import 'app_route.dart';
 
 // ===== User =====
 import '/view/user/splash_screen.dart';
+import 'package:seatup_app/view/user/user_login_select_page.dart';
 import '/view/user/user_login.dart';
 import '/view/user/user_find_info.dart';
 import '/view/user/sign_up.dart';
@@ -47,6 +48,8 @@ class AppRouter {
       // ===== USER =====
       case AppRoute.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+            case AppRoute.userLoginSelectPage:
+        return MaterialPageRoute(builder: (_) => const UserLoginSelectPage());
       case AppRoute.userLogin:
         return MaterialPageRoute(builder: (_) => const UserLogin());
       case AppRoute.userFindInfo:

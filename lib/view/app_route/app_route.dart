@@ -1,6 +1,7 @@
 class AppRoute {
   // ===== USER =====
   static const splash = '/';
+  static const userLoginSelectPage = '/user_login_select_page'; // 로그인 방법 선택
   static const userLogin = '/user-login'; // 고객 로그인
   static const userFindInfo = '/user-find-info'; // 회원 정보 찾기
   static const signUp = '/sign-up'; // 회원가입
