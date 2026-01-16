@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:seatup_app/firebase_options.dart';
+import 'package:seatup_app/view/admin/admin_curtain_create.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
 import 'package:seatup_app/view/app_route/app_router.dart';
 import 'package:seatup_app/view/app_route/router_page.dart';
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoute.main,
       onGenerateRoute: AppRouter.generate,
       showSemanticsDebugger: false,
-      home: const RouterPage(), // 추후 삭제 연결
+      home: const AdminPerformanceCreate(), // 추후 삭제 연결
     );
   }
 }
