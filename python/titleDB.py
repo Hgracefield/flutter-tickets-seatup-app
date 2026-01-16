@@ -28,7 +28,6 @@ async def select():
     curs.execute(sql)
     rows = curs.fetchall()
     conn.close()
-    print(rows)
     # 결과값을 Dictionary로 변환
     result = [{'title_seq' : row[0], 'title_contents' : row[1], 'title_create_date' : row[2]} for row in rows]
     return {'results' : result}
@@ -44,12 +43,13 @@ async def insert(title_contents : str = Form(...)):
         sql = "insert into title(title_contents, title_create_date) values (%s,now())"
         curs.execute(sql, (title_contents,))
         conn.commit()
-        conn.close()
         return {'result':'OK'}
     except Exception as ex:
-        conn.close()
+        conn.rollback()
         print("Error :", ex)
         return {'result':'Error'}
+    finally:
+        conn.close()
     
 
 @router.post("/update")
@@ -63,12 +63,12 @@ async def update(title_contents : str = Form(...), title_seq : int = Form(...)):
         sql = "update title set title_contents=%s , title_create_date=now() where title_seq=%s"
         curs.execute(sql, (title_contents,title_seq))
         conn.commit()
-        conn.close()
         return {'result':'OK'}  
     except Exception as ex:
-        conn.close()
         print("Error :", ex)
         return {'result':'Error'}
+    finally:
+        conn.close()
 
 @router.post("/delete")
 async def delete(title_seq : int = Form(...)):
@@ -81,9 +81,9 @@ async def delete(title_seq : int = Form(...)):
         sql = "delete from title where title_seq = %s"
         curs.execute(sql, (title_seq,))
         conn.commit()
-        conn.close()
         return {'result':'OK'}
     except Exception as ex:
-        conn.close()
         print("Error :", ex)
         return {'result':'Error'}
+    finally:
+        conn.close()
