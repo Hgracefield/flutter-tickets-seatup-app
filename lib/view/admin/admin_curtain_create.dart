@@ -8,7 +8,7 @@ class AdminPerformanceCreate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // [핵심] productNotifierProvider의 상태를 감시함 (data, error, loading으로 나뉨)
-    final typeAsync = ref.watch(typeNotifierProvider);
+    final TypeAsync = ref.watch(typeNotifierProvider);
     final vmHandler = ref.read(typeNotifierProvider.notifier);
 
     return Scaffold(
@@ -33,7 +33,7 @@ class AdminPerformanceCreate extends ConsumerWidget {
                   const SizedBox(height: 20),
                   
                   // [설명] Riverpod의 .when을 사용하여 로딩/에러/데이터 상태에 따른 화면 처리
-                  typeAsync.when(
+                  TypeAsync.when(
                     data: (typeList) => _buildProductTable(typeList, vmHandler),
                     error: (err, stack) => Center(child: Text("에러 발생: $err")),
                     loading: () => const Center(child: CircularProgressIndicator()),
@@ -66,13 +66,13 @@ class AdminPerformanceCreate extends ConsumerWidget {
                 Checkbox(value: false, onChanged: (val){}),
                 Expanded(child: Text(type.type_name, textAlign: TextAlign.center)),
                 Expanded(child: Text(type.type_create_date, textAlign: TextAlign.center)),
-                // Expanded(child: Text(product.location, textAlign: TextAlign.center)),
-                // Expanded(child: Text(product.place, textAlign: TextAlign.center)),
-                // Expanded(child: Text(product.grade, textAlign: TextAlign.center)),
-                // Expanded(child: Text(product.area, textAlign: TextAlign.center)),
-                // Expanded(child: Text(product.showDate, textAlign: TextAlign.center)),
-                // Expanded(child: Text(product.showTime, textAlign: TextAlign.center)),
-                // Expanded(child: Text(product.showCast, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
+                // Expanded(child: Text(curtain.location, textAlign: TextAlign.center)),
+                // Expanded(child: Text(curtain.place, textAlign: TextAlign.center)),
+                // Expanded(child: Text(curtain.grade, textAlign: TextAlign.center)),
+                // Expanded(child: Text(curtain.area, textAlign: TextAlign.center)),
+                // Expanded(child: Text(curtain.curtainDate, textAlign: TextAlign.center)),
+                // Expanded(child: Text(curtain.curtainTime, textAlign: TextAlign.center)),
+                // Expanded(child: Text(curtain.curtainCast, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis)),
                 ElevatedButton(
                   onPressed: () {
                     // [설명] 수정 버튼 클릭 시 vmHandler.updateProduct() 호출 로직 연결
