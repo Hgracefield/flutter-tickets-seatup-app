@@ -17,7 +17,7 @@ import '/view/user/purchase_detail.dart';
 import '/view/user/map_view.dart';
 import '/view/user/payment.dart';
 import '/view/user/category.dart';
-import '/view/user/search_result.dart';
+import '../user/curtain_search.dart';
 import '/view/user/review_write.dart';
 import '/view/user/review_list.dart';
 import '/view/user/seller_to_admin_chat.dart';
@@ -32,7 +32,7 @@ import '/view/user/sell_history.dart';
 import '/view/admin/admin_login.dart';
 import '/view/admin/admin_dashboard.dart';
 import '/view/admin/admin_curtain_edit.dart';
-import '/view/admin/faq.dart';
+import '../admin/faq_list.dart';
 import '/view/admin/board_write.dart';
 import '/view/admin/board_edit.dart';
 import '/view/admin/admin_transaction_manage.dart';
@@ -75,8 +75,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const Payment());
       case AppRoute.category:
         return MaterialPageRoute(builder: (_) => const Category());
-      case AppRoute.searchResult:
-        return MaterialPageRoute(builder: (_) => const SearchResult());
+      case AppRoute.curtainSearch:
+        return MaterialPageRoute(builder: (_) => const CurtainSearch());
       case AppRoute.reviewWrite:
         return MaterialPageRoute(builder: (_) => const ReviewWrite());
       case AppRoute.reviewList:
@@ -104,8 +104,8 @@ class AppRouter {
 
       case AppRoute.adminCurtainEdit:
         return MaterialPageRoute(builder: (_) => const AdminCurtainEdit());
-      case AppRoute.faq:
-        return MaterialPageRoute(builder: (_) => const Faq());
+      case AppRoute.faqList:
+        return MaterialPageRoute(builder: (_) => const FaqList());
       case AppRoute.boardWrite:
         return MaterialPageRoute(builder: (_) => const BoardWrite());
       case AppRoute.boardEdit:
