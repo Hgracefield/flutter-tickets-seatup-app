@@ -10,7 +10,7 @@
     
     <application
         android:label="seatup_app"
-        android:name="seatup"
+        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
