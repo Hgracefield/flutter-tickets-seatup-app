@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class SearchResult extends StatelessWidget {
-  const SearchResult({super.key});
+class UserToUserChat extends StatelessWidget {
+  const UserToUserChat({super.key});
 
   @override
   Widget build(BuildContext context) {

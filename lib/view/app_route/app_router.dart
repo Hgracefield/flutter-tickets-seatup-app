@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:seatup_app/view/user/curtain_list.dart';
+import 'package:seatup_app/view/user/ticket_list.dart';
+import 'package:seatup_app/view/user/ticket_list_option.dart';
+import 'package:seatup_app/view/user/user_to_user_chat.dart';
 import 'app_route.dart';
 
 // ===== User =====
 import '/view/user/splash_screen.dart';
+import 'package:seatup_app/view/user/user_login_select_page.dart';
 import '/view/user/user_login.dart';
 import '/view/user/user_find_info.dart';
 import '/view/user/sign_up.dart';
@@ -13,11 +18,11 @@ import '/view/user/main_page.dart';
 import '/view/user/curtain_detail.dart';
 import '/view/user/ticket_detail.dart';
 import '/view/user/purchase_history.dart';
-import '/view/user/purchase_detail.dart';
+import '../user/purchase_history_detail.dart';
 import '/view/user/map_view.dart';
 import '/view/user/payment.dart';
 import '/view/user/category.dart';
-import '/view/user/search_result.dart';
+import '../user/curtain_search.dart';
 import '/view/user/review_write.dart';
 import '/view/user/review_list.dart';
 import '/view/user/seller_to_admin_chat.dart';
@@ -32,7 +37,7 @@ import '/view/user/sell_history.dart';
 import '/view/admin/admin_login.dart';
 import '/view/admin/admin_dashboard.dart';
 import '/view/admin/admin_curtain_edit.dart';
-import '/view/admin/faq.dart';
+import '../admin/faq_list.dart';
 import '/view/admin/board_write.dart';
 import '/view/admin/board_edit.dart';
 import '/view/admin/admin_transaction_manage.dart';
@@ -47,6 +52,8 @@ class AppRouter {
       // ===== USER =====
       case AppRoute.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+      case AppRoute.userLoginSelectPage:
+        return MaterialPageRoute(builder: (_) => const UserLoginSelectPage());
       case AppRoute.userLogin:
         return MaterialPageRoute(builder: (_) => const UserLogin());
       case AppRoute.userFindInfo:
@@ -61,6 +68,12 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const TabBarPage());
       case AppRoute.main:
         return MaterialPageRoute(builder: (_) => const MainPage());
+      case AppRoute.curtainList:
+        return MaterialPageRoute(builder: (_) => const CurtainList());
+      case AppRoute.ticketList:
+        return MaterialPageRoute(builder: (_) => const TicketList());
+      case AppRoute.ticketListOption:
+        return MaterialPageRoute(builder: (_) => const TicketListOption());
       case AppRoute.curtainDetail:
         return MaterialPageRoute(builder: (_) => const CurtainDetail());
       case AppRoute.ticketDetail:
@@ -68,27 +81,29 @@ class AppRouter {
       case AppRoute.purchaseHistory:
         return MaterialPageRoute(builder: (_) => const PurchaseHistory());
       case AppRoute.purchaseDetail:
-        return MaterialPageRoute(builder: (_) => const PurchaseDetail());
+        return MaterialPageRoute(builder: (_) => const PurchaseHistoryDetail());
       case AppRoute.mapView:
         return MaterialPageRoute(builder: (_) => const MapView());
       case AppRoute.payment:
         return MaterialPageRoute(builder: (_) => const Payment());
       case AppRoute.category:
         return MaterialPageRoute(builder: (_) => const Category());
-      case AppRoute.searchResult:
-        return MaterialPageRoute(builder: (_) => const SearchResult());
+      case AppRoute.curtainSearch:
+        return MaterialPageRoute(builder: (_) => const CurtainSearch());
       case AppRoute.reviewWrite:
         return MaterialPageRoute(builder: (_) => const ReviewWrite());
       case AppRoute.reviewList:
         return MaterialPageRoute(builder: (_) => const ReviewList());
-
+      case AppRoute.userToUserChat:
+        return MaterialPageRoute(builder: (_) => const UserToUserChat());
       case AppRoute.sellerToAdminChat:
         return MaterialPageRoute(builder: (_) => const SellerToAdminChat());
       case AppRoute.transactionReviewWrite:
-        return MaterialPageRoute(builder: (_) => const TransactionReviewWrite());
+        return MaterialPageRoute(
+          builder: (_) => const TransactionReviewWrite(),
+        );
       case AppRoute.transactionReviewList:
         return MaterialPageRoute(builder: (_) => const TransactionReviewList());
-
       case AppRoute.shoppingCart:
         return MaterialPageRoute(builder: (_) => const ShoppingCart());
       case AppRoute.sellRegister:
@@ -101,21 +116,24 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const AdminLogin());
       case AppRoute.adminDashboard:
         return MaterialPageRoute(builder: (_) => const AdminDashboard());
-
       case AppRoute.adminCurtainEdit:
         return MaterialPageRoute(builder: (_) => const AdminCurtainEdit());
-      case AppRoute.faq:
-        return MaterialPageRoute(builder: (_) => const Faq());
+      case AppRoute.faqList:
+        return MaterialPageRoute(builder: (_) => const FaqList());
       case AppRoute.boardWrite:
         return MaterialPageRoute(builder: (_) => const BoardWrite());
       case AppRoute.boardEdit:
         return MaterialPageRoute(builder: (_) => const BoardEdit());
       case AppRoute.adminTransactionManage:
-        return MaterialPageRoute(builder: (_) => const AdminTransactionManage());
+        return MaterialPageRoute(
+          builder: (_) => const AdminTransactionManage(),
+        );
       case AppRoute.adminReviewManage:
         return MaterialPageRoute(builder: (_) => const AdminReviewManage());
       case AppRoute.adminTransactionReviewManage:
-        return MaterialPageRoute(builder: (_) => const AdminTransactionReviewManage());
+        return MaterialPageRoute(
+          builder: (_) => const AdminTransactionReviewManage(),
+        );
       case AppRoute.adminChatList:
         return MaterialPageRoute(builder: (_) => const AdminChatList());
       case AppRoute.adminChatDetail:
@@ -123,7 +141,8 @@ class AppRouter {
 
       default:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(body: Center(child: Text('Route not found'))),
+          builder: (_) =>
+              const Scaffold(body: Center(child: Text('Route not found'))),
         );
     }
   }

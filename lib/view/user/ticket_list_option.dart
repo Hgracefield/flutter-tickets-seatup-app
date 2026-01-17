@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Faq extends StatelessWidget {
-  const Faq({super.key});
+class TicketListOption extends StatelessWidget {
+  const TicketListOption({super.key});
 
   @override
   Widget build(BuildContext context) {

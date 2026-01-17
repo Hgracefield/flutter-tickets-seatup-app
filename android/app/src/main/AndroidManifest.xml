@@ -1,9 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+      <meta-data
+    android:name="com.google.android.gms.auth.api.signin.DEPRECATED_FORCE_CODE_FOR_REFRESH_TOKEN"
+    android:value="false" />
+       <queries>
+    <package android:name="com.kakao.talk" />
+</queries> 
+    
     <application
         android:label="seatup_app"
-        android:name="${applicationName}"
+        android:name="seatup"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -28,6 +35,22 @@
             </intent-filter>
              
         </activity>
+         <!-- 카카오 로그인 Redirect 처리용 Activity -->
+    <activity
+        android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+
+            <!-- 중요: kakao + 네이티브 앱 키 -->
+            <data
+                android:scheme="kakao6a4ed9946737798d62126a14547f4c74"
+                android:host="oauth" />
+        </intent-filter>
+    </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
