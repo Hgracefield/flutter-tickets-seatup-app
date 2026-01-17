@@ -3,6 +3,7 @@ import 'package:seatup_app/view/user/curtain_search.dart';
 class AppRoute {
   // ===== USER =====
   static const splash = '/';
+  static const userLoginSelectPage = '/user_login_select_page';
   static const userLogin = '/user_login'; // 고객 로그인
   static const userFindInfo = '/user_find_info'; // 회원 정보 찾기
   static const signUp = '/sign_up'; // 회원가입

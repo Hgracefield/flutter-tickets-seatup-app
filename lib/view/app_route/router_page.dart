@@ -14,6 +14,7 @@ class RouterPage extends StatelessWidget {
           _section('USER'),
 
           _btn(context, 'splash_screen', AppRoute.splash),
+          _btn(context, 'user_login_select_page', AppRoute.userLoginSelectPage),
           _btn(context, 'user_login', AppRoute.userLogin),
           _btn(context, 'user_find_info', AppRoute.userFindInfo),
           _btn(context, 'sign_up', AppRoute.signUp),

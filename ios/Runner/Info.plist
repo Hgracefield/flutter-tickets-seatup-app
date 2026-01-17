@@ -73,6 +73,25 @@
 				<string>com.googleusercontent.apps.1082483227170-q9sn3tssl5kloo2ao041vqhvsemcpvqt</string>
 			</array>
 		</dict>
-	</array>		
+	</array>	
+
+	<key>LSApplicationQueriesSchemes</key>
+  <key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLName</key>
+    <string>kakao</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <!-- kakao + 네이티브 앱 키 -->
+      <string>kakao6a4ed9946737798d62126a14547f4c74</string>
+    </array>
+  </dict>
+</array>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+  <string>kakaokompassauth</string>
+  <string>kakaolink</string>
+</array>
 </dict>
 </plist>

@@ -48,7 +48,7 @@ class AppRouter {
       // ===== USER =====
       case AppRoute.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
-            case AppRoute.userLoginSelectPage:
+      case AppRoute.userLoginSelectPage:
         return MaterialPageRoute(builder: (_) => const UserLoginSelectPage());
       case AppRoute.userLogin:
         return MaterialPageRoute(builder: (_) => const UserLogin());
