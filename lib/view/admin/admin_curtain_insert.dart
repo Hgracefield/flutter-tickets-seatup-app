@@ -1,75 +1,42 @@
 import 'package:flutter/material.dart';
 
-/// ✅ 수정 페이지
-/// - 등록 페이지와 동일한 UI/스타일
-/// - 초기값(initialData)로 폼 채움
-/// - 저장(수정) 누르면 수정된 Map을 pop으로 반환
+/// ✅ 등록 버튼을 누르면 나오는 "등록 페이지"
+/// - type / grade / area : Dropdown
+/// - title / location / place / show_date / show_time / show_cast : TextField
+/// - 대시보드 톤(블루 + 카드 + 둥근테두리) 맞춤
 ///
-/// 사용법(대시보드에서):
-/// final updated = await Navigator.push(
+/// 사용법:
+/// Navigator.push(
 ///   context,
-///   MaterialPageRoute(
-///     builder: (_) => AdminCurtainEdit(initialData: rows[index]),
-///   ),
+///   MaterialPageRoute(builder: (_) => const AdminCurtainInsert()),
 /// );
-/// if(updated != null){
-///   setState(() => rows[index] = updated);
-/// }
-class AdminCurtainEdit extends StatefulWidget {
-  final Map<String, dynamic> initialData;
-
-  const AdminCurtainEdit({
-    super.key,
-    required this.initialData,
-  });
+class AdminCurtainInsert extends StatefulWidget {
+  const AdminCurtainInsert({super.key});
 
   @override
-  State<AdminCurtainEdit> createState() => _AdminCurtainEditState();
+  State<AdminCurtainInsert> createState() => _AdminCurtainInsertState();
 }
 
-class _AdminCurtainEditState extends State<AdminCurtainEdit> {
+class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
   final _formKey = GlobalKey<FormState>();
 
-  // ---------- Dropdown ----------
+  // ---------- Dropdown 기본값 ----------
   String typeValue = '뮤지컬';
   String gradeValue = 'VIP';
   String areaValue = 'A구역';
 
+  // ---------- Dropdown 아이템 ----------
   final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
   final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
   final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역', 'E구역', 'F구역'];
 
   // ---------- TextField ----------
-  late final TextEditingController titleCtrl;
-  late final TextEditingController locationCtrl;
-  late final TextEditingController placeCtrl;
-  late final TextEditingController showDateCtrl;
-  late final TextEditingController showTimeCtrl;
-  late final TextEditingController castCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // ✅ 초기값 주입
-    final d = widget.initialData;
-
-    typeValue = (d['type'] ?? '뮤지컬').toString();
-    gradeValue = (d['grade'] ?? 'VIP').toString();
-    areaValue = (d['area'] ?? 'A구역').toString();
-
-    // items에 없는 값이 들어오면 기본값으로 안전 처리
-    if (!typeItems.contains(typeValue)) typeValue = typeItems.first;
-    if (!gradeItems.contains(gradeValue)) gradeValue = gradeItems.first;
-    if (!areaItems.contains(areaValue)) areaValue = areaItems.first;
-
-    titleCtrl = TextEditingController(text: (d['title'] ?? '').toString());
-    locationCtrl = TextEditingController(text: (d['location'] ?? '').toString());
-    placeCtrl = TextEditingController(text: (d['place'] ?? '').toString());
-    showDateCtrl = TextEditingController(text: (d['show_date'] ?? '').toString());
-    showTimeCtrl = TextEditingController(text: (d['show_time'] ?? '').toString());
-    castCtrl = TextEditingController(text: (d['show_cast'] ?? '').toString());
-  }
+  final titleCtrl = TextEditingController();
+  final locationCtrl = TextEditingController();
+  final placeCtrl = TextEditingController();
+  final showDateCtrl = TextEditingController();
+  final showTimeCtrl = TextEditingController();
+  final castCtrl = TextEditingController();
 
   @override
   void dispose() {
@@ -82,6 +49,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
     super.dispose();
   }
 
+  // (선택) 날짜/시간 선택 도우미: 텍스트필드 입력도 가능 + 아이콘 누르면 picker
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -110,13 +78,10 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
     }
   }
 
-  void _submitUpdate() {
+  void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    // ✅ 기존 데이터 복사 + 수정값 덮어쓰기 (id/seq 같은 값 유지 가능)
-    final updated = Map<String, dynamic>.from(widget.initialData);
-
-    updated.addAll({
+    final payload = <String, dynamic>{
       'type': typeValue,
       'grade': gradeValue,
       'area': areaValue,
@@ -126,9 +91,11 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
       'show_date': showDateCtrl.text.trim(),
       'show_time': showTimeCtrl.text.trim(),
       'show_cast': castCtrl.text.trim(),
-    });
+    };
 
-    Navigator.pop(context, updated);
+    // ✅ 여기서 API 호출로 등록해도 되고,
+    // ✅ 지금은 payload를 이전 화면으로 반환
+    Navigator.pop(context, payload);
   }
 
   @override
@@ -139,7 +106,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          '제품 정보 수정',
+          '제품 정보 등록',
           style: TextStyle(
             color: Color(0xFF1E3A8A),
             fontWeight: FontWeight.w900,
@@ -166,7 +133,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 안내 문구
+                        // 안내 문구 (대시보드 톤)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           decoration: BoxDecoration(
@@ -176,11 +143,12 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.edit_note_outlined, size: 20, color: Color(0xFF2F57C9)),
+                              Icon(Icons.confirmation_number_outlined,
+                                  size: 20, color: Color(0xFF2F57C9)),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  '기존 정보를 수정한 후 저장하세요.',
+                                  '티켓 리셀 상품 정보를 입력하고 등록하세요.',
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
@@ -194,6 +162,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
 
                         const SizedBox(height: 14),
 
+                        // 폼 영역 (스크롤 가능)
                         Expanded(
                           child: SingleChildScrollView(
                             child: Column(
@@ -272,7 +241,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 4줄: show_date + show_time
+                                // 4줄: show_date + show_time (입력 가능 + picker 아이콘)
                                 Row(
                                   children: [
                                     Expanded(
@@ -311,6 +280,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
 
                         const SizedBox(height: 12),
 
+                        // 하단 버튼
                         Row(
                           children: [
                             OutlinedButton(
@@ -330,8 +300,8 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                               ),
-                              onPressed: _submitUpdate,
-                              child: const Text('저장', style: TextStyle(fontWeight: FontWeight.w900)),
+                              onPressed: _submit,
+                              child: const Text('등록', style: TextStyle(fontWeight: FontWeight.w900)),
                             ),
                           ],
                         ),
