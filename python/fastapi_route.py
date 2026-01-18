@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from userDB import router as user_router
 # from areaDB import router as area_router
-# from curtainDB import router as curtain_router
+from curtainDB import router as curtain_router
 # from gradeDB import router as grade_router
 # from locationDB import router as location_router
 # from placeDB import router as place_router
