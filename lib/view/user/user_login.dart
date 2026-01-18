@@ -1,18 +1,20 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
+import 'package:seatup_app/vm/user_notifier.dart';
+import 'package:seatup_app/util/login_status.dart';
 
-class UserLogin extends StatefulWidget {
+class UserLogin extends ConsumerStatefulWidget {
   const UserLogin({super.key});
 
   @override
-  State<UserLogin> createState() => _UserLoginState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _UserLoginState();
 }
 
-class _UserLoginState extends State<UserLogin> {
-  // Property
+class _UserLoginState extends ConsumerState<UserLogin> {
+  // === Property ===
   late TextEditingController emailController;
   late TextEditingController passwordController;
   late bool showPassword; // 비밀번호 숨김 on/off 토글
@@ -117,7 +119,10 @@ class _UserLoginState extends State<UserLogin> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoute.signUp);
+                      Navigator.pushNamed(context, AppRoute.signUp).then((value) {
+                        emailController.clear();
+                        passwordController.clear();
+                      },);
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -133,22 +138,6 @@ class _UserLoginState extends State<UserLogin> {
                       ],
                     ),
                   ),
-                  // TextButton(
-                  //   onPressed: () {_signIn();},
-                  //   child: Row(
-                  //     mainAxisSize: MainAxisSize.min,
-                  //     children: [
-                  //       Text(
-                  //         '구글 로그인',
-                  //         style: TextStyle(
-                  //           color: Colors.black,
-                  //           fontWeight: FontWeight.bold,
-                  //         ),
-                  //       ),
-                  //       Icon(Icons.arrow_forward_outlined, color: Colors.black),
-                  //     ],
-                  //   ),
-                  // ),
                 ],
               ),
             ),
@@ -178,10 +167,12 @@ class _UserLoginState extends State<UserLogin> {
         ),
         TextField(
           controller: controller,
+          obscureText: showSuffix ? showPassword: false,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
+
             ),
             prefixIcon: icon,
             hintText: hint,
@@ -199,7 +190,7 @@ class _UserLoginState extends State<UserLogin> {
                       setState(() {});
                     },
                   )
-                : Center(),
+                : null
           ),
         ),
       ],
@@ -210,35 +201,31 @@ class _UserLoginState extends State<UserLogin> {
   void checkLogin() {
     if (emailController.text.trim().isEmpty) {
       // 이메일이 비어있을 경우 -> SnackBar 처리
-      message.errorSnackBar('Error', '이메일을 입력하세요.');
+      message.errorSnackBar(context, '이메일을 입력하세요.');
     } else if (passwordController.text.trim().isEmpty) {
       // 비밀번호가 비어있을 경우 -> SnackBar 처리
-      message.errorSnackBar('Error', '비밀번호를 입력하세요.');
+      message.errorSnackBar(context, '비밀번호를 입력하세요.');
     } else {
-      customerLogin();
+      userLogin();
     }
   }
 
-  Future<void> customerLogin() async {
-    var url = Uri.parse("127.0.0.1/customer/login");
-    var response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        // 백엔드 서버로 로그인 데이터 전송
-        'email': emailController.text.trim(),
-        'password': passwordController.text.trim(),
-      }),
-    );
+  Future<void> userLogin() async {
+    final userNotifier =  ref.read(userNotifierProvider.notifier);
+    var result = await userNotifier.login(emailController.text.trim(), passwordController.text.trim());
 
-    var jsonData = json.decode(utf8.decode(response.bodyBytes));
-    if (response.statusCode == 200) {
-      // GlobalData.customerId = jsonData['id'];
-      // 로그인 성공 -> MainPage 이동
-      Navigator.pushNamed(context, AppRoute.userMypage);
-    } else {
-      // 로그인 실패 -> errorSnackBar 출력
-      message.errorSnackBar('Error', jsonData['detail']);
+    switch(result)
+    {
+      case LoginStatus.success:
+        message.successSnackBar(context, '로그인 성공');
+        Navigator.pushNamed(context, AppRoute.main).then((value) {
+          emailController.clear();
+          passwordController.clear();
+        },);
+      case LoginStatus.fail:
+        message.errorSnackBar(context, '로그인 실패');
+      case LoginStatus.withdraw:
+        message.errorSnackBar(context, '탈퇴한 회원입니다.');
     }
   }
 

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-# from userDB import router as user_router
+from userDB import router as user_router
 # from areaDB import router as area_router
 # from curtainDB import router as curtain_router
 # from gradeDB import router as grade_router
@@ -15,7 +15,7 @@ from titleDB import router as title_router
 import config
 
 app = FastAPI()
-# app.include_router(user_router, prefix='/user', tags=['user'])
+app.include_router(user_router, prefix='/user', tags=['user'])
 # app.include_router(area_router, prefix='/area', tags=['area'])
 # app.include_router(curtain_router, prefix='/curtain', tags=['curtain'])
 # app.include_router(grade_router, prefix='/grade', tags=['grade'])
