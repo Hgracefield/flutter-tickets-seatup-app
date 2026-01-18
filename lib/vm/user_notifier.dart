@@ -111,6 +111,22 @@ final userNotifierProvider = AsyncNotifierProvider<UserNotifier,User>(
   UserNotifier.new  
 );
 
+// 유저 이름만 뽑는 Provider  추가 pjs
+final userNameProvider = Provider<String>((ref) {
+  final userAsync = ref.watch(userNotifierProvider);
+
+  return userAsync.when(
+    data: (user) => user.user_name,
+    loading: () => "회원",
+    error: (_, __) => "회원",
+  );
+});
+// 배너 문구 Provider 추가 pjs 
+final greetingMessageProvider = Provider<String>((ref) {
+  final name = ref.watch(userNameProvider);
+  return "$name님, 오늘도 좋은 티켓 되세요!";
+});
+
 
 // class UserState{
 //   final int user_id;
