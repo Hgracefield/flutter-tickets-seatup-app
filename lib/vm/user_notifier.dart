@@ -1,16 +1,33 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/user.dart';
 import 'package:seatup_app/util/global_data.dart';
 import 'package:seatup_app/util/login_status.dart';
+import 'package:seatup_app/vm/storage_provider.dart';
 
 class UserNotifier extends AsyncNotifier<User>{
+  late final GetStorage box;
 
   @override
   Future<User> build() async {
+      box = ref.read(storageProvider);
       return await fetchUser();
+  }
+
+  Future<void> saveUserLogin(Map<String,dynamic> user) async{
+    box.write('userIsLogin', true);          // 유저 로그인
+    box.write('user_id', user['user_id']);   // 유저 seq
+    box.write('user_name', user['user_name']);   // 유저 이름
+    box.write('user_email', user['user_email']);   // 유저 이메일
+
+
+    // print('=== GetStorage user login saved ===');
+    // print('userIsLogin: ${box.read('userIsLogin')}');
+    // print('user_id    : ${box.read('user_id')}');
+    // print('user_name   : ${box.read('user_name')}');
   }
 
   Future<User> fetchUser() async {
@@ -105,6 +122,19 @@ class UserNotifier extends AsyncNotifier<User>{
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async => fetchUser());
   }
+
+  Future<List<dynamic>> loginData(String email, String password) async {    // 로그인 데이터얻을려고
+    final url = Uri.parse('${GlobalData.url}/user/login');
+    final res = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': password}),
+    );
+
+    final data = json.decode(utf8.decode(res.bodyBytes));
+    return data['results'];
+  }
+
 }
 
 final userNotifierProvider = AsyncNotifierProvider<UserNotifier,User>(

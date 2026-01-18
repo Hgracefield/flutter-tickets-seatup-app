@@ -95,7 +95,7 @@ class AppRouter {
       case AppRoute.reviewList:
         return MaterialPageRoute(builder: (_) => const ReviewList());
       case AppRoute.userToUserChat:
-        return MaterialPageRoute(builder: (_) => const UserToUserChat());
+        // return MaterialPageRoute(builder: (_) => const UserToUserChat());
       case AppRoute.sellerToAdminChat:
         return MaterialPageRoute(builder: (_) => const SellerToAdminChat());
       case AppRoute.transactionReviewWrite:

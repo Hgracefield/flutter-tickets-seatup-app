@@ -213,4 +213,18 @@ async def delete(user : int):
     finally:
         conn.close()
     
+@router.get("/select")
+async def select():
+    # Connection으로 부터 Cursor 생성
+    conn = connect()
+    curs = conn.cursor()
+
+    # SQL 문장
+    sql = "SELECT * FROM user"
+    curs.execute(sql)
+    rows = curs.fetchall()
+    conn.close()
+    # 결과값을 Dictionary로 변환
+    result = [{'user_id' : row[0], 'user_email' : row[1], 'user_password' : row[2], 'user_name' : row[3], 'user_phone' : row[4], 'user_address' : row[5], 'user_signup_date' : row[6], 'user_account' : row[7], 'user_bank_name' : row[8], 'user_withdraw_date' : row[9]} for row in rows]
+    return {'results' : result}
     
