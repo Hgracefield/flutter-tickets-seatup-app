@@ -31,7 +31,7 @@ class TitleProvider extends AsyncNotifier<List<Title>> {
 
   // select
   Future<List<Title>> fetchTitles() async{
-    final res = await http.get(Uri.parse("$baseUrl/select"));
+    final res = await http.get(Uri.parse("$baseUrl/title/select"));
 
     if (res.statusCode != 200) {
       throw Exception("불러오기 실패: ${res.statusCode}");
@@ -43,7 +43,7 @@ class TitleProvider extends AsyncNotifier<List<Title>> {
 
    // insert
    Future<List<Title>> insertTitles(Title t) async {
-    final url = Uri.parse("$baseUrl/insert");
+    final url = Uri.parse("$baseUrl/title/insert");
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -56,7 +56,7 @@ class TitleProvider extends AsyncNotifier<List<Title>> {
 
   // update
   Future<String> updateTitles(Title t) async {
-    final url = Uri.parse('$baseUrl/update');
+    final url = Uri.parse('$baseUrl/title/update');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -68,7 +68,7 @@ class TitleProvider extends AsyncNotifier<List<Title>> {
   }
 
   Future<String> deleteTitles(String code) async {
-    final url = Uri.parse('$baseUrl/delete');
+    final url = Uri.parse('$baseUrl/title/delete');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -85,7 +85,7 @@ class TitleProvider extends AsyncNotifier<List<Title>> {
       () async => fetchTitles(),
     );
   }
-} // StudentNotifier
+} // StaffNotifier
 
 final titleNotifierProvider =
     AsyncNotifierProvider<TitleProvider, List<Title>>(

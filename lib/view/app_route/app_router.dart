@@ -117,7 +117,7 @@ class AppRouter {
       case AppRoute.adminDashboard:
         return MaterialPageRoute(builder: (_) => const AdminDashboard());
       case AppRoute.adminCurtainEdit:
-        return MaterialPageRoute(builder: (_) => const AdminCurtainEdit());
+        // return MaterialPageRoute(builder: (_) => const AdminCurtainEdit());
       case AppRoute.faqList:
         return MaterialPageRoute(builder: (_) => const FaqList());
       case AppRoute.boardWrite:
