@@ -1,4 +1,3 @@
-import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/view/user/curtain_search.dart';
@@ -12,9 +11,11 @@ class MainPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        toolbarHeight: 70,
         title: Text('SeatUp'),
-        centerTitle: true,
         actions: [
           IconButton(
             onPressed: () {
@@ -37,16 +38,35 @@ class MainPage extends ConsumerWidget {
           )
         ],
       ),
-      body: SizedBox(
-        width: MediaQuery.widthOf(context),
-        height: 300,
-        child: Swiper(
-          itemCount: 3,
-          itemBuilder: (BuildContext context, int index) {
-            return Image.asset("images/musical01.jpg", fit: BoxFit.cover);
-          },
-          pagination: SwiperPagination(),
-          control: SwiperControl(),
+      body: TabBarView(
+        controller: mainTabController,
+        children: [
+          Category(),
+          Category(),
+          MainPageHome(),
+          CurtainSearch(),
+          UserMypage(),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        ),
+        height: 80,
+        child: TabBar(
+          controller: mainTabController,
+          labelColor: const Color.fromARGB(255, 0, 0, 0),
+          labelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          indicatorColor: const Color.fromARGB(255, 0, 0, 0),
+          indicatorSize: TabBarIndicatorSize.label,
+          indicatorWeight: 2,
+          tabs: [
+            Tab(icon: Icon(Icons.shopping_cart_outlined), text: '구매'),
+            Tab(icon: Icon(Icons.sell_outlined), text: '판매'),
+            Tab(icon: Icon(Icons.home), text: '홈'),
+            Tab(icon: Icon(Icons.search_outlined), text: '검색'),
+            Tab(icon: Icon(Icons.person_outline_outlined), text: '마이'),
+          ],
         ),
       ),
     );

@@ -18,10 +18,7 @@ import 'package:flutter/material.dart';
 class AdminCurtainEdit extends StatefulWidget {
   final Map<String, dynamic> initialData;
 
-  const AdminCurtainEdit({
-    super.key,
-    required this.initialData,
-  });
+  const AdminCurtainEdit({super.key, required this.initialData});
 
   @override
   State<AdminCurtainEdit> createState() => _AdminCurtainEditState();
@@ -140,10 +137,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
         elevation: 0,
         title: const Text(
           '제품 정보 수정',
-          style: TextStyle(
-            color: Color(0xFF1E3A8A),
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(color: Color(0xFF1E3A8A), fontWeight: FontWeight.w900),
         ),
         iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
       ),
@@ -168,7 +162,10 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                       children: [
                         // 안내 문구
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF4F6FF),
                             borderRadius: BorderRadius.circular(10),
@@ -176,7 +173,11 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.edit_note_outlined, size: 20, color: Color(0xFF2F57C9)),
+                              Icon(
+                                Icons.edit_note_outlined,
+                                size: 20,
+                                color: Color(0xFF2F57C9),
+                              ),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -317,21 +318,34 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF2F57C9),
                                 side: const BorderSide(color: Color(0xFFCFD8FF)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('취소', style: TextStyle(fontWeight: FontWeight.w800)),
+                              child: const Text(
+                                '취소',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
                             ),
                             const Spacer(),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF4D74D6),
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 12,
+                                ),
                               ),
                               onPressed: _submitUpdate,
-                              child: const Text('저장', style: TextStyle(fontWeight: FontWeight.w900)),
+                              child: const Text(
+                                '저장',
+                                style: TextStyle(fontWeight: FontWeight.w900),
+                              ),
                             ),
                           ],
                         ),
@@ -349,13 +363,13 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
 
   // ===================== 대시보드 스타일 공통 위젯 =====================
   Widget _dashLabel(String text) => Text(
-        text,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF2F57C9),
-        ),
-      );
+    text,
+    style: const TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+      color: Color(0xFF2F57C9),
+    ),
+  );
 
   Widget _dashTextField({
     required String label,
@@ -455,7 +469,9 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
               value: value,
               isExpanded: true,
               icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2F57C9)),
-              items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              items: items
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: (v) {
                 if (v != null) onChanged(v);
               },

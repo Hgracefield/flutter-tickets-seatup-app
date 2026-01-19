@@ -150,11 +150,12 @@ final userNameProvider = Provider<String>((ref) {
     error: (_, __) => "회원",
   );
 });
-// 배너 문구 Provider 추가 pjs
+// 배너 문구 Provider 추가 pjs 
 final greetingMessageProvider = Provider<String>((ref) {
   final name = ref.watch(userNameProvider);
   return "$name님, 오늘도 좋은 티켓 되세요!";
 });
+
 
 // class UserState{
 //   final int user_id;
