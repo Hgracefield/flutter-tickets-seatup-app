@@ -24,6 +24,9 @@ class _MainPageState extends State<MainPage>
       vsync: this,
       initialIndex: 2, // 홈 화면을 기본페이지로 설정
     );
+    mainTabController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -32,26 +35,45 @@ class _MainPageState extends State<MainPage>
     super.dispose();
   }
 
+  AppBar mainAppBar(int index) { // 앱 바 메인화면에서 일괄 적용
+    final titles = ['구매', '판매', 'SeatUp', '검색', 'MY티켓'];
+
+    return AppBar(
+      title: Text(
+        titles[index],
+        style: TextStyle(
+          fontWeight: FontWeight.w500
+        ),
+      ),
+      centerTitle: true,
+      backgroundColor: Colors.white,
+      toolbarHeight: 70,
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.black),
+      actions: [
+        IconButton(
+          onPressed: () {
+            //
+          },
+          icon: Icon(
+            Icons.notifications_outlined,),
+        ),
+        IconButton(
+          onPressed: () {
+            //
+          },
+          icon: Icon(
+            Icons.chat_bubble_outline,),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        toolbarHeight: 70,
-        title: Text('SeatUp'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CurtainSearch()),
-              );
-            },
-            icon: Icon(Icons.search),
-          ),
-        ],
-      ),
+      appBar: mainAppBar(mainTabController.index),
       body: TabBarView(
         controller: mainTabController,
         children: [
