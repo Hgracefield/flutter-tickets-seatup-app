@@ -11,6 +11,8 @@ class Grade {
     this.grade_create_date
   });
 
+  int get bit => 1 << grade_value;
+
   factory Grade.fromJson(Map<String, dynamic> json){
     return Grade(
       grade_seq: json['grade_seq'] ?? 0,
