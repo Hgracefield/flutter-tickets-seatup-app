@@ -1,6 +1,6 @@
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-import 'package:seatup_app/view/user/search_result.dart';
+import 'package:seatup_app/view/user/curtain_search.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -16,7 +16,7 @@ class MainPage extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SearchResult()),
+                MaterialPageRoute(builder: (context) => CurtainSearch()),
               );
             },
             icon: Icon(Icons.search),
@@ -28,11 +28,8 @@ class MainPage extends StatelessWidget {
         height: 300,
         child: Swiper(
           itemCount: 3,
-          itemBuilder: (BuildContext context,int index){
-            return Image.asset(
-              "images/musical01.jpg",
-              fit: BoxFit.cover,
-            );
+          itemBuilder: (BuildContext context, int index) {
+            return Image.asset("images/musical01.jpg", fit: BoxFit.cover);
           },
           pagination: SwiperPagination(),
           control: SwiperControl(),

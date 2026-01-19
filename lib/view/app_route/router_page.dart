@@ -16,6 +16,7 @@ class RouterPage extends StatelessWidget {
           _section('USER'),
 
           _btn(context, 'splash_screen', AppRoute.splash),
+          _btn(context, 'user_login_select_page', AppRoute.userLoginSelectPage),
           _btn(context, 'user_login', AppRoute.userLogin),
           _btn(
             context,
@@ -35,6 +36,9 @@ class RouterPage extends StatelessWidget {
           ),
           _btn(context, 'tab_bar', AppRoute.tabBar),
           _btn(context, 'main_page', AppRoute.main),
+          _btn(context, 'curtain_list', AppRoute.curtainList),
+          _btn(context, 'ticket_list', AppRoute.ticketList),
+          _btn(context, 'ticket_list_option', AppRoute.ticketListOption),
           _btn(
             context,
             'curtain_detail',
@@ -58,37 +62,13 @@ class RouterPage extends StatelessWidget {
           _btn(context, 'map_view', AppRoute.mapView),
           _btn(context, 'payment', AppRoute.payment),
           _btn(context, 'category', AppRoute.category),
-          _btn(
-            context,
-            'search_result',
-            AppRoute.curtainSearch,
-          ),
-          _btn(
-            context,
-            'review_write',
-            AppRoute.reviewWrite,
-          ),
-          _btn(
-            context,
-            'review_list',
-            AppRoute.reviewList,
-          ),
+          _btn(context, 'search_result', AppRoute.curtainSearch),
+          _btn(context, 'review_write', AppRoute.reviewWrite),
+          _btn(context, 'review_list', AppRoute.reviewList),
           // _btn(context, 'seller_to_seller_chat', AppRoute.sellerToSellerChat),
-          _btn(
-            context,
-            'seller_to_admin_chat',
-            AppRoute.sellerToAdminChat,
-          ),
-          _btn(
-            context,
-            'transaction_review_write',
-            AppRoute.transactionReviewWrite,
-          ),
-          _btn(
-            context,
-            'transaction_review_list',
-            AppRoute.transactionReviewList,
-          ),
+          _btn(context, 'seller_to_admin_chat', AppRoute.sellerToAdminChat),
+          _btn(context, 'transaction_review_write', AppRoute.transactionReviewWrite),
+          _btn(context, 'transaction_review_list', AppRoute.transactionReviewList),
           // _btn(context, 'transaction_cancel', AppRoute.transactionCancel),
           // _btn(context, 'transaction_tickets_check', AppRoute.transactionTicketsCheck),
           _btn(
@@ -136,16 +116,8 @@ class RouterPage extends StatelessWidget {
             AppRoute.boardWrite,
           ),
           _btn(context, 'board_edit', AppRoute.boardEdit),
-          _btn(
-            context,
-            'admin_transaction_manage',
-            AppRoute.adminTransactionManage,
-          ),
-          _btn(
-            context,
-            'admin_review_manage',
-            AppRoute.adminReviewManage,
-          ),
+          _btn(context, 'admin_transaction_manage', AppRoute.adminTransactionManage),
+          _btn(context, 'admin_review_manage', AppRoute.adminReviewManage),
           _btn(
             context,
             'admin_transaction_review_manage',

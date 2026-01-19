@@ -1,9 +1,11 @@
 import 'package:seatup_app/view/admin/faq_detail.dart';
 import 'package:seatup_app/view/user/curtain_search.dart';
+import 'package:seatup_app/view/user/ticket_list_option.dart';
 
 class AppRoute {
   // ===== USER =====
   static const splash = '/';
+  static const userLoginSelectPage = '/user_login_select_page'; // 로그인api 선택
   static const userLogin = '/user_login'; // 고객 로그인
   static const userFindInfo =
       '/user_find_info'; // 회원 정보 찾기
@@ -11,7 +13,7 @@ class AppRoute {
   static const userInfoUpdate =
       '/user_info_update'; // 회원 정보 수정
   static const userMypage = '/user_mypage'; // 마이 페이지
-  static const tabBar = '/tab_bar';
+  static const tabBar = '/tab_bar'; // 메인 페이지 탭바
   static const main = '/main_page';
   static const curtainDetail =
       '/curtain_detail'; // 공연 정보 페이지
@@ -23,8 +25,6 @@ class AppRoute {
       '/purchase_detail'; // 구매 상세
   static const mapView = '/map_view'; // 지도 보기
   static const payment = '/payment'; // 결제 화면
-  static const category = '/category'; // 가테고리
-  static const curtainSearch = '/curtain_search'; // 검색 결과
   static const reviewWrite = '/review_write'; // 관람 후기 작성
   static const reviewList = '/review_list'; // 관람 후기 내역
   // static const sellerToSellerChat = '/seller_to_seller_chat';
@@ -37,8 +37,6 @@ class AppRoute {
   // static const transactionCancel = '/transaction_cancel';
   // static const transactionTicketsCheck = '/transaction_tickets_check';
   static const shoppingCart = '/shopping_cart'; // 찜하기
-  static const sellRegister = '/sell_register'; // 판매 등록
-  static const sellHistory = '/sell_history'; // 판매 내역
 
   // ===== ADMIN =====
   static const adminLogin = '/admin_login'; // 관리자 로그인

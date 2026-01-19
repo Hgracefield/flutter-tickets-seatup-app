@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:seatup_app/view/user/curtain_list.dart';
+import 'package:seatup_app/view/user/ticket_list.dart';
+import 'package:seatup_app/view/user/ticket_list_option.dart';
+import 'package:seatup_app/view/user/user_to_user_chat.dart';
 import 'app_route.dart';
 
 // ===== User =====
 import '/view/user/splash_screen.dart';
+import 'package:seatup_app/view/user/user_login_select_page.dart';
 import '/view/user/user_login.dart';
 import '/view/user/user_find_info.dart';
 import '/view/user/sign_up.dart';
@@ -13,7 +18,7 @@ import '/view/user/main_page.dart';
 import '/view/user/curtain_detail.dart';
 import '/view/user/ticket_detail.dart';
 import '/view/user/purchase_history.dart';
-import '/view/user/purchase_detail.dart';
+import '../user/purchase_history_detail.dart';
 import '/view/user/map_view.dart';
 import '/view/user/payment.dart';
 import '/view/user/category.dart';
