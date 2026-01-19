@@ -21,8 +21,8 @@ class SellRegisterState
 
   SellRegisterState({
     this.selectCurtainIndex = -1,
-    this.selectGradeIndex = -1,
-    this.selectAreaIndex = -1
+    this.selectGradeIndex = 0,
+    this.selectAreaIndex = 0
   });
 
   SellRegisterState copyWith({int? curtainIndex, int? gradeIndex, int? areaIndex}) =>

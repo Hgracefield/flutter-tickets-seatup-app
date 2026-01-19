@@ -32,6 +32,29 @@ class PostNotifier extends AsyncNotifier<List<Post>>{
     // print(data);
     return (data['results'] as List).map((e) => Post.fromJson(e),).toList();
   }
+
+  Future insertPost(Post post) async{
+    final url = Uri.parse("${GlobalData.url}/post/insert");
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(post.toJson()),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('불러오기 실패 ${response.statusCode} / ${response.body}');
+    }
+
+    final data = json.decode(utf8.decode(response.bodyBytes));
+    await refreshPost();
+    return data['results'];
+  }
+
+  Future<void> refreshPost() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () async => fetchPost(),
+    );
+  }
 } // PostNotifier
 
 final postNotifierProvider = AsyncNotifierProvider<PostNotifier, List<Post>>(
