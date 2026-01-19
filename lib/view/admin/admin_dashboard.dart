@@ -18,25 +18,29 @@ class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
 
   @override
-  State<AdminDashboard> createState() => _AdminDashboardState();
+  State<AdminDashboard> createState() =>
+      _AdminDashboardState();
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
   int selectedMenuIndex = 0;
 
-  final List<Map<String, dynamic>> rows = List.generate(30, (i) {
-    return {
-      'type': '뮤지컬',
-      'title': '안나카레니나',
-      'location': '서울',
-      'place': '예술의 전당',
-      'grade': 'vip',
-      'area': 'F구역',
-      'show_date': '2.11 ~ 3.20',
-      'show_time': '14:00',
-      'show_cast': '정선아 ...',
-    };
-  });
+  final List<Map<String, dynamic>> rows = List.generate(
+    30,
+    (i) {
+      return {
+        'type': '뮤지컬',
+        'title': '안나카레니나',
+        'location': '서울',
+        'place': '예술의 전당',
+        'grade': 'vip',
+        'area': 'F구역',
+        'show_date': '2.11 ~ 3.20',
+        'show_time': '14:00',
+        'show_cast': '정선아 ...',
+      };
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -50,12 +54,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
               child: IndexedStack(
                 index: selectedMenuIndex,
                 children: [
-                  _productInfoTab(context),          // 0 제품 정보
-                  FaqList(),           // 1
-                  AdminTransactionManage(),    // 2
-                  AdminReviewManage(),    // 3
-                  AdminTransactionReviewManage(),    // 4
-                  AdminChatList(),  // 5
+                  _productInfoTab(context), // 0 제품 정보
+                  FaqList(), // 1
+                  AdminTransactionManage(), // 2
+                  AdminReviewManage(), // 3
+                  AdminTransactionReviewManage(), // 4
+                  AdminChatList(), // 5
                 ],
               ),
             ),
@@ -73,12 +77,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFCFD8FF)),
+          border: Border.all(
+            color: const Color(0xFFCFD8FF),
+          ),
         ),
         child: Center(
           child: Text(
             '$title (준비중)',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ),
@@ -110,7 +119,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFCFD8FF)),
+                border: Border.all(
+                  color: const Color(0xFFCFD8FF),
+                ),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
@@ -120,52 +131,102 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 980),
+                        constraints: const BoxConstraints(
+                          minWidth: 980,
+                        ),
                         child: DataTable(
                           headingRowHeight: 42,
                           dataRowMinHeight: 48,
                           dataRowMaxHeight: 56,
                           columnSpacing: 18,
-                          headingTextStyle: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF2F57C9),
-                            fontWeight: FontWeight.w800,
-                          ),
+                          headingTextStyle:
+                              const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF2F57C9),
+                                fontWeight:
+                                    FontWeight.w800,
+                              ),
                           dataTextStyle: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF1F2937),
                             fontWeight: FontWeight.w600,
                           ),
                           columns: const [
-                            DataColumn(label: Text('type')),
-                            DataColumn(label: Text('title')),
-                            DataColumn(label: Text('location')),
-                            DataColumn(label: Text('place')),
-                            DataColumn(label: Text('grade')),
-                            DataColumn(label: Text('area')),
-                            DataColumn(label: Text('show_date')),
-                            DataColumn(label: Text('show_time')),
-                            DataColumn(label: Text('show_cast')),
-                            DataColumn(label: SizedBox(width: 56)),
+                            DataColumn(
+                              label: Text('type'),
+                            ),
+                            DataColumn(
+                              label: Text('title'),
+                            ),
+                            DataColumn(
+                              label: Text('location'),
+                            ),
+                            DataColumn(
+                              label: Text('place'),
+                            ),
+                            DataColumn(
+                              label: Text('grade'),
+                            ),
+                            DataColumn(
+                              label: Text('area'),
+                            ),
+                            DataColumn(
+                              label: Text('show_date'),
+                            ),
+                            DataColumn(
+                              label: Text('show_time'),
+                            ),
+                            DataColumn(
+                              label: Text('show_cast'),
+                            ),
+                            DataColumn(
+                              label: SizedBox(width: 56),
+                            ),
                           ],
-                          rows: List.generate(rows.length, (i) {
+                          rows: List.generate(rows.length, (
+                            i,
+                          ) {
                             final r = rows[i];
                             return DataRow(
                               cells: [
-                                DataCell(Text('${r['type']}')),
-                                DataCell(Text('${r['title']}')),
-                                DataCell(Text('${r['location']}')),
-                                DataCell(Text('${r['place']}')),
-                                DataCell(Text('${r['grade']}')),
-                                DataCell(Text('${r['area']}')),
-                                DataCell(Text('${r['show_date']}')),
-                                DataCell(Text('${r['show_time']}')),
+                                DataCell(
+                                  Text('${r['type']}'),
+                                ),
+                                DataCell(
+                                  Text('${r['title']}'),
+                                ),
+                                DataCell(
+                                  Text(
+                                    '${r['location']}',
+                                  ),
+                                ),
+                                DataCell(
+                                  Text('${r['place']}'),
+                                ),
+                                DataCell(
+                                  Text('${r['grade']}'),
+                                ),
+                                DataCell(
+                                  Text('${r['area']}'),
+                                ),
+                                DataCell(
+                                  Text(
+                                    '${r['show_date']}',
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    '${r['show_time']}',
+                                  ),
+                                ),
                                 DataCell(
                                   SizedBox(
                                     width: 120,
                                     child: Text(
                                       '${r['show_cast']}',
-                                      overflow: TextOverflow.ellipsis,
+                                      overflow:
+                                          TextOverflow
+                                              .ellipsis,
                                     ),
                                   ),
                                 ),
@@ -175,11 +236,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                     height: 28,
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        padding: EdgeInsets.zero,
-                                        backgroundColor: const Color(0xFF4D74D6),
+                                        padding:
+                                            EdgeInsets
+                                                .zero,
+                                        backgroundColor:
+                                            const Color(
+                                              0xFF4D74D6,
+                                            ),
                                         elevation: 0,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                                6,
+                                              ),
                                         ),
                                       ),
                                       onPressed: () {
@@ -189,9 +258,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                         '수정',
                                         maxLines: 1,
                                         softWrap: false,
-                                        overflow: TextOverflow.clip,
+                                        overflow:
+                                            TextOverflow
+                                                .clip,
                                         style: TextStyle(
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight:
+                                              FontWeight
+                                                  .w800,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -236,7 +309,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               onTap: () {
                 // 여기에 로그아웃
               },
-              child: _sideLogout()
+              child: _sideLogout(),
             ),
           ),
         ],
@@ -248,19 +321,27 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final bool selected = selectedMenuIndex == index;
 
     return InkWell(
-      onTap: () => setState(() => selectedMenuIndex = index),
+      onTap: () =>
+          setState(() => selectedMenuIndex = index),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF2F57C9) : Colors.transparent,
+          color: selected
+              ? const Color(0xFF2F57C9)
+              : Colors.transparent,
         ),
         child: Text(
           title,
           style: TextStyle(
             color: Colors.white,
             fontSize: 13,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+            fontWeight: selected
+                ? FontWeight.w700
+                : FontWeight.w600,
           ),
         ),
       ),
@@ -270,14 +351,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget _sideLogout() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF2F57C9),
         borderRadius: BorderRadius.circular(6),
       ),
       child: const Text(
         '로그아웃',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -289,14 +376,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFCFD8FF)),
+        border: Border.all(
+          color: const Color(0xFFCFD8FF),
+        ),
       ),
       child: Column(
         children: [
           Row(
             children: const [
-              Icon(Icons.confirmation_number_outlined,
-                  size: 22, color: Color(0xFF2F57C9)),
+              Icon(
+                Icons.confirmation_number_outlined,
+                size: 22,
+                color: Color(0xFF2F57C9),
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -316,16 +408,31 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const Spacer(),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4D74D6),
+                  backgroundColor: const Color(
+                    0xFF4D74D6,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
+                    borderRadius: BorderRadius.circular(
+                      6,
+                    ),
+                  ),
                   elevation: 0,
                 ),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminCurtainInsert(),));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AdminCurtainInsert(),
+                    ),
+                  );
                 },
-                child: const Text('등록',
-                    style: TextStyle(fontWeight: FontWeight.w800)),
+                child: const Text(
+                  '등록',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
             ],
           ),

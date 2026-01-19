@@ -1,31 +1,23 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:seatup_app/main.dart';
 import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/model/faq.dart';
+import 'package:seatup_app/vm/faq_provider.dart';
 
-// 컬러
-// const seatupYellow = Color.fromRGBO(248, 222, 125, 1); // rgb(248,222,125)
-// const seatupDark   = Color.fromRGBO(57, 57, 63, 1);    // rgb(57,57,63)
-// const seatupYellow = Color(0xFFF8DE7D);
-// const seatupDark   = Color(0xFF39393F);
-
-class FaqList extends StatefulWidget {
+class FaqList extends ConsumerStatefulWidget {
   const FaqList({super.key});
 
   @override
-  State<FaqList> createState() => _FaqListState();
+  ConsumerState<FaqList> createState() => _FaqListState();
 }
 
-class _FaqListState extends State<FaqList> {
+class _FaqListState extends ConsumerState<FaqList> {
   // property
-  // 체크박스
-  bool faqCheck = false;
-  // 체크 박스 상태 변수
-  // 선택된 faq문서 id (없으면 null)
+  //선택된 faq문서 id (없으면 null)
   String? selectedDocId;
+  // 체크 박스 상태 변수
+  bool faqCheck = false;
   bool canEdit = false;
   // contents 확장
   String? expandedDocId;
@@ -37,31 +29,45 @@ class _FaqListState extends State<FaqList> {
 
   @override
   Widget build(BuildContext context) {
+    final faqsAsync = ref.watch(faqListProvider);
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         child: Column(
           children: [
             contentsTitle(),
-            Row(mainAxisAlignment: MainAxisAlignment.end, children: [editBtn()]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                insertBtn(),
+                SizedBox(width: 8),
+                editBtn(),
+              ],
+            ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
+              padding: const EdgeInsets.symmetric(
+                vertical: 7,
+              ),
               child: boardListHeader(),
             ),
 
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('FAQs')
-                    .orderBy('no', descending: false)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  final documents = snapshot.data!.docs;
+              child: faqsAsync.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                error: (e, _) =>
+                    Center(child: Text('불러오기 실패: $e')),
+                data: (faqs) {
                   return ListView(
-                    children: documents.map((e) => buildItemWidget(e)).toList(),
+                    primary: false,
+                    // controller: ScrollController(),
+                    children: faqs
+                        .map(
+                          (faq) => buildItemWidget(faq),
+                        )
+                        .toList(),
                   );
                 },
               ),
@@ -102,30 +108,47 @@ class _FaqListState extends State<FaqList> {
       child: ElevatedButton.icon(
         onPressed: canEdit
             ? () {
-                Navigator.pushNamed(context, '/faq_update', arguments: selectedDocId);
+                Navigator.pushNamed(
+                  context,
+                  '/faq_update',
+                  arguments: selectedDocId,
+                );
               }
             : null,
         style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(4)),
-          backgroundColor: canEdit ? const Color(0xFF4D74D6) : const Color(0xFFE5E7EB),
-          foregroundColor: canEdit ? Colors.white : const Color(0xFF9CA3AF),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(
+              4,
+            ),
+          ),
+          backgroundColor: canEdit
+              ? const Color(0xFF4D74D6)
+              : const Color(0xFFE5E7EB),
+          foregroundColor: canEdit
+              ? Colors.white
+              : const Color(0xFF9CA3AF),
         ),
 
         icon: const Icon(Icons.mode_edit),
-        label: const Text('수정', style: TextStyle(fontSize: 16)),
+        label: const Text(
+          '수정',
+          style: TextStyle(fontSize: 16),
+        ),
       ),
     );
   }
 
   // 리스트 헤더
   Widget boardListHeader() {
-    final canEdit = selectedDocId != null;
+    // final canEdit = selectedDocId != null;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
         color: Color.fromRGBO(248, 222, 125, 1),
-        border: Border(bottom: BorderSide(color: Colors.black12)),
+        border: Border(
+          bottom: BorderSide(color: Colors.black12),
+        ),
       ),
       child: DefaultTextStyle(
         style: TextStyle(
@@ -134,16 +157,23 @@ class _FaqListState extends State<FaqList> {
           fontSize: 14,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(
+            vertical: 6,
+          ),
           child: Row(
             children: [
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 4,
+                  ),
                   child: Text(
                     'FAQ',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -153,7 +183,10 @@ class _FaqListState extends State<FaqList> {
                 child: Text(
                   '등록일',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ],
@@ -181,29 +214,59 @@ class _FaqListState extends State<FaqList> {
     );
   }
 
-  // 글 리스트
-  Widget buildItemWidget(DocumentSnapshot doc) {
-    final faq = Faq.fromFirestore(doc);
-    bool isSelected = selectedDocId == doc.id;
-    const seatupDark = Color(0xFF39393F);
+  // 입력 버튼
+  Widget insertBtn() {
+    return SizedBox(
+      width: 110,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.pushNamed(context, '/faq_insert');
+        },
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          backgroundColor: const Color(
+            0xFFF8DE7D,
+          ), // seatupYellow
+          foregroundColor: const Color(
+            0xFF39393F,
+          ), // seatupDark
+          elevation: 0,
+        ),
+        icon: const Icon(Icons.add_outlined),
+        label: const Text(
+          '등록',
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+
+  // 글 리스트 (documentsnapshot => faq 로 변경)
+  Widget buildItemWidget(Faq faq) {
     final dateText = (faq.createdAt == null)
         ? ''
         : DateFormat('yy.MM.dd').format(faq.createdAt!);
-    final isExpanded = expandedDocId == doc.id;
+    final isExpanded = expandedDocId == faq.id;
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.black)),
+        border: Border(
+          bottom: BorderSide(color: Colors.black),
+        ),
       ),
       child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        data: Theme.of(
+          context,
+        ).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          key: PageStorageKey(doc.id),
+          key: PageStorageKey(faq.id),
           initiallyExpanded: isExpanded,
           onExpansionChanged: (expanded) {
             setState(() {
-              expandedDocId = expanded ? doc.id : null;
+              expandedDocId = expanded ? faq.id : null;
             });
           },
           title: Row(
@@ -211,9 +274,11 @@ class _FaqListState extends State<FaqList> {
               SizedBox(
                 width: 50,
                 child: Checkbox(
-                  value: selectedDocId == doc.id,
+                  value: selectedDocId == faq.id,
                   onChanged: (value) {
-                    selectedDocId = (value == true) ? doc.id : null;
+                    selectedDocId = (value == true)
+                        ? faq.id
+                        : null;
                     setState(() {});
                   },
                 ),
@@ -221,16 +286,19 @@ class _FaqListState extends State<FaqList> {
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
                       Text(
                         faq.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: seatupDark,
+                          color: Colors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -255,22 +323,31 @@ class _FaqListState extends State<FaqList> {
 
               IconButton(
                 tooltip: '삭제',
-                icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+                icon: const Icon(
+                  Icons.delete_forever,
+                  color: Colors.redAccent,
+                ),
                 onPressed: () async {
                   // (선택) 삭제 확인 다이얼로그
                   final ok = await showDialog<bool>(
                     context: context,
                     builder: (_) => AlertDialog(
-                      title: const Text('삭제할까요?'),
-                      content: const Text('삭제하면 되돌릴 수 없어요.'),
+                      title: Text('삭제할까요?'),
+                      content: Text('삭제하면 되돌릴 수 없어요.'),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('취소'),
+                          onPressed: () => Navigator.pop(
+                            context,
+                            false,
+                          ),
+                          child: Text('취소'),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('삭제'),
+                          onPressed: () => Navigator.pop(
+                            context,
+                            true,
+                          ),
+                          child: Text('삭제'),
                         ),
                       ],
                     ),
@@ -278,16 +355,27 @@ class _FaqListState extends State<FaqList> {
 
                   if (ok != true) return;
 
-                  await FirebaseFirestore.instance
-                      .collection('FAQs')
-                      .doc(doc.id)
-                      .delete();
+                  try {
+                    await ref
+                        .read(faqActionProvider.notifier)
+                        .deleteFaq(faq.id);
+                    // 삭제한 항목이 선택/확장 상태였으면 정리
+                    if (selectedDocId == faq.id)
+                      selectedDocId = null;
+                    if (expandedDocId == faq.id)
+                      expandedDocId = null;
 
-                  // 삭제한 항목이 선택/확장 상태였으면 정리
-                  if (selectedDocId == doc.id) selectedDocId = null;
-                  if (expandedDocId == doc.id) expandedDocId = null;
-
-                  setState(() {});
+                    if (mounted) setState(() {});
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(
+                      SnackBar(
+                        content: Text('삭제 실패 : $e'),
+                      ),
+                    );
+                  }
                 },
               ),
             ],
@@ -295,14 +383,26 @@ class _FaqListState extends State<FaqList> {
           // 클릭시 내용 보기
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+              padding: const EdgeInsets.fromLTRB(
+                20,
+                0,
+                20,
+                14,
+              ),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 221, 221, 221),
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color.fromARGB(
+                      255,
+                      221,
+                      221,
+                      221,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      10,
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -310,7 +410,12 @@ class _FaqListState extends State<FaqList> {
                       faq.contents,
                       style: const TextStyle(
                         fontSize: 16,
-                        color: Color.fromARGB(255, 0, 0, 0),
+                        color: Color.fromARGB(
+                          255,
+                          0,
+                          0,
+                          0,
+                        ),
                         height: 1.4,
                       ),
                     ),
