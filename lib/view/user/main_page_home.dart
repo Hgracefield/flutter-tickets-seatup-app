@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 // import 'package:seatup_app/view/user/category.dart';
@@ -93,7 +91,7 @@ class _MainPageHomeState extends State<MainPageHome> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: Image.asset(
-                          "images/musical${index + 1}.jpg",
+                          "images/musical0${index + 1}.jpg",
                           fit: BoxFit.cover,
                           alignment: AlignmentGeometry.topCenter,
                         ),
@@ -166,12 +164,6 @@ class _MainPageHomeState extends State<MainPageHome> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
-              weather == null
-                ? CircularProgressIndicator()
-                : Text(
-                    weather!['response']['body']['items']['item'][0]['fcstValue']
-                    .toString(),
-                  ),
             ],
           ),
         ),
@@ -179,7 +171,7 @@ class _MainPageHomeState extends State<MainPageHome> {
     );
   } // build
 
-  // Widgets ---
+  // Widget ---
   Widget categoryButton(String title, int index) {
     return Expanded(
       child: GestureDetector(
@@ -210,7 +202,7 @@ class _MainPageHomeState extends State<MainPageHome> {
               color: selectedCategory == index
                   ? Colors.white
                   : Colors.grey.shade900,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.bold
             ),
           ),
         ),

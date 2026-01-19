@@ -33,6 +33,19 @@ class _CurtainSearchState extends ConsumerState<CurtainSearch> {
   Widget build(BuildContext context) {
     final keywordAsync = ref.watch(keywordHandlerNotifilerProvider);
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          '검색',
+          style: TextStyle(
+            color: Color(0xFF1E3A8A),
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
+      ),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();

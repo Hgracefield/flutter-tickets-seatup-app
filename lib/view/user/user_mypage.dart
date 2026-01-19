@@ -18,6 +18,13 @@ class _UserMypageState extends ConsumerState<UserMypage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("MY티켓"),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+      ),
       body:
        ListView(
         

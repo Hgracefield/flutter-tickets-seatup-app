@@ -21,7 +21,7 @@ class TitleState {
   }
 } // TitleState
 
-class TitleProvider extends AsyncNotifier<List<Title>> {
+class TitleNotifier extends AsyncNotifier<List<Title>> {
   final String baseUrl = GlobalData.url;
 
   @override
@@ -88,6 +88,6 @@ class TitleProvider extends AsyncNotifier<List<Title>> {
 } // StaffNotifier
 
 final titleNotifierProvider =
-    AsyncNotifierProvider<TitleProvider, List<Title>>(
-      TitleProvider.new
+    AsyncNotifierProvider<TitleNotifier, List<Title>>(
+      TitleNotifier.new
     );
