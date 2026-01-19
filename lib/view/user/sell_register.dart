@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/vm/curtain_list_provider.dart';
-import 'package:seatup_app/vm/title_provider.dart';
+import 'package:seatup_app/vm/title_notifier.dart';
 
 class SellRegister extends ConsumerStatefulWidget {
   const SellRegister({super.key});
@@ -20,15 +20,7 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
   // ---------- Dropdown 아이템 ----------
   final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
   final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
-  final List<String> areaItems = const [
-    'A구역',
-    'B구역',
-    'C구역',
-    'D구역',
-    'E구역',
-    'F구역',
-  ];
-
+  final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역', 'E구역', 'F구역'];
 
   // ---------- TextField ----------
   final titleCtrl = TextEditingController();
@@ -37,7 +29,6 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
   final showDateCtrl = TextEditingController();
   final showTimeCtrl = TextEditingController();
   final castCtrl = TextEditingController();
-
 
   @override
   void initState() {
@@ -56,16 +47,16 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
           children: [
             titleAsync.when(
               data: (data) {
-              return  _titleDropdown(
-              label: '제목',
-              value: titleAsync.value!.first.title_contents,
-              items: titleAsync.value!.map((e) => e.title_contents).toList(),
-              onChanged: (v) => setState(() => typeValue = v),
-            );
-              }, 
-              error: (error, stackTrace) => Center(), 
-              loading: () => Center(),)
-            
+                return _titleDropdown(
+                  label: '제목',
+                  value: titleAsync.value!.first.title_contents,
+                  items: titleAsync.value!.map((e) => e.title_contents).toList(),
+                  onChanged: (v) => setState(() => typeValue = v),
+                );
+              },
+              error: (error, stackTrace) => Center(),
+              loading: () => Center(),
+            ),
           ],
         ),
       ),
@@ -97,10 +88,7 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              icon: const Icon(
-                Icons.keyboard_arrow_down,
-                color: Color(0xFF2F57C9),
-              ),
+              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2F57C9)),
               items: items
                   .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                   .toList(),
@@ -124,5 +112,4 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
   );
 
   // === Functions ===
-
 }
