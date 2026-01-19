@@ -23,7 +23,8 @@ class ChatMessage{
       id: id,
       senderId: map['senderId'] ?? "",
       text: map['text'] ?? '',
-      createdAt: ts is Timestamp ? ts.toDate().toLocal() : DateTime.now(),   // Firestore 전용 Timestamp
+      createdAt: ts is Timestamp ? ts.toDate().toLocal() : DateTime.now(),   
+      // Firestore 전용 Timestamp , toLocal() -> 한국시간으로변경
       isRead: map['isRead'] ?? false
     );
   }

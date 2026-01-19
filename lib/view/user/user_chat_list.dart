@@ -8,82 +8,6 @@ import 'package:seatup_app/view/user/user_to_user_chat.dart';
 class UserChatList extends ConsumerWidget {
   const UserChatList({super.key});
 
-  Future<void> _openNewChatDialog(BuildContext context, WidgetRef ref, String myId) async {
-    final postIdCtrl = TextEditingController();
-    final partnerIdCtrl = TextEditingController();
-    final sellerIdCtrl = TextEditingController();
-
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('새 채팅 열기(테스트용)'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: postIdCtrl,
-              decoration: const InputDecoration(labelText: 'postId (예: 100)'),
-            ),
-            TextField(
-              controller: partnerIdCtrl,
-              decoration: const InputDecoration(labelText: 'partnerId (상대 user_id)'),
-            ),
-            TextField(
-              controller: sellerIdCtrl,
-              decoration: const InputDecoration(labelText: 'sellerId (판매자 user_id)'),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '※ 실제 서비스에서는 게시글/거래 화면에서 자동으로 넘어와야 해요.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('열기'),
-          ),
-        ],
-      ),
-    );
-
-    if (ok != true) return;
-
-    final postId = postIdCtrl.text.trim();
-    final partnerId = partnerIdCtrl.text.trim();
-    final sellerId = sellerIdCtrl.text.trim();
-
-    if (postId.isEmpty || partnerId.isEmpty || sellerId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('postId/partnerId/sellerId를 모두 입력하세요')),
-      );
-      return;
-    }
-
-    if (partnerId == myId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('partnerId는 내 id와 같을 수 없어요')),
-      );
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => UserToUserChat(
-          postId: postId,
-          partnerId: partnerId,
-          sellerId: sellerId,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final raw = ref.read(storageProvider).read('user_id');
@@ -98,18 +22,17 @@ class UserChatList extends ConsumerWidget {
     final roomsAsync = ref.watch(chatRoomsProvider(myId));
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('채팅'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
         centerTitle: true,
-
-        // ✅ 앱바 채팅(+) 버튼 추가
-        actions: [
-          IconButton(
-            tooltip: '새 채팅(테스트용)',
-            onPressed: () => _openNewChatDialog(context, ref, myId),
-            icon: const Icon(Icons.chat_bubble_outline),
-          ),
-        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.grey.withOpacity(0.15)),
+        ),
       ),
       body: roomsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -123,17 +46,18 @@ class UserChatList extends ConsumerWidget {
 
           return ListView.separated(
             itemCount: docs.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, __) =>
+                Divider(height: 1, color: Colors.grey.withOpacity(0.15)),
             itemBuilder: (context, index) {
               final doc = docs[index];
               final data = doc.data();
 
-              // ✅ members
+              // members
               final members = (data['members'] as List? ?? [])
                   .map((e) => e.toString())
                   .toList();
 
-              // ✅ 상대 id 계산
+              // 상대 id 계산
               String partnerId = '';
               try {
                 partnerId = members.firstWhere((id) => id != myId);
@@ -141,14 +65,18 @@ class UserChatList extends ConsumerWidget {
                 return const SizedBox.shrink();
               }
 
-              // ✅ 거래 정보
+              // 거래 정보
               final postId = (data['postId'] ?? '').toString();
-              final sellerId = (data['sellerId'] ?? '').toString();
 
-              // ✅ 마지막 메시지/시간
+              // 마지막 메시지/시간
               final lastMessage = (data['lastMessage'] ?? '').toString();
               final ts = data['lastMessageAt'];
               final lastAt = ts is Timestamp ? ts.toDate().toLocal() : null;
+
+              // 아바타에 표시할 짧은 텍스트(너무 길면 UI 깨짐 방지)
+              final avatarText = partnerId.length >= 2
+                  ? partnerId.substring(0, 2)
+                  : partnerId;
 
               void openChat() {
                 Navigator.push(
@@ -157,45 +85,103 @@ class UserChatList extends ConsumerWidget {
                     builder: (_) => UserToUserChat(
                       postId: postId,
                       partnerId: partnerId,
-                      sellerId: sellerId,
                     ),
                   ),
                 );
               }
 
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text(
-                    partnerId,
-                    style: const TextStyle(fontSize: 12),
+              return InkWell(
+                onTap: openChat,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      // 프로필(임시)
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: const Color(0xFFF1F3F5),
+                        child: Text(
+                          avatarText,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // 가운데 텍스트 영역
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 1줄: 상대 + post 라벨
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '상대 ID: $partnerId',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (postId.isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F3F5),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      'post $postId',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+
+                            // 2줄: 마지막 메시지
+                            Text(
+                              lastMessage.isEmpty
+                                  ? '대화를 시작해보세요'
+                                  : lastMessage,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      // 오른쪽 시간 영역
+                      Text(
+                        lastAt == null
+                            ? ''
+                            : TimeOfDay.fromDateTime(lastAt).format(context),
+                        style:
+                            const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ),
-                title: Text('상대 ID: $partnerId  (post: $postId)'),
-                subtitle: Text(
-                  lastMessage.isEmpty ? '대화를 시작해보세요' : lastMessage,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      lastAt == null
-                          ? ''
-                          : TimeOfDay.fromDateTime(lastAt).format(context),
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // ✅ 리스트 아이템 채팅 버튼 추가
-                    IconButton(
-                      tooltip: '채팅 열기',
-                      onPressed: openChat,
-                      icon: const Icon(Icons.chat),
-                    ),
-                  ],
-                ),
-                onTap: openChat, // ✅ 탭해도 열림
               );
             },
           );

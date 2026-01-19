@@ -7,14 +7,11 @@ import 'package:seatup_app/vm/user_chat_notifier.dart';
 class UserToUserChat extends ConsumerStatefulWidget {
   const UserToUserChat({
     super.key,
-    required this.postId,
-    required this.partnerId,
-    required this.sellerId,
+    required this.postId,required this.partnerId
   });
 
-  final String postId;    // ✅ 거래(게시글) id
-  final String partnerId; // ✅ 상대 userId
-  final String sellerId;  // ✅ 이 거래의 판매자 userId
+  final String postId;    // 거래(게시글) id
+  final String partnerId; // 상대 userId
 
   @override
   ConsumerState<UserToUserChat> createState() => _UserToUserChatState();
@@ -24,7 +21,7 @@ class _UserToUserChatState extends ConsumerState<UserToUserChat> {
   late final TextEditingController _controller;
 
   late final String myId;      // 로그인 user_id
-  late final String partnerId; // 상대
+  late final String partnerId; // 상대id이기도 하면서 처음에는 판매자 id
   late final String roomID;
 
   @override
@@ -46,6 +43,10 @@ class _UserToUserChatState extends ConsumerState<UserToUserChat> {
 
     roomID = ref.read(chatNotifierProvider.notifier)
         .makeRoomId(widget.postId, myId, partnerId);
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      ref.read(chatNotifierProvider.notifier).markMessagesAsRead(roomId: roomID, myId: myId);
+    },);
   }
 
   @override
@@ -53,8 +54,6 @@ class _UserToUserChatState extends ConsumerState<UserToUserChat> {
     _controller.dispose();
     super.dispose();
   }
-
-  bool get _iAmSeller => myId == widget.sellerId;
 
   @override
   Widget build(BuildContext context) {
@@ -147,18 +146,12 @@ class _UserToUserChatState extends ConsumerState<UserToUserChat> {
                     final text = _controller.text.trim();
                     if (text.isEmpty) return;
 
-                    // ✅ buyerId / sellerId 정리
-                    final sellerId = widget.sellerId;
-                    final buyerId = _iAmSeller ? partnerId : myId;
-
                     await ref.read(chatNotifierProvider.notifier).sendMessage(
                       roomId: roomID,
                       postId: widget.postId,
                       senderId: myId,
                       partnerId: partnerId,
                       text: text,
-                      sellerId: sellerId,
-                      buyerId: buyerId,
                     );
 
                     _controller.clear();
@@ -182,52 +175,76 @@ class _UserToUserChatState extends ConsumerState<UserToUserChat> {
     );
   }
 
-  Widget buildItem(BuildContext context, ChatMessage message, String myId) {
-    final isMe = message.senderId == myId;
-    final time = TimeOfDay.fromDateTime(message.createdAt).format(context);
+Widget buildItem(BuildContext context, ChatMessage message, String myId) {
+  final isMe = message.senderId == myId;
+  final time = TimeOfDay.fromDateTime(message.createdAt).format(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (isMe)
-            Padding(
-              padding: const EdgeInsets.only(right: 8, bottom: 4),
-              child: Text(time, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.65,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isMe ? Colors.black : Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(20),
-                topRight: const Radius.circular(20),
-                bottomLeft: Radius.circular(isMe ? 20 : 0),
-                bottomRight: Radius.circular(isMe ? 0 : 20),
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+    child: Row(
+      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            // 💬 말풍선
+            Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.65,
               ),
-              border: isMe ? null : Border.all(color: const Color(0xFFE9ECEF)),
-            ),
-            child: Text(
-              message.text,
-              style: TextStyle(
-                color: isMe ? Colors.white : Colors.black87,
-                fontSize: 14,
-                height: 1.4,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isMe ? Colors.black : Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isMe ? 18 : 0),
+                  bottomRight: Radius.circular(isMe ? 0 : 18),
+                ),
+                border: isMe ? null : Border.all(color: const Color(0xFFE9ECEF)),
+              ),
+              child: Text(
+                message.text,
+                style: TextStyle(
+                  color: isMe ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                  height: 1.35,
+                ),
               ),
             ),
-          ),
-          if (!isMe)
-            Padding(
-              padding: const EdgeInsets.only(left: 8, bottom: 4),
-              child: Text(time, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ),
-        ],
-      ),
-    );
-  }
+
+            const SizedBox(height: 4),
+
+            // 시간 + 읽음 (내 메시지일 때만)
+            if (isMe)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message.isRead ? '읽음' : '안읽음',
+                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    time,
+                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
+                ],
+              ),
+
+            // 상대 메시지는 시간만 (원하면)
+            if (!isMe)
+              Text(
+                time,
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 }

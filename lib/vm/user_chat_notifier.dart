@@ -1,20 +1,39 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/chat_message.dart';
+import 'package:seatup_app/vm/storage_provider.dart';
 
-// messages 컬렉션
+// 채팅방 안 메시지들을 가져오는 provider(메시지 보내기, 메시지 삭제, 메시지 수정가능)
 final chatMessagesCollectionProvider =
     Provider.family<CollectionReference<Map<String, dynamic>>, String>((ref, roomId) {
+      // return값이 Map<String, dynamic>으로 반환한다. , String -> 파라미터값
   return FirebaseFirestore.instance
       .collection('chat_rooms')
       .doc(roomId)
       .collection('messages');
 });
 
-// room 문서
+// 메시지 스트림(읽기 + 실시간 UI용)
+final chatMessagesProvider =
+    StreamProvider.family<List<ChatMessage>, String>((ref, roomId) {
+  final col = ref.watch(chatMessagesCollectionProvider(roomId));
+
+  return col
+      .orderBy('createdAt', descending: false)
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) => ChatMessage.fromMap(doc.data(), doc.id)).toList();
+  });
+});
+
+
+// 채팅방 자체를 가져오는 provider(방 정보, 읽음처리, 상태변경[open,closed], 그방의 타입)
 final chatRoomDocProvider =
     Provider.family<DocumentReference<Map<String, dynamic>>, String>((ref, roomId) {
-  return FirebaseFirestore.instance.collection('chat_rooms').doc(roomId);
+  return FirebaseFirestore.instance
+                          .collection('chat_rooms')
+                          .doc(roomId);
+                          
 });
 
 // 내 채팅방 리스트 (members에 내 id가 들어간 방만)
@@ -28,21 +47,8 @@ final chatRoomsProvider =
       .snapshots();
 });
 
-
-// 메시지 스트림
-final chatMessagesProvider =
-    StreamProvider.family<List<ChatMessage>, String>((ref, roomId) {
-  final col = ref.watch(chatMessagesCollectionProvider(roomId));
-
-  return col
-      .orderBy('createdAt', descending: false)
-      .snapshots()
-      .map((snapshot) {
-    return snapshot.docs.map((doc) => ChatMessage.fromMap(doc.data(), doc.id)).toList();
-  });
-});
-
 class UserChatNotifier extends Notifier<void> {
+  
   @override
   void build() {}
 
@@ -60,26 +66,21 @@ class UserChatNotifier extends Notifier<void> {
   }
 
   Future<void> sendMessage({
-    required String roomId,
-    required String postId,
-    required String senderId,
-    required String partnerId,
+    required String roomId,         // 방번호
+    required String postId,         // 판매방번호
+    required String senderId,       // 보내는사람번호(getstorage)
+    required String partnerId,      // 채팅을 받는사람번호
     required String text,
-
-    // (선택) 거래앱이면 방 문서에 역할 저장하면 나중에 리스트/관리 편함
-    required String sellerId,
-    required String buyerId,
   }) async {
     final roomRef = _roomRef(roomId);
 
     // 방 문서 생성/업데이트
+    // 채팅방이없으면 만들고 있으면 필요한 필드만 갱신
     await roomRef.set({
       'postId': postId,
       'members': [senderId, partnerId],
-      'sellerId': sellerId,
-      'buyerId': buyerId,
       'createdAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    }, SetOptions(merge: true));    // merge -> 없는 필드만 추가 / 변경가능
 
     // 메시지 추가
     await _messageRef(roomId).add({
@@ -89,7 +90,7 @@ class UserChatNotifier extends Notifier<void> {
       'isRead': false,
     });
 
-    // 채팅방 리스트용 최신 정보
+    // 채팅방 리스트용 최신 정보 -> Firestore는 랜덤으로 리스트에 가져옴 따라서 필요
     await roomRef.set({
       'lastMessage': text,
       'lastMessageAt': FieldValue.serverTimestamp(),
@@ -97,40 +98,53 @@ class UserChatNotifier extends Notifier<void> {
     }, SetOptions(merge: true));
   }
 
-  Future<void> deleteMessage(String roomId, String messageId) async {
-    await _messageRef(roomId).doc(messageId).delete();
+  // 처음방인지 아닌지 확인함수
+  Future<String> openChat(String postId, String partnerId) async{
+    final raw = ref.read(storageProvider).read('user_id');
+    final myId = raw?.toString() ?? '';
+
+    final roomId =makeRoomId(postId, myId, partnerId);
+    final roomRef = ref.read(chatRoomDocProvider(roomId));
+    final roomSnap = await roomRef.get();
+    
+    if (roomSnap.exists) {
+      final data = roomSnap.data();
+      final members = List<String>.from(data?['members'] ?? []);
+      final partnerID = members.firstWhere((id) => id != myId, orElse: () => partnerId);  // 이게 중요한 포인트
+      return partnerID;
+    }else{
+      return partnerId;
+    }
   }
 
-  Future<String> openOrCreateRoom({
-  required String postId,
+
+  // 읽었는지 아닌지 확인
+  Future<void> markMessagesAsRead({
+  required String roomId,
   required String myId,
-  required String sellerId,
 }) async {
-  if (myId == sellerId) {
-    throw Exception('내가 내 게시글에 채팅할 수는 없어요');
+  final col = _messageRef(roomId);
+
+  // 상대가 보낸, 아직 안 읽은 메시지들만 조회
+  final snap = await col
+      .where('isRead', isEqualTo: false)
+      .where('senderId', isNotEqualTo: myId)
+      .get();
+
+  if (snap.docs.isEmpty) return;
+
+  // 한번에 업데이트 (batch)
+  final batch = FirebaseFirestore.instance.batch();
+  for (final doc in snap.docs) {
+    batch.update(doc.reference, {'isRead': true});
   }
-
-  final roomId = makeRoomId(postId, myId, sellerId);
-  final roomRef = _roomRef(roomId);
-
-  final snap = await roomRef.get();
-
-  if (!snap.exists) {
-    await roomRef.set({
-      'postId': postId,
-      'members': [myId, sellerId],  // ✅ 여기서 members 저장!
-      'sellerId': sellerId,
-      'createdAt': FieldValue.serverTimestamp(),
-      'lastMessage': '',
-      'lastMessageAt': FieldValue.serverTimestamp(),
-    });
-  }
-
-  return roomId;
+  await batch.commit();
 }
 
 
-
+  Future<void> deleteMessage(String roomId, String messageId) async {
+    await _messageRef(roomId).doc(messageId).delete();
+  }
 }
 
 final chatNotifierProvider = NotifierProvider<UserChatNotifier, void>(
