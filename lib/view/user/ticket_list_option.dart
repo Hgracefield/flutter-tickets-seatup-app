@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class PurchaseDetail extends StatelessWidget {
-  const PurchaseDetail({super.key});
+class TicketListOption extends StatelessWidget {
+  const TicketListOption({super.key});
 
   @override
   Widget build(BuildContext context) {

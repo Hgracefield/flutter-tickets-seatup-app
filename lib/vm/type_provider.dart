@@ -20,7 +20,7 @@ class TypeNotifier extends AsyncNotifier<List<Types>> {
 
   // [Read] Python 서버에서 데이터 가져오기
   Future<List<Types>> fetchTypes() async {
-    var url = Uri.parse("http://192.168.10.65:8000/select"); // 본인 서버 주소
+    var url = Uri.parse("http://172.16.251.240:8000/select"); // 본인 서버 주소
     var response = await http.get(url);
     
     if (response.statusCode == 200) {
