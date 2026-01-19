@@ -63,20 +63,17 @@ class UserNotifier extends AsyncNotifier<User>{
   }
 
   Future<int> existUser(String email) async {
-    final url = Uri.parse("${GlobalData.url}/user/exist");
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'email': email
-      }),
-    );
+    final uri = Uri.parse(
+      "${GlobalData.url}/user/exist",
+    ).replace(queryParameters: {'email': email});
+    final response = await http.get(uri);
     if (response.statusCode != 200) {
   throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
 }
     final data = json.decode(utf8.decode(response.bodyBytes));
     return data['result'];
   }
+
 
   Future<String> insertUser(User user) async{
   final url = Uri.parse("${GlobalData.url}/user/insert");
