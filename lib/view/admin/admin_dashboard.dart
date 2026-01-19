@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:seatup_app/view/admin/admin_chat_list.dart';
-import 'package:seatup_app/view/admin/admin_curtain_edit.dart';
 import 'package:seatup_app/view/admin/admin_curtain_insert.dart';
 import 'package:seatup_app/view/admin/admin_review_manage.dart';
 import 'package:seatup_app/view/admin/admin_transaction_manage.dart';
 import 'package:seatup_app/view/admin/admin_transaction_review_manage.dart';
 import 'package:seatup_app/view/admin/faq_list.dart';
-
-// ✅ 일단 다른 화면 import는 빼고, Placeholder로 처리(오류 방지)
-// import 'package:seatup_app/view/admin/admin_chat_list.dart';
-// import 'package:seatup_app/view/admin/admin_review_manage.dart';
-// import 'package:seatup_app/view/admin/admin_transaction_manage.dart';
-// import 'package:seatup_app/view/admin/admin_transaction_review_manage.dart';
-// import 'package:seatup_app/view/admin/faq_list.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -47,22 +39,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
           children: [
             _sideBar(),
             Expanded(
-              child: IndexedStack(
-                index: selectedMenuIndex,
-                children: [
-                  _productInfoTab(context),          // 0 제품 정보
-                  FaqList(),           // 1
-                  AdminTransactionManage(),    // 2
-                  AdminReviewManage(),    // 3
-                  AdminTransactionReviewManage(),    // 4
-                  AdminChatList(),  // 5
-                ],
-              ),
+              // ✅ IndexedStack 제거: 선택된 페이지만 build
+              child: _buildBodyByIndex(context),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // ✅ 선택된 index만 build (안 보이는 탭은 아예 build 안 함)
+  Widget _buildBodyByIndex(BuildContext context) {
+    switch (selectedMenuIndex) {
+      case 0:
+        return _productInfoTab(context);
+      case 1:
+        return FaqList();
+      case 2:
+        return AdminTransactionManage();
+      case 3:
+        return AdminReviewManage();
+      case 4:
+        return AdminTransactionReviewManage();
+      case 5:
+        return AdminChatList();
+      default:
+        return _placeholderTab('알 수 없는 메뉴');
+    }
   }
 
   // ---------------- 탭 화면(임시) ----------------
@@ -101,9 +104,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           ),
           const SizedBox(height: 14),
-          _topPanel(),
+          _topPanel(context),
           const SizedBox(height: 14),
-
           Expanded(
             child: Container(
               width: double.infinity,
@@ -176,14 +178,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         padding: EdgeInsets.zero,
-                                        backgroundColor: const Color(0xFF4D74D6),
+                                        backgroundColor:
+                                            const Color(0xFF4D74D6),
                                         elevation: 0,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
                                         ),
                                       ),
                                       onPressed: () {
-                                        // 수정부분
+                                        // TODO: 수정 페이지 이동(필요하면 연결해줄게)
+                                        // Navigator.push(context, MaterialPageRoute(
+                                        //   builder: (_) => AdminCurtainEdit(data: r),
+                                        // ));
                                       },
                                       child: const Text(
                                         '수정',
@@ -234,9 +241,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
             padding: const EdgeInsets.all(12.0),
             child: GestureDetector(
               onTap: () {
-                // 여기에 로그아웃
+                // TODO: 로그아웃 로직
               },
-              child: _sideLogout()
+              child: _sideLogout(),
             ),
           ),
         ],
@@ -283,7 +290,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   // ---------------- Top Panel ----------------
-  Widget _topPanel() {
+  Widget _topPanel(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
@@ -322,10 +329,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   elevation: 0,
                 ),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminCurtainInsert(),));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AdminCurtainInsert(),
+                    ),
+                  );
                 },
-                child: const Text('등록',
-                    style: TextStyle(fontWeight: FontWeight.w800)),
+                child: const Text(
+                  '등록',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
               ),
             ],
           ),

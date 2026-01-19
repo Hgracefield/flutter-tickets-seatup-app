@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/vm/curtain_list_provider.dart';
-import 'package:seatup_app/vm/title_provider.dart';
+import 'package:seatup_app/vm/title_notifier.dart';
 
 class SellRegister extends ConsumerStatefulWidget {
   const SellRegister({super.key});
