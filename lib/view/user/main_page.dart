@@ -1,39 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:seatup_app/view/user/category.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/view/user/curtain_search.dart';
-import 'package:seatup_app/view/user/main_page_home.dart';
-import 'package:seatup_app/view/user/user_mypage.dart';
+import 'package:seatup_app/view/user/user_to_user_chat.dart';
+import 'package:seatup_app/vm/storage_provider.dart';
 
-class MainPage extends StatefulWidget {
+class MainPage extends ConsumerWidget {
   const MainPage({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage>
-    with SingleTickerProviderStateMixin {
-  // property
-  late TabController mainTabController;
-
-  @override
-  void initState() {
-    super.initState();
-    mainTabController = TabController(
-      length: 5,
-      vsync: this,
-      initialIndex: 2, // 홈 화면을 기본페이지로 설정
-    );
-  }
-
-  @override
-  void dispose() {
-    mainTabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -50,6 +26,16 @@ class _MainPageState extends State<MainPage>
             },
             icon: Icon(Icons.search),
           ),
+          IconButton(             // 채팅확인용으로 만들음
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => UserToUserChat(
+                  roomId: '2_3', 
+                  partnerName: '고석민', 
+                  partnerId: '3'),));
+            }, 
+            icon: Icon(Icons.chat)
+          )
         ],
       ),
       body: TabBarView(

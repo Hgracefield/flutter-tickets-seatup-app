@@ -40,7 +40,7 @@ async def exist(email:str):
         select count(user_id) from user
         where user_email = %s
         """
-        curs.execute(sql, (email))
+        curs.execute(sql, (email,))
         row = curs.fetchone()
         conn.close()   
         return {'result': row[0]}  
@@ -152,7 +152,7 @@ async def insert(user : User):
         user_account,
         user_signup_date,
         user_withdraw_date
-        ) values (%s,%s,%s,%s,%s,%s,%s,now(),'')"""
+        ) values (%s,%s,%s,%s,%s,%s,%s,now(),null)"""
         curs.execute(sql, (user.email, user.password, user.name, user.phone, user.address, user.bank, user.account))
         conn.commit()
         return {'result':'OK'}
@@ -172,15 +172,15 @@ async def insert(user : User):
     try:
         sql = """
         update user set
-        user_email = %s, 
         user_password = %s,
         user_name = %s,
         user_phone = %s,
         user_address = %s,
         user_bank_name = %s,
         user_account = %s
+        where user_email = %s
         """
-        curs.execute(sql, (user.email, user.password, user.name, user.phone, user.address, user.bank, user.account))
+        curs.execute(sql, (user.password, user.name, user.phone, user.address, user.bank, user.account, user.email))
         conn.commit()
         return {'result':'OK'}
     except Exception as ex:
@@ -213,4 +213,18 @@ async def delete(user : int):
     finally:
         conn.close()
     
+@router.get("/select")
+async def select():
+    # Connection으로 부터 Cursor 생성
+    conn = connect()
+    curs = conn.cursor()
+
+    # SQL 문장
+    sql = "SELECT * FROM user"
+    curs.execute(sql)
+    rows = curs.fetchall()
+    conn.close()
+    # 결과값을 Dictionary로 변환
+    result = [{'user_id' : row[0], 'user_email' : row[1], 'user_password' : row[2], 'user_name' : row[3], 'user_phone' : row[4], 'user_address' : row[5], 'user_signup_date' : row[6], 'user_account' : row[7], 'user_bank_name' : row[8], 'user_withdraw_date' : row[9]} for row in rows]
+    return {'results' : result}
     

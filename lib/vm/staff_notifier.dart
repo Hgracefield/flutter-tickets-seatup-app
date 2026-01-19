@@ -7,7 +7,7 @@ import 'package:seatup_app/util/global_data.dart';
 import 'package:http/http.dart' as http;
 import 'package:seatup_app/vm/storage_provider.dart';
 
-class StaffProvider extends AsyncNotifier<List<Staff>> {
+class StaffNotifier extends AsyncNotifier<List<Staff>> {
   final String baseUrl = GlobalData.url;
   late final GetStorage box;
 
@@ -77,6 +77,6 @@ class StaffProvider extends AsyncNotifier<List<Staff>> {
 } // StaffNotifier
 
 final staffNotifierProvider =
-    AsyncNotifierProvider<StaffProvider, List<Staff>>(
-      StaffProvider.new
+    AsyncNotifierProvider<StaffNotifier, List<Staff>>(
+      StaffNotifier.new
     );
