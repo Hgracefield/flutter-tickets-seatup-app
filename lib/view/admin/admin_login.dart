@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/view/admin/admin_dashboard.dart';
-import 'package:seatup_app/vm/staff_provider.dart';
+import 'package:seatup_app/vm/staff_notifier.dart';
 
 class AdminLogin extends ConsumerStatefulWidget {
   const AdminLogin({super.key});
