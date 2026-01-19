@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 // import 'package:seatup_app/view/user/category.dart';
+import 'package:http/http.dart' as http;
 
 class MainPageHome extends StatefulWidget {
   const MainPageHome({super.key});
@@ -11,7 +14,63 @@ class MainPageHome extends StatefulWidget {
 
 class _MainPageHomeState extends State<MainPageHome> {
   // Property
-  int selectedCategory = 0;
+  int selectedCategory = 0; // 선택한 카테고리 인덱스
+  Map<String, dynamic>? weather; // 날씨 데이터를 담을 그릇
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWeather(); // 화면 실행 시 기상청 API 호출
+  }
+
+  // Functions ---
+  Future<void> fetchWeather() async { // 기상청 API
+    const serviceKey =
+        '보안된 키로 재삽입 예정';
+    const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
+
+    final uri = Uri.parse(
+      '$url/getVilageFcst' // URL -> 단기예보조회
+      '?serviceKey=$serviceKey' // 인증키
+      '&pageNo=1' // 페이지 번호
+      '&numOfRows=10' // 한 페이지 결과 수
+      '&dataType=JSON' // 요청자료형식(XML/JSON)
+      '&base_date=20260119' // 작성 기준 날짜
+      '&base_time=1400' // 작성 기준 시간
+      '&nx=61' // 예보지점의 X 좌표값 -> 강남구
+      '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
+    );
+
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      print(data);
+      setState(() {
+        weather = data;
+      });
+    } else {
+      // throw Exception('기상청 API 실패: ${response.statusCode}');
+      throw Exception('날씨 데이터 로딩 실패');
+    }
+  }
+
+  String? getWeatherValue(String category) { // 특정 날씨 데이터 추출
+    if (weather == null) {
+      return null;
+    }
+
+    final List items =
+      weather!['response']['body']['items']['item'];
+
+    for (final item in items) {
+      if (item['category'] == category) {
+        return item['fcstValue']?.toString();
+      }
+    }
+
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +167,12 @@ class _MainPageHomeState extends State<MainPageHome> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
+              weather == null
+                ? CircularProgressIndicator()
+                : Text(
+                    weather!['response']['body']['items']['item'][0]['fcstValue']
+                    .toString(),
+                  ),
             ],
           ),
         ),
@@ -115,7 +180,7 @@ class _MainPageHomeState extends State<MainPageHome> {
     );
   } // build
 
-  // Widget ---
+  // Widgets ---
   Widget categoryButton(String title, int index) {
     return Expanded(
       child: GestureDetector(
@@ -146,7 +211,7 @@ class _MainPageHomeState extends State<MainPageHome> {
               color: selectedCategory == index
                   ? Colors.white
                   : Colors.grey.shade900,
-              fontWeight: FontWeight.bold
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
