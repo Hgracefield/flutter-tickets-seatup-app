@@ -7,8 +7,8 @@ import 'package:seatup_app/util/global_data.dart';
 class CurtainNotifier extends AsyncNotifier<List<Curtain>>{
 
   @override
-  FutureOr<List<Curtain>> build() {
-    throw UnimplementedError();
+  FutureOr<List<Curtain>> build() async {
+    return fetchCurtain();
   }
 
   Future<List<Curtain>> fetchCurtain() async{

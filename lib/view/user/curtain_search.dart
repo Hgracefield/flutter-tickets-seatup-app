@@ -15,13 +15,11 @@ class _CurtainSearchState extends ConsumerState<CurtainSearch> {
   // === Property ===
 
   late TextEditingController searchController;
-  late bool isShowSearchResult;
   late List<Curtain> curtainList;
   @override
   void initState() {
     super.initState();
     searchController = TextEditingController();
-    isShowSearchResult = false;
     curtainList = [];
   }
 
