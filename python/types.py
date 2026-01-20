@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import joblib
 import pymysql
 
-fastAPIAddress = "172.16.251.240"
+fastAPIAddress = "192.168.10.48"
 
 app = FastAPI()
 
@@ -121,6 +121,6 @@ async def read_iris(sepalLength: str=None, sepalWidth: str=None, petalLength: st
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="172.16.251.240", port=8000)
+    uvicorn.run(app, host="192.168.10.48", port=8000)
 
 # uvicorn types:app --reload

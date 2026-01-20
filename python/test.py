@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import pymysql
 
-fastAPIAddress = "172.16.250.148"
+fastAPIAddress = "192.168.10.48"
 
 app = FastAPI()
 
