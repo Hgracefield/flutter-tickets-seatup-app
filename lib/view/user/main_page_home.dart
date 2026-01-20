@@ -93,7 +93,7 @@ class _MainPageHomeState extends State<MainPageHome> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: Image.asset(
-                          "images/musical0${index + 1}.jpg",
+                          "images/musical${index + 1}.jpg",
                           fit: BoxFit.cover,
                           alignment: AlignmentGeometry.topCenter,
                         ),
