@@ -22,7 +22,6 @@ class RouterPage extends StatelessWidget {
           _btn(context, 'tab_bar', AppRoute.tabBar),
           _btn(context, 'main_page', AppRoute.main),
           _btn(context, 'curtain_list_screen', AppRoute.curtainListscreen),
-          _btn(context, 'curtain_detail', AppRoute.curtainDetail),
           _btn(context, 'ticket_detail', AppRoute.ticketDetail),
           _btn(context, 'purchase_history', AppRoute.purchaseHistoryDetail),
           _btn(context, 'purchase_history_detail', AppRoute.purchaseHistoryDetail),
