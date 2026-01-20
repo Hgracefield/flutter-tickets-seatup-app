@@ -74,7 +74,7 @@
 			</array>
 		</dict>
 	</array>	
-
+	<!--
 	<key>LSApplicationQueriesSchemes</key>
   <key>CFBundleURLTypes</key>
 <array>
@@ -82,9 +82,9 @@
     <key>CFBundleURLName</key>
     <string>kakao</string>
     <key>CFBundleURLSchemes</key>
-    <array>
+    <array>-->
       <!-- kakao + 네이티브 앱 키 -->
-      <string>kakao6a4ed9946737798d62126a14547f4c74</string>
+      <!--<string>kakao6a4ed9946737798d62126a14547f4c74</string>
     </array>
   </dict>
 </array>
@@ -92,6 +92,6 @@
 <array>
   <string>kakaokompassauth</string>
   <string>kakaolink</string>
-</array>
+</array>-->
 </dict>
 </plist>
