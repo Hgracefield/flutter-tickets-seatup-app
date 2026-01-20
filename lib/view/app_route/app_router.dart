@@ -112,7 +112,9 @@ class AppRouter {
       case AppRoute.adminCurtainEdit:
         final data = (settings.arguments as Map<String, dynamic>?) ?? {};
         return MaterialPageRoute(
-          builder: (_) => AdminCurtainEdit(initialData: data), // const 제거
+          builder: (_) => AdminCurtainEdit(
+            // initialData: data,
+          ), // const 제거
         );
       case AppRoute.faqList:
         return MaterialPageRoute(builder: (_) => const FaqList());
