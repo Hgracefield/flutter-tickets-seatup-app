@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seatup_app/model/curtain.dart';
 
 /// ✅ 수정 페이지
 /// - 등록 페이지와 동일한 UI/스타일
@@ -16,9 +17,9 @@ import 'package:flutter/material.dart';
 ///   setState(() => rows[index] = updated);
 /// }
 class AdminCurtainEdit extends StatefulWidget {
-  final Map<String, dynamic> initialData;
+  // final Curtain initialData;
 
-  const AdminCurtainEdit({super.key, required this.initialData});
+  const AdminCurtainEdit({super.key, });
 
   @override
   State<AdminCurtainEdit> createState() => _AdminCurtainEditState();
@@ -49,23 +50,23 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
     super.initState();
 
     // ✅ 초기값 주입
-    final d = widget.initialData;
+    // final d = widget.initialData;
 
-    typeValue = (d['type'] ?? '뮤지컬').toString();
-    gradeValue = (d['grade'] ?? 'VIP').toString();
-    areaValue = (d['area'] ?? 'A구역').toString();
+    // typeValue = (d['type'] ?? '뮤지컬').toString();
+    // gradeValue = (d['grade'] ?? 'VIP').toString();
+    // areaValue = (d['area'] ?? 'A구역').toString();
 
     // items에 없는 값이 들어오면 기본값으로 안전 처리
     if (!typeItems.contains(typeValue)) typeValue = typeItems.first;
     if (!gradeItems.contains(gradeValue)) gradeValue = gradeItems.first;
     if (!areaItems.contains(areaValue)) areaValue = areaItems.first;
 
-    titleCtrl = TextEditingController(text: (d['title'] ?? '').toString());
-    locationCtrl = TextEditingController(text: (d['location'] ?? '').toString());
-    placeCtrl = TextEditingController(text: (d['place'] ?? '').toString());
-    showDateCtrl = TextEditingController(text: (d['show_date'] ?? '').toString());
-    showTimeCtrl = TextEditingController(text: (d['show_time'] ?? '').toString());
-    castCtrl = TextEditingController(text: (d['show_cast'] ?? '').toString());
+    // titleCtrl = TextEditingController(text: (d['title'] ?? '').toString());
+    // locationCtrl = TextEditingController(text: (d['location'] ?? '').toString());
+    // placeCtrl = TextEditingController(text: (d['place'] ?? '').toString());
+    // showDateCtrl = TextEditingController(text: (d['show_date'] ?? '').toString());
+    // showTimeCtrl = TextEditingController(text: (d['show_time'] ?? '').toString());
+    // castCtrl = TextEditingController(text: (d['show_cast'] ?? '').toString());
   }
 
   @override
@@ -111,21 +112,21 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     // ✅ 기존 데이터 복사 + 수정값 덮어쓰기 (id/seq 같은 값 유지 가능)
-    final updated = Map<String, dynamic>.from(widget.initialData);
+    // final updated = Map<String, dynamic>.from(widget.initialData);
 
-    updated.addAll({
-      'type': typeValue,
-      'grade': gradeValue,
-      'area': areaValue,
-      'title': titleCtrl.text.trim(),
-      'location': locationCtrl.text.trim(),
-      'place': placeCtrl.text.trim(),
-      'show_date': showDateCtrl.text.trim(),
-      'show_time': showTimeCtrl.text.trim(),
-      'show_cast': castCtrl.text.trim(),
-    });
+    // updated.addAll({
+    //   'type': typeValue,
+    //   'grade': gradeValue,
+    //   'area': areaValue,
+    //   'title': titleCtrl.text.trim(),
+    //   'location': locationCtrl.text.trim(),
+    //   'place': placeCtrl.text.trim(),
+    //   'show_date': showDateCtrl.text.trim(),
+    //   'show_time': showTimeCtrl.text.trim(),
+    //   'show_cast': castCtrl.text.trim(),
+    // });
 
-    Navigator.pop(context, updated);
+    // Navigator.pop(context, updated);
   }
 
   @override

@@ -165,7 +165,7 @@ class AppRouter {
             {};
         return MaterialPageRoute(
           builder: (_) => AdminCurtainEdit(
-            initialData: data,
+            // initialData: data,
           ), // const 제거
         );
       case AppRoute.faqList:

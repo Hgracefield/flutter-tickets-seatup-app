@@ -54,7 +54,8 @@ order by curtain_date asc
                    'type_name' : row[6], 
                    'title_contents' : row[7],
                    'curtain_grade' : row[8],
-                   'curtain_area' : row[9]
+                   'curtain_area' : row[9],
+                   'curtain_time' : row[10]
                    } for row in rows]
         
         return {'results' : result}
@@ -158,5 +159,54 @@ async def search(keyword:str):
     finally:
         conn.close()
     
+@router.get("/selectAll")
+async def search():
+    conn = connect()
+    curs = conn.cursor()
+    try:
+        sql = """
+        Select 
+            c.curtain_id, 
+            c.curtain_date,
+            c.curtain_desc, 
+            c.curtain_mov, 
+            c.curtain_pic, 
+            p.place_name, 
+            type.type_name, 
+            t.title_contents, 
+            c.curtain_grade, 
+            c.curtain_area,
+            DATE_FORMAT(c.curtain_time, '%H:%i:%s') as curtain_time
+        from curtain as c
+            join title as t
+                on c.curtain_title_seq = t.title_seq
+            join place as p
+                on c.curtain_place_seq = p.place_seq
+            join type 
+                on c.curtain_type_seq = type.type_seq
+        where curtain_date > now()
+order by curtain_date asc     
+        """
+        curs.execute(sql)
+        rows = curs.fetchall()
+        result = [{'curtain_id' : row[0], 
+                   'curtain_date' : row[1], 
+                   'curtain_desc' : row[2], 
+                   'curtain_mov' : row[3], 
+                   'curtain_pic' : row[4], 
+                   'place_name' : row[5], 
+                   'type_name' : row[6], 
+                   'title_contents' : row[7],
+                   'curtain_grade' : row[8],
+                   'curtain_area' : row[9],
+                   'curtain_time' : row[10]
+                   } for row in rows]
+        
+        return {'results' : result}
+    except Exception as ex:
+        print("Error :", ex)
+        return {'result':'Error'} 
+    finally:
+        conn.close()
 
     
