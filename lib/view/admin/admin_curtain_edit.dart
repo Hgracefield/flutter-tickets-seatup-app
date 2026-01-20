@@ -1,132 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain.dart';
+import 'package:seatup_app/vm/admin_edit_notifier.dart';
 
-/// ✅ 수정 페이지
-/// - 등록 페이지와 동일한 UI/스타일
-/// - 초기값(initialData)로 폼 채움
-/// - 저장(수정) 누르면 수정된 Map을 pop으로 반환
-///
-/// 사용법(대시보드에서):
-/// final updated = await Navigator.push(
-///   context,
-///   MaterialPageRoute(
-///     builder: (_) => AdminCurtainEdit(initialData: rows[index]),
-///   ),
-/// );
-/// if(updated != null){
-///   setState(() => rows[index] = updated);
-/// }
-class AdminCurtainEdit extends StatefulWidget {
-  // final Curtain initialData;
+class AdminCurtainEdit extends ConsumerStatefulWidget {
+  final Curtain initialData;
 
-  const AdminCurtainEdit({super.key, });
+  const AdminCurtainEdit({super.key, required this.initialData});
 
   @override
-  State<AdminCurtainEdit> createState() => _AdminCurtainEditState();
+  ConsumerState<AdminCurtainEdit> createState() => _AdminCurtainEditConsumerState();
 }
 
-class _AdminCurtainEditState extends State<AdminCurtainEdit> {
+class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
   final _formKey = GlobalKey<FormState>();
 
-  // ---------- Dropdown ----------
+  // ---------- Dropdown (단일) ----------
   String typeValue = '뮤지컬';
-  String gradeValue = 'VIP';
-  String areaValue = 'A구역';
-
   final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
+
+  // ---------- Multi Select (복수) ----------
   final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
   final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역', 'E구역', 'F구역'];
 
+  List<String> selectedGrades = [];
+  List<String> selectedAreas = [];
+
   // ---------- TextField ----------
   late final TextEditingController titleCtrl;
-  late final TextEditingController locationCtrl;
   late final TextEditingController placeCtrl;
-  late final TextEditingController showDateCtrl;
-  late final TextEditingController showTimeCtrl;
-  late final TextEditingController castCtrl;
+  late final TextEditingController curtainDateCtrl;
+  late final TextEditingController curtainTimeCtrl;
+
+  // ✅ 추가
+  late final TextEditingController curtainDescCtrl;
+  late final TextEditingController curtainPicCtrl;
 
   @override
   void initState() {
     super.initState();
 
-    // ✅ 초기값 주입
-    // final d = widget.initialData;
+    final d = widget.initialData;
 
-    // typeValue = (d['type'] ?? '뮤지컬').toString();
-    // gradeValue = (d['grade'] ?? 'VIP').toString();
-    // areaValue = (d['area'] ?? 'A구역').toString();
-
-    // items에 없는 값이 들어오면 기본값으로 안전 처리
+    typeValue = d.curtain_type.toString();
     if (!typeItems.contains(typeValue)) typeValue = typeItems.first;
-    if (!gradeItems.contains(gradeValue)) gradeValue = gradeItems.first;
-    if (!areaItems.contains(areaValue)) areaValue = areaItems.first;
 
-    // titleCtrl = TextEditingController(text: (d['title'] ?? '').toString());
-    // locationCtrl = TextEditingController(text: (d['location'] ?? '').toString());
-    // placeCtrl = TextEditingController(text: (d['place'] ?? '').toString());
-    // showDateCtrl = TextEditingController(text: (d['show_date'] ?? '').toString());
-    // showTimeCtrl = TextEditingController(text: (d['show_time'] ?? '').toString());
-    // castCtrl = TextEditingController(text: (d['show_cast'] ?? '').toString());
+    titleCtrl = TextEditingController(text: d.curtain_title.toString());
+    placeCtrl = TextEditingController(text: d.curtain_place.toString());
+    curtainDateCtrl = TextEditingController(text: d.curtain_date.toString());
+    curtainTimeCtrl = TextEditingController(text: d.curtain_time?.toString() ?? '');
+
+    curtainDescCtrl = TextEditingController(text: d.curtain_desc.toString());
+    curtainPicCtrl = TextEditingController(text: d.curtain_pic.toString());
+
+    // ✅ 기존 값이 단일로 들어있다면(예: "VIP") → 리스트로 변환해서 초기 체크
+    //   (DB에 "VIP,R" 같이 저장돼있으면 split(',')로 바꾸면 됨)
+    if (d.curtain_grade != null) {
+      final g = d.curtain_grade.toString();
+      if (gradeItems.contains(g)) selectedGrades = [g];
+    }
+    if (d.curtain_area != null) {
+      final a = d.curtain_area.toString();
+      if (areaItems.contains(a)) selectedAreas = [a];
+    }
   }
 
   @override
   void dispose() {
     titleCtrl.dispose();
-    locationCtrl.dispose();
     placeCtrl.dispose();
-    showDateCtrl.dispose();
-    showTimeCtrl.dispose();
-    castCtrl.dispose();
+    curtainDateCtrl.dispose();
+    curtainTimeCtrl.dispose();
+    curtainDescCtrl.dispose();
+    curtainPicCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 3),
-      initialDate: now,
-    );
-    if (picked != null) {
-      final y = picked.year.toString();
-      final m = picked.month.toString().padLeft(2, '0');
-      final d = picked.day.toString().padLeft(2, '0');
-      setState(() => showDateCtrl.text = '$y-$m-$d');
-    }
-  }
-
-  Future<void> _pickTime() async {
-    final t = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 14, minute: 0),
-    );
-    if (t != null) {
-      final hh = t.hour.toString().padLeft(2, '0');
-      final mm = t.minute.toString().padLeft(2, '0');
-      setState(() => showTimeCtrl.text = '$hh:$mm');
-    }
   }
 
   void _submitUpdate() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    // ✅ 기존 데이터 복사 + 수정값 덮어쓰기 (id/seq 같은 값 유지 가능)
-    // final updated = Map<String, dynamic>.from(widget.initialData);
+    // ✅ 여기서 서버로 보낼 값 만들기 (예시)
+    final payload = {
+      "type": typeValue,
+      "title": titleCtrl.text.trim(),
+      "place": placeCtrl.text.trim(),
+      "curtain_date": curtainDateCtrl.text.trim(),
+      "curtain_time": curtainTimeCtrl.text.trim(),
+      "curtain_desc": curtainDescCtrl.text.trim(),
+      "curtain_pic": curtainPicCtrl.text.trim(),
+      "grades": selectedGrades, // ✅ 복수 선택
+      "areas": selectedAreas,   // ✅ 복수 선택
+    };
 
-    // updated.addAll({
-    //   'type': typeValue,
-    //   'grade': gradeValue,
-    //   'area': areaValue,
-    //   'title': titleCtrl.text.trim(),
-    //   'location': locationCtrl.text.trim(),
-    //   'place': placeCtrl.text.trim(),
-    //   'show_date': showDateCtrl.text.trim(),
-    //   'show_time': showTimeCtrl.text.trim(),
-    //   'show_cast': castCtrl.text.trim(),
-    // });
-
-    // Navigator.pop(context, updated);
+    // print(payload);
+    // TODO: update API 호출
   }
 
   @override
@@ -163,10 +130,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                       children: [
                         // 안내 문구
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF4F6FF),
                             borderRadius: BorderRadius.circular(10),
@@ -174,11 +138,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                           ),
                           child: Row(
                             children: const [
-                              Icon(
-                                Icons.edit_note_outlined,
-                                size: 20,
-                                color: Color(0xFF2F57C9),
-                              ),
+                              Icon(Icons.edit_note_outlined, size: 20, color: Color(0xFF2F57C9)),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -226,18 +186,9 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 2줄: location + place
+                                // 2줄: place
                                 Row(
                                   children: [
-                                    Expanded(
-                                      child: _dashTextField(
-                                        label: 'location',
-                                        controller: locationCtrl,
-                                        hint: '지역 (예: 서울)',
-                                        requiredField: true,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
                                     Expanded(
                                       child: _dashTextField(
                                         label: 'place',
@@ -250,37 +201,54 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 3줄: grade + area
+                                // ✅ 3줄: grade(복수) + area(복수)
                                 Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: _dashDropdown(
-                                        label: 'grade',
-                                        value: gradeValue,
+                                      child: _multiSelectBox(
+                                        label: 'grade (복수 선택)',
                                         items: gradeItems,
-                                        onChanged: (v) => setState(() => gradeValue = v),
+                                        selected: selectedGrades,
+                                        onToggle: (v) {
+                                          setState(() {
+                                            if (selectedGrades.contains(v)) {
+                                              selectedGrades.remove(v);
+                                            } else {
+                                              selectedGrades.add(v);
+                                            }
+                                          });
+                                        },
                                       ),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: _dashDropdown(
-                                        label: 'area',
-                                        value: areaValue,
+                                      child: _multiSelectBox(
+                                        label: 'area (복수 선택)',
                                         items: areaItems,
-                                        onChanged: (v) => setState(() => areaValue = v),
+                                        selected: selectedAreas,
+                                        onToggle: (v) {
+                                          setState(() {
+                                            if (selectedAreas.contains(v)) {
+                                              selectedAreas.remove(v);
+                                            } else {
+                                              selectedAreas.add(v);
+                                            }
+                                          });
+                                        },
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 4줄: show_date + show_time
+                                // 4줄: curtain_date + show_time
                                 Row(
                                   children: [
                                     Expanded(
                                       child: _dashPickerField(
-                                        label: 'show_date',
-                                        controller: showDateCtrl,
+                                        label: 'curtain_date',
+                                        controller: curtainDateCtrl,
                                         hint: '예: 2026-02-11',
                                         icon: Icons.calendar_today_outlined,
                                         onTapIcon: _pickDate,
@@ -290,7 +258,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                                     Expanded(
                                       child: _dashPickerField(
                                         label: 'show_time',
-                                        controller: showTimeCtrl,
+                                        controller: curtainTimeCtrl,
                                         hint: '예: 14:00',
                                         icon: Icons.schedule_outlined,
                                         onTapIcon: _pickTime,
@@ -300,11 +268,19 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 5줄: show_cast
+                                // ✅ 추가: curtain_desc
+                                _dashTextArea(
+                                  label: 'curtain_desc',
+                                  controller: curtainDescCtrl,
+                                  hint: '설명 (여러 줄 입력 가능)',
+                                ),
+                                const SizedBox(height: 12),
+
+                                // ✅ 추가: 이미지 링크
                                 _dashTextField(
-                                  label: 'show_cast',
-                                  controller: castCtrl,
-                                  hint: '출연진 (예: 정선아, ...)',
+                                  label: 'curtain_pic (image url)',
+                                  controller: curtainPicCtrl,
+                                  hint: 'https://...',
                                 ),
                               ],
                             ),
@@ -319,34 +295,21 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF2F57C9),
                                 side: const BorderSide(color: Color(0xFFCFD8FF)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                               onPressed: () => Navigator.pop(context),
-                              child: const Text(
-                                '취소',
-                                style: TextStyle(fontWeight: FontWeight.w800),
-                              ),
+                              child: const Text('취소', style: TextStyle(fontWeight: FontWeight.w800)),
                             ),
                             const Spacer(),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF4D74D6),
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 12,
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                               ),
                               onPressed: _submitUpdate,
-                              child: const Text(
-                                '저장',
-                                style: TextStyle(fontWeight: FontWeight.w900),
-                              ),
+                              child: const Text('저장', style: TextStyle(fontWeight: FontWeight.w900)),
                             ),
                           ],
                         ),
@@ -362,15 +325,15 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
     );
   }
 
-  // ===================== 대시보드 스타일 공통 위젯 =====================
+  // ------------------ 공통 UI ------------------
   Widget _dashLabel(String text) => Text(
-    text,
-    style: const TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w800,
-      color: Color(0xFF2F57C9),
-    ),
-  );
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF2F57C9),
+        ),
+      );
 
   Widget _dashTextField({
     required String label,
@@ -404,6 +367,39 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
             if (v == null || v.trim().isEmpty) return '$label 는 필수입니다';
             return null;
           },
+        ),
+      ],
+    );
+  }
+
+  Widget _dashTextArea({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          minLines: 3,
+          maxLines: 6,
+          decoration: InputDecoration(
+            hintText: hint,
+            filled: true,
+            fillColor: const Color(0xFFF4F6FF),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE0E6FF)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFF4D74D6), width: 2),
+            ),
+          ),
         ),
       ],
     );
@@ -470,9 +466,7 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
               value: value,
               isExpanded: true,
               icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2F57C9)),
-              items: items
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
+              items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
               onChanged: (v) {
                 if (v != null) onChanged(v);
               },
@@ -481,5 +475,80 @@ class _AdminCurtainEditState extends State<AdminCurtainEdit> {
         ),
       ],
     );
+  }
+
+  // ✅ 복수 선택 박스 (선택한 값은 Chip으로 보이고, 아래에서 체크박스 선택)
+  Widget _multiSelectBox({
+    required String label,
+    required List<String> items,
+    required List<String> selected,
+    required ValueChanged<String> onToggle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+
+        // 선택된 값 Chip 표시
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF4F6FF),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE0E6FF)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: selected.isEmpty
+                    ? [const Text('선택 없음', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)))]
+                    : selected
+                        .map(
+                          (v) => Chip(
+                            label: Text(v, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () => onToggle(v),
+                          ),
+                        )
+                        .toList(),
+              ),
+              const SizedBox(height: 8),
+              const Divider(height: 1),
+
+              // 체크박스 리스트
+              ...items.map((v) {
+                final checked = selected.contains(v);
+                return CheckboxListTile(
+                  dense: true,
+                  value: checked,
+                  onChanged: (_) => onToggle(v),
+                  title: Text(v, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ------------------ Date/Time pick ------------------
+  Future<void> _pickDate() async {
+    final edit = ref.read(adminEditNotifierProvider.notifier);
+    final value = await edit.pickDate(context);
+    if (value.isNotEmpty) setState(() => curtainDateCtrl.text = value);
+  }
+
+  Future<void> _pickTime() async {
+    final edit = ref.read(adminEditNotifierProvider.notifier);
+    final value = await edit.pickTime(context);
+    if (value.isNotEmpty) setState(() => curtainTimeCtrl.text = value);
   }
 }

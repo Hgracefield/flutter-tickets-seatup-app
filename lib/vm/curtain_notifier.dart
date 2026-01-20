@@ -51,7 +51,7 @@ class CurtainNotifier extends AsyncNotifier<List<Curtain>> {
 
   // 시간가져오기위한 함수
   Future<List<Map<String,dynamic>>> fetchCurtainAll() async {
-    final res = await http.get(Uri.parse("${GlobalData.url}/curtain/selectAll"));
+    final res = await http.get(Uri.parse("${GlobalData.url}/curtain/selectTime"));
     if (res.statusCode != 200) {
       throw Exception('불러오기 실패 ${res.statusCode}');
     }

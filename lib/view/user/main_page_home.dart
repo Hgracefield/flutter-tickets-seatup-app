@@ -4,7 +4,7 @@ import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 // import 'package:seatup_app/view/user/category.dart';
 import 'package:http/http.dart' as http;
-import 'package:seatup_app/constants/api_keys.dart';
+// import 'package:seatup_app/constants/api_keys.dart';
 import 'package:seatup_app/model/weather.dart';
 
 class MainPageHome extends StatefulWidget {
@@ -32,7 +32,7 @@ class _MainPageHomeState extends State<MainPageHome> {
 
     final uri = Uri.parse(
       '$url/getVilageFcst' // URL -> 단기예보조회
-      '?serviceKey=$weatherServiceKey' // 인증키
+      // '?serviceKey=$weatherServiceKey' // 인증키
       '&pageNo=1' // 페이지 번호
       '&numOfRows=10' // 한 페이지 결과 수
       '&dataType=JSON' // 요청자료형식(XML/JSON)
