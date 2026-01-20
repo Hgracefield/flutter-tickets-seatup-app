@@ -22,16 +22,17 @@ class AddressNotifier extends Notifier<AddressState>{
     state = state.copyWith(address: address);
   }
 }
+// DB에 주소가 문자열만 가지고 있어서  주소 -> 좌표(위도 , 경도) 정방향 지오코딩(Forward Geocoding)
+  // 길찾기 기능때문에 추가한 함수
+  Future<Location?> getCoordinatesFromAddress(String address) async {
+    final locations = await locationFromAddress(address);
+
+    if (locations.isEmpty) return null;
+
+    return locations.first; // 여기 안에 latitude, longitude 있음
+  }
 } // AddressNotifier
- // DB에 주소가 문자열만 가지고 있어서  주소 -> 좌표(위도 , 경도) 정방향 지오코딩(Forward Geocoding)
- // 길찾기 기능때문에 추가한 함수
-Future<Location?> getCoordinatesFromAddress(String address) async {
-  final locations = await locationFromAddress(address);
-
-  if (locations.isEmpty) return null;
-
-  return locations.first; // 여기 안에 latitude, longitude 있음
-}
+ 
 final addressNotifier = NotifierProvider<AddressNotifier, AddressState>(
   AddressNotifier.new
 );
