@@ -10,7 +10,8 @@ class AreaNotifier extends AsyncNotifier<List<Area>>{
    return await fetchArea();
   }
   Future<List<Area>> fetchArea() async {
-    final res = await http.get(Uri.parse("${GlobalData.url}/grade/select"));
+     String url = "${GlobalData.url}/area/select";
+    final res = await http.get(Uri.parse(url));
     if (res.statusCode != 200) {
       throw Exception('불러오기 실패 ${res.statusCode}');
     }
