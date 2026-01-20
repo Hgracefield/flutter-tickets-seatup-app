@@ -1,71 +1,88 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/vm/faq_provider.dart';
 
-class FaqInsert extends ConsumerStatefulWidget {
-  // <<<<<<<<<<<<<
-  const FaqInsert({super.key});
+class FaqInsert extends ConsumerWidget {
+  FaqInsert({super.key});
 
-  @override
-  ConsumerState<FaqInsert> createState() =>
-      _FaqInsertState(); //<<<<<
-}
-
-class _FaqInsertState extends ConsumerState<FaqInsert> {
-  //<<<<<
-  // property
-  TextEditingController noController =
+  final TextEditingController titleController =
       TextEditingController();
-  TextEditingController titleController =
-      TextEditingController();
-  TextEditingController contentsController =
+  final TextEditingController contentsController =
       TextEditingController();
 
-  bool _saving = false;
-
   @override
-  void dispose() {
-    titleController.text.trim();
-    contentsController.text.trim();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final saving = ref.watch(faqInsertSavingProvider);
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
         child: Center(
           child: Column(
             children: [
+              contentsTitle(),
               TextField(
                 controller: titleController,
+
                 decoration: InputDecoration(
                   labelText: '제목',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.sublack,
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.textColor,
+                      width: 2,
+                    ),
+                  ),
                 ),
               ),
+              SizedBox(height: 20),
               TextField(
                 controller: contentsController,
                 decoration: InputDecoration(
                   labelText: '내용을 입력하세요',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.textColor,
+                      width: 2,
+                    ),
+                  ),
                 ),
+                maxLines: 12,
               ),
+              SizedBox(height: 30),
               ElevatedButton(
-                onPressed: () {
-                  insertAction();
-                },
+                onPressed: saving
+                    ? null
+                    : () => insertAction(context, ref),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadiusGeometry.circular(4),
+                  ),
+                  backgroundColor: AppColors.suyellow,
+                  foregroundColor: AppColors.textColor,
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(0, 5, 10, 5),
                   child: SizedBox(
                     width: 80,
                     child: Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Text('등록 하기'),
                         Icon(Icons.add_outlined),
+                        Text(' 등록 하기'),
                       ],
                     ),
                   ),
@@ -77,85 +94,58 @@ class _FaqInsertState extends ConsumerState<FaqInsert> {
       ),
     );
   } // build
-  // ============================ widgets =====================================
 
-  Widget buildItemWidget(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
-    final ts = data['createdAt'] as Timestamp?;
-    final createdAtText = (ts == null)
-        ? ''
-        : DateFormat('yy.MM.dd').format(ts.toDate());
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/faq_update',
-          arguments: doc.id,
-
-          // main에 route 등록해야함.
-          // MaterialPageRoute(
-          //     builder: (_) => FaqUpdate(docId: doc.id),
-          //   ),
-        );
-      },
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+  //============================= widgets===================================================
+  // 관리자 contents title
+  Widget contentsTitle() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 18, 24, 18),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            '게시판',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textColor,
+            ),
           ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 100,
-                child: Text('${data['no']}'),
-              ),
-              Expanded(child: Text('${data['title']}')),
-              SizedBox(
-                width: 110,
-                child: Text(
-                  createdAtText,
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
 
   // ========================== functions ======================================
-  Future<void> insertAction() async {
-    if (_saving) return;
+  Future<void> insertAction(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final saving = ref.read(faqInsertSavingProvider);
+    if (saving) return;
 
     final title = titleController.text.trim();
     final contents = contentsController.text.trim();
 
     if (title.isEmpty || contents.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('빈칸 없이 작성 해주세요.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('빈칸 없이 작성 해주세요.')));
       return;
     }
-    setState(() => _saving = true);
+    // ref.read(faqInsertSavingProvider.notifier).state = true; // 유무에 작동 되는지 확인하기
 
     try {
       await ref
           .read(faqActionProvider.notifier)
           .addFaq(title: title, contents: contents);
-
-      if (!mounted) return;
       Navigator.pop(context);
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('등록 실패 : $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('등록 실패 : $e')));
     } finally {
-      if (mounted) setState(() => _saving = false);
+      ref.read(faqInsertSavingProvider.notifier).state = false;
     }
   }
 } // class

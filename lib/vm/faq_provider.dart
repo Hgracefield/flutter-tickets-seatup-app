@@ -5,19 +5,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:seatup_app/model/faq.dart';
 
-final faqsCollectionProvider = Provider<CollectionReference<Map<String, dynamic>>>(
-  (ref) => FirebaseFirestore.instance.collection('FAQs'),
-);
-// 체크 박스
-final faqselectedProvider = StateProvider<String?>((ref) => null);
-// 확장 액션
-final faqExpandedProvider = StateProvider<String?>((ref) => null);
+final faqsCollectionProvider =
+    Provider<CollectionReference<Map<String, dynamic>>>(
+      (ref) => FirebaseFirestore.instance.collection('FAQs'),
+    );
+
+final faqselectedProvider = StateProvider<String?>(
+  (ref) => null,
+); // 체크 박스
+
+final faqExpandedProvider = StateProvider<String?>(
+  (ref) => null,
+); // 확장 액션
+final faqInsertSavingProvider = StateProvider<bool>(
+  (ref) => false,
+); // 입력
+// 수정 페이지 provider
+final faqUpdateLoadingProvider = StateProvider<bool>((ref) => true);
+final faqUpdateSavingProvider = StateProvider<bool>((ref) => false);
+final faqUpdateDocIdProvider = StateProvider<String?>((ref) => null);
+
 // 실시간 Faq 목록 Provider(streamProvider)
 final faqListProvider = StreamProvider<List<Faq>>((ref) {
   final col = ref.watch(faqsCollectionProvider);
 
-  return col.orderBy('createdAt', descending: false).snapshots().map((snapshot) {
-    return snapshot.docs.map((doc) => Faq.fromMap(doc.data(), doc.id)).toList();
+  return col.orderBy('createdAt', descending: false).snapshots().map((
+    snapshot,
+  ) {
+    return snapshot.docs
+        .map((doc) => Faq.fromMap(doc.data(), doc.id))
+        .toList();
   });
 });
 
@@ -26,9 +43,17 @@ class FaqActionNotifier extends Notifier<void> {
   @override
   void build() {}
 
-  CollectionReference<Map<String, dynamic>> get _faqs => ref.read(faqsCollectionProvider);
-  Future<void> addFaq({required String title, required String contents}) async {
-    await _faqs.add({'title': title, 'contents': contents, 'createdAt': Timestamp.now()});
+  CollectionReference<Map<String, dynamic>> get _faqs =>
+      ref.read(faqsCollectionProvider);
+  Future<void> addFaq({
+    required String title,
+    required String contents,
+  }) async {
+    await _faqs.add({
+      'title': title,
+      'contents': contents,
+      'createdAt': Timestamp.now(),
+    });
   }
 
   Future<void> deleteFaq(String id) async {
@@ -53,7 +78,10 @@ final faqActionProvider = NotifierProvider<FaqActionNotifier, void>(
 );
 
 // (옵션) 수정 페이지에서 단건 불러오기 Provider
-final faqByIdProvider = FutureProvider.family<Faq?, String>((ref, id) async {
+final faqByIdProvider = FutureProvider.family<Faq?, String>((
+  ref,
+  id,
+) async {
   final doc = await ref.watch(faqsCollectionProvider).doc(id).get();
   final data = doc.data();
   if (data == null) return null;

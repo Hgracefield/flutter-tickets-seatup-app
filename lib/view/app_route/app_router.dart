@@ -51,15 +51,21 @@ class AppRouter {
     switch (settings.name) {
       // ===== USER =====
       case AppRoute.splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return MaterialPageRoute(
+          builder: (_) => const SplashScreen(),
+        );
       case AppRoute.userLogin:
         return MaterialPageRoute(builder: (_) => const UserLogin());
       case AppRoute.userFindInfo:
-        return MaterialPageRoute(builder: (_) => const UserFindInfo());
+        return MaterialPageRoute(
+          builder: (_) => const UserFindInfo(),
+        );
       case AppRoute.signUp:
         return MaterialPageRoute(builder: (_) => const SignUp());
       case AppRoute.userInfoUpdate:
-        return MaterialPageRoute(builder: (_) => const UserInfoUpdate());
+        return MaterialPageRoute(
+          builder: (_) => const UserInfoUpdate(),
+        );
       case AppRoute.userMypage:
         return MaterialPageRoute(builder: (_) => const UserMypage());
       case AppRoute.tabBar:
@@ -67,13 +73,21 @@ class AppRouter {
       case AppRoute.main:
         return MaterialPageRoute(builder: (_) => const MainPage());
       case AppRoute.curtainListscreen:
-        return MaterialPageRoute(builder: (_) => const CurtainListScreen());
+        return MaterialPageRoute(
+          builder: (_) => const CurtainListScreen(),
+        );
       case AppRoute.ticketDetail:
-        return MaterialPageRoute(builder: (_) => const TicketDetail());
+        return MaterialPageRoute(
+          builder: (_) => const TicketDetail(),
+        );
       case AppRoute.PurchaseHistory:
-        return MaterialPageRoute(builder: (_) => const PurchaseHistory());
+        return MaterialPageRoute(
+          builder: (_) => const PurchaseHistory(),
+        );
       case AppRoute.purchaseHistoryDetail:
-        return MaterialPageRoute(builder: (_) => const PurchaseHistoryDetail());
+        return MaterialPageRoute(
+          builder: (_) => const PurchaseHistoryDetail(),
+        );
       case AppRoute.mapView:
         return MaterialPageRoute(builder: (_) => const MapView());
       case AppRoute.payment:
@@ -81,7 +95,9 @@ class AppRouter {
       case AppRoute.category:
         return MaterialPageRoute(builder: (_) => const Category());
       case AppRoute.curtainSearch:
-        return MaterialPageRoute(builder: (_) => const CurtainSearch());
+        return MaterialPageRoute(
+          builder: (_) => const CurtainSearch(),
+        );
       case AppRoute.reviewWrite:
         return MaterialPageRoute(builder: (_) => const ReviewWrite());
       case AppRoute.reviewList:
@@ -89,16 +105,26 @@ class AppRouter {
       // case AppRoute.userToUserChat:
       // return MaterialPageRoute(builder: (_) => const UserToUserChat());
       case AppRoute.sellerToAdminChat:
-        return MaterialPageRoute(builder: (_) => const SellerToAdminChat());
+        return MaterialPageRoute(
+          builder: (_) => const SellerToAdminChat(),
+        );
       case AppRoute.transactionReviewWrite:
-        return MaterialPageRoute(builder: (_) => const TransactionReviewWrite());
+        return MaterialPageRoute(
+          builder: (_) => const TransactionReviewWrite(),
+        );
       case AppRoute.transactionReviewList:
-        return MaterialPageRoute(builder: (_) => const TransactionReviewList());
+        return MaterialPageRoute(
+          builder: (_) => const TransactionReviewList(),
+        );
 
       case AppRoute.shoppingCart:
-        return MaterialPageRoute(builder: (_) => const ShoppingCart());
+        return MaterialPageRoute(
+          builder: (_) => const ShoppingCart(),
+        );
       case AppRoute.sellRegister:
-        return MaterialPageRoute(builder: (_) => const SellRegister());
+        return MaterialPageRoute(
+          builder: (_) => const SellRegister(),
+        );
       case AppRoute.sellHistory:
         return MaterialPageRoute(builder: (_) => const SellHistory());
       case AppRoute.userFaq:
@@ -108,18 +134,25 @@ class AppRouter {
       case AppRoute.adminLogin:
         return MaterialPageRoute(builder: (_) => const AdminLogin());
       case AppRoute.adminDashboard:
-        return MaterialPageRoute(builder: (_) => const AdminDashboard());
-      case AppRoute.adminCurtainEdit:
-        final data = (settings.arguments as Map<String, dynamic>?) ?? {};
         return MaterialPageRoute(
-          builder: (_) => AdminCurtainEdit(initialData: data), // const 제거
+          builder: (_) => const AdminDashboard(),
+        );
+      case AppRoute.adminCurtainEdit:
+        final data =
+            (settings.arguments as Map<String, dynamic>?) ?? {};
+        return MaterialPageRoute(
+          builder: (_) =>
+              AdminCurtainEdit(initialData: data), // const 제거
         );
       case AppRoute.faqList:
         return MaterialPageRoute(builder: (_) => const FaqList());
       case AppRoute.faqInsert:
-        return MaterialPageRoute(builder: (_) => const FaqInsert());
+        return MaterialPageRoute(builder: (_) => FaqInsert());
       case AppRoute.faqUpdate:
-        return MaterialPageRoute(builder: (_) => const FaqUpdate(), settings: settings);
+        return MaterialPageRoute(
+          builder: (_) => FaqUpdate(),
+          settings: settings,
+        );
       case AppRoute.faqDetail:
         return MaterialPageRoute(builder: (_) => const FaqDetail());
       case AppRoute.boardWrite:
@@ -127,19 +160,31 @@ class AppRouter {
       case AppRoute.boardEdit:
         return MaterialPageRoute(builder: (_) => const BoardEdit());
       case AppRoute.adminTransactionManage:
-        return MaterialPageRoute(builder: (_) => const AdminTransactionManage());
+        return MaterialPageRoute(
+          builder: (_) => const AdminTransactionManage(),
+        );
       case AppRoute.adminReviewManage:
-        return MaterialPageRoute(builder: (_) => const AdminReviewManage());
+        return MaterialPageRoute(
+          builder: (_) => const AdminReviewManage(),
+        );
       case AppRoute.adminTransactionReviewManage:
-        return MaterialPageRoute(builder: (_) => const AdminTransactionReviewManage());
+        return MaterialPageRoute(
+          builder: (_) => const AdminTransactionReviewManage(),
+        );
       case AppRoute.adminChatList:
-        return MaterialPageRoute(builder: (_) => const AdminChatList());
+        return MaterialPageRoute(
+          builder: (_) => const AdminChatList(),
+        );
       case AppRoute.adminChatDetail:
-        return MaterialPageRoute(builder: (_) => const AdminChatDetail());
+        return MaterialPageRoute(
+          builder: (_) => const AdminChatDetail(),
+        );
 
       default:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(body: Center(child: Text('Route not found'))),
+          builder: (_) => const Scaffold(
+            body: Center(child: Text('Route not found')),
+          ),
         );
     }
   }
