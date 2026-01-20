@@ -13,7 +13,6 @@ class AppRoute {
   static const tabBar = '/tab_bar';
   static const main = '/main_page';
   static const curtainListscreen = '/curtain_list_screen'; // 공연 리스트
-  static const curtainDetail = '/curtain_detail'; // 공연 정보 페이지
   static const ticketDetail = '/ticket_detail'; // 티켓 상세 페이지
   static const PurchaseHistory = '/purchase_history'; // 구매 이력
   static const purchaseHistoryDetail = '/purchase_History_detail'; // 구매 상세
