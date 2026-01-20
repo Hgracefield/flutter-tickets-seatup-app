@@ -8,7 +8,10 @@ import 'package:seatup_app/model/faq.dart';
 final faqsCollectionProvider = Provider<CollectionReference<Map<String, dynamic>>>(
   (ref) => FirebaseFirestore.instance.collection('FAQs'),
 );
-
+// 체크 박스
+final faqselectedProvider = StateProvider<String?>((ref) => null);
+// 확장 액션
+final faqExpandedProvider = StateProvider<String?>((ref) => null);
 // 실시간 Faq 목록 Provider(streamProvider)
 final faqListProvider = StreamProvider<List<Faq>>((ref) {
   final col = ref.watch(faqsCollectionProvider);
@@ -17,7 +20,6 @@ final faqListProvider = StreamProvider<List<Faq>>((ref) {
     return snapshot.docs.map((doc) => Faq.fromMap(doc.data(), doc.id)).toList();
   });
 });
-final faqExpandedProvider = StateProvider<String?>((ref) => null);
 
 // Faq 액션 Provider (입력, 수정, 삭제)
 class FaqActionNotifier extends Notifier<void> {

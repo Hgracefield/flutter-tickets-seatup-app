@@ -5,30 +5,11 @@ import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/model/faq.dart';
 import 'package:seatup_app/vm/faq_provider.dart';
 
-class FaqList extends ConsumerStatefulWidget {
+class FaqList extends ConsumerWidget {
   const FaqList({super.key});
 
   @override
-  ConsumerState<FaqList> createState() => _FaqListState();
-}
-
-class _FaqListState extends ConsumerState<FaqList> {
-  // property
-  //선택된 faq문서 id (없으면 null)
-  String? selectedDocId;
-  // 체크 박스 상태 변수
-  bool faqCheck = false;
-  bool canEdit = false;
-  // contents 확장
-  String? expandedDocId;
-  // 초기 설정
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final faqsAsync = ref.watch(faqListProvider);
 
     return Scaffold(
@@ -39,7 +20,7 @@ class _FaqListState extends ConsumerState<FaqList> {
             contentsTitle(),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [insertBtn(), SizedBox(width: 8), editBtn()],
+              children: [insertBtn(context), SizedBox(width: 8), editBtn(context, ref)],
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 7),
@@ -54,7 +35,9 @@ class _FaqListState extends ConsumerState<FaqList> {
                   return ListView(
                     primary: false,
                     // controller: ScrollController(),
-                    children: faqs.map((faq) => buildItemWidget(faq)).toList(),
+                    children: faqs
+                        .map((faq) => buildItemWidget(context, ref, faq))
+                        .toList(),
                   );
                 },
               ),
@@ -87,7 +70,8 @@ class _FaqListState extends ConsumerState<FaqList> {
   }
 
   // 수정 버튼
-  Widget editBtn() {
+  Widget editBtn(BuildContext context, WidgetRef ref) {
+    final selectedDocId = ref.watch(faqselectedProvider);
     final canEdit = selectedDocId != null;
 
     return SizedBox(
@@ -157,7 +141,9 @@ class _FaqListState extends ConsumerState<FaqList> {
   }
 
   // 수정 버튼 체크박스가 클릭되어야 활성화 됨.
-  Widget updateBtn() {
+  Widget updateBtn(BuildContext context, WidgetRef ref) {
+    final selectedDocId = ref.watch(faqselectedProvider);
+    final canEdit = selectedDocId != null;
     return TextButton.icon(
       onPressed: canEdit
           ? () {
@@ -168,14 +154,20 @@ class _FaqListState extends ConsumerState<FaqList> {
               );
             }
           : null,
-
+      //  style: ElevatedButton.styleFrom(
+      //           shape: RoundedRectangleBorder(
+      //             borderRadius: BorderRadius.circular(4),
+      //           ),
+      //           backgroundColor: canEdit ? const Color(0xFF4D74D6) : const Color(0xFFE5E7EB),
+      //           foregroundColor: canEdit ? Colors.white : const Color(0xFF9CA3AF),
+      //         ),
       icon: const Icon(Icons.mode_edit),
       label: const Text('수정'),
     );
   }
 
   // 입력 버튼
-  Widget insertBtn() {
+  Widget insertBtn(BuildContext context) {
     return SizedBox(
       width: 110,
       child: ElevatedButton.icon(
@@ -195,11 +187,14 @@ class _FaqListState extends ConsumerState<FaqList> {
   }
 
   // 글 리스트 (documentsnapshot => faq 로 변경)
-  Widget buildItemWidget(Faq faq) {
+  Widget buildItemWidget(BuildContext context, WidgetRef ref, Faq faq) {
+    final selectedDocId = ref.watch(faqselectedProvider);
+    final expandedDocId = ref.watch(faqExpandedProvider);
+    final isExpanded = expandedDocId == faq.id;
+
     final dateText = (faq.createdAt == null)
         ? ''
         : DateFormat('yy.MM.dd').format(faq.createdAt!);
-    final isExpanded = expandedDocId == faq.id;
 
     return Container(
       decoration: BoxDecoration(
@@ -212,9 +207,7 @@ class _FaqListState extends ConsumerState<FaqList> {
           key: PageStorageKey(faq.id),
           initiallyExpanded: isExpanded,
           onExpansionChanged: (expanded) {
-            setState(() {
-              expandedDocId = expanded ? faq.id : null;
-            });
+            ref.read(faqExpandedProvider.notifier).state = expanded ? faq.id : null;
           },
           title: Row(
             children: [
@@ -222,9 +215,14 @@ class _FaqListState extends ConsumerState<FaqList> {
                 width: 50,
                 child: Checkbox(
                   value: selectedDocId == faq.id,
-                  onChanged: (value) {
-                    selectedDocId = (value == true) ? faq.id : null;
-                    setState(() {});
+                  onChanged: (checked) {
+                    ref.read(faqselectedProvider.notifier).state = checked == true
+                        ? faq.id
+                        : null;
+
+                    ref.read(faqExpandedProvider.notifier).state = checked == true
+                        ? faq.id
+                        : null;
                   },
                 ),
               ),
@@ -293,12 +291,14 @@ class _FaqListState extends ConsumerState<FaqList> {
                   try {
                     await ref.read(faqActionProvider.notifier).deleteFaq(faq.id);
                     // 삭제한 항목이 선택/확장 상태였으면 정리
-                    if (selectedDocId == faq.id) selectedDocId = null;
-                    if (expandedDocId == faq.id) expandedDocId = null;
+                    if (ref.read(faqselectedProvider) == faq.id) {
+                      ref.read(faqselectedProvider.notifier).state = null;
+                    }
 
-                    if (mounted) setState(() {});
+                    if (ref.read(faqExpandedProvider) == faq.id) {
+                      ref.read(faqExpandedProvider.notifier).state = null;
+                    }
                   } catch (e) {
-                    if (!mounted) return;
                     ScaffoldMessenger.of(
                       context,
                     ).showSnackBar(SnackBar(content: Text('삭제 실패 : $e')));
