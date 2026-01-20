@@ -4,7 +4,8 @@ import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 // import 'package:seatup_app/view/user/category.dart';
 import 'package:http/http.dart' as http;
-// import 'package:seatup_app/constants/api_keys.dart';
+import 'package:seatup_app/constants/api_keys.dart';
+import 'package:seatup_app/model/weather.dart';
 
 class MainPageHome extends StatefulWidget {
   const MainPageHome({super.key});
@@ -16,7 +17,7 @@ class MainPageHome extends StatefulWidget {
 class _MainPageHomeState extends State<MainPageHome> {
   // Property
   int selectedCategory = 0; // 선택한 카테고리 인덱스
-  Map<String, dynamic>? weather; // 날씨 데이터를 담을 그릇
+  WeatherModel? weather; // 날씨 데이터를 담을 모델
 
   @override
   void initState() {
@@ -31,7 +32,7 @@ class _MainPageHomeState extends State<MainPageHome> {
 
     final uri = Uri.parse(
       '$url/getVilageFcst' // URL -> 단기예보조회
-      // '?serviceKey=$weatherServiceKey' // 인증키
+      '?serviceKey=$weatherServiceKey' // 인증키
       '&pageNo=1' // 페이지 번호
       '&numOfRows=10' // 한 페이지 결과 수
       '&dataType=JSON' // 요청자료형식(XML/JSON)
@@ -47,29 +48,11 @@ class _MainPageHomeState extends State<MainPageHome> {
       final data = jsonDecode(utf8.decode(response.bodyBytes));
       print(data);
       setState(() {
-        weather = data;
+        weather = WeatherModel.fromJson(data);
       });
     } else {
-      // throw Exception('기상청 API 실패: ${response.statusCode}');
       throw Exception('날씨 데이터 로딩 실패');
     }
-  }
-
-  String? getWeatherValue(String category) {
-    // 특정 날씨 데이터 추출
-    if (weather == null) {
-      return null;
-    }
-
-    final List items = weather!['response']['body']['items']['item'];
-
-    for (final item in items) {
-      if (item['category'] == category) {
-        return item['fcstValue']?.toString();
-      }
-    }
-
-    return null;
   }
 
   @override
@@ -167,6 +150,94 @@ class _MainPageHomeState extends State<MainPageHome> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
+              
+              // Text('기온: ${weather?.temperature ?? "-"}°C'),
+              Text('최저 기온: ${weather?.tmn ?? "-"}°C'),
+              Text('최고 기온: ${weather?.tmx ?? "-"}°C'),
+              Text('1시간 기온: ${weather?.tmp ?? "-"}°C'),
+              // Text('습도: ${weather?.humidity ?? "-"}°C'),
+              Text('하늘: ${weather?.sky ?? "-"}°C'),
+              Text('강수 확률: ${weather?.pop ?? "-"}'),
+              Text('강수 형태: ${weather?.pty ?? "-"}'),
+              Text('1시간 강수량: ${weather?.pcp ?? "-"}'),
+              Text('1시간 신적설: ${weather?.sno ?? "-"}'),
+
+              weather == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            elevation: 5,
+                            color: Colors.lightBlue[50],
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '${weather!.temperature}°C',
+                                    style: const TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '하늘: ${weather!.sky ?? "-"}',
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '습도: ${weather!.humidity ?? "-"}%',
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '강수: ${weather!.pty ?? "-"}',
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            '오늘의 날씨',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // 여기서 추가 예보 카드나 다른 정보 추가 가능
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              weatherCard(
+                                '체감온도',
+                                '${weather!.temperature}°C',
+                                Icons.thermostat,
+                              ),
+                              weatherCard(
+                                '습도',
+                                '${weather!.humidity ?? "-"}%',
+                                Icons.water_drop,
+                              ),
+                              weatherCard(
+                                '강수',
+                                '${weather!.pty ?? "-"}',
+                                Icons.grain,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
             ],
           ),
         ),
@@ -194,16 +265,42 @@ class _MainPageHomeState extends State<MainPageHome> {
                   : Colors.grey.shade300,
               width: 2,
             ),
-            color: selectedCategory == index ? Colors.grey.shade900 : Colors.white,
+            color: selectedCategory == index
+                ? Colors.grey.shade900
+                : Colors.white,
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(
             title,
             style: TextStyle(
-              color: selectedCategory == index ? Colors.white : Colors.grey.shade900,
+              color: selectedCategory == index
+                  ? Colors.white
+                  : Colors.grey.shade900,
               fontWeight: FontWeight.bold,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget weatherCard(String title, String text, IconData icon) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 3,
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: Colors.blue),
+            SizedBox(height: 8),
+            Text(
+              text,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text(title, style: TextStyle(fontSize: 14)),
+          ],
         ),
       ),
     );
