@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seatup_app/view/user/curtain_list.dart';
+import 'package:seatup_app/view/user/curtain_list_screen.dart';
 import 'package:seatup_app/view/user/purchase_history_detail.dart';
 import 'package:seatup_app/view/user/user_faq.dart';
 import 'app_route.dart';
@@ -67,8 +67,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const TabBarPage());
       case AppRoute.main:
         return MaterialPageRoute(builder: (_) => const MainPage());
-      case AppRoute.curtainList:
-        return MaterialPageRoute(builder: (_) => const CurtainList());
+      case AppRoute.curtainListscreen:
+        return MaterialPageRoute(builder: (_) => const CurtainListScreen());
       case AppRoute.curtainDetail:
         return MaterialPageRoute(builder: (_) => const CurtainDetail());
       case AppRoute.ticketDetail:
