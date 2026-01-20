@@ -25,6 +25,7 @@ async def search():
         Select 
             c.curtain_id, 
             c.curtain_date,
+            c.curtain_time,
             c.curtain_desc, 
             c.curtain_mov, 
             c.curtain_pic, 
@@ -47,14 +48,15 @@ order by curtain_date asc
         rows = curs.fetchall()
         result = [{'curtain_id' : row[0], 
                    'curtain_date' : row[1], 
-                   'curtain_desc' : row[2], 
-                   'curtain_mov' : row[3], 
-                   'curtain_pic' : row[4], 
-                   'place_name' : row[5], 
-                   'type_name' : row[6], 
-                   'title_contents' : row[7],
-                   'curtain_grade' : row[8],
-                   'curtain_area' : row[9]
+                   'curtain_time' : str(row[2]), 
+                   'curtain_desc' : row[3], 
+                   'curtain_mov' : row[4], 
+                   'curtain_pic' : row[5], 
+                   'place_name' : row[6], 
+                   'type_name' : row[7], 
+                   'title_contents' : row[8],
+                   'curtain_grade' : row[9],
+                   'curtain_area' : row[10]
                    } for row in rows]
         
         return {'results' : result}
@@ -73,6 +75,7 @@ async def search(seq:int):
         Select 
             c.curtain_id, 
             c.curtain_date,
+            c.curtain_time,
             c.curtain_desc, 
             c.curtain_mov, 
             c.curtain_pic, 
@@ -94,14 +97,15 @@ async def search(seq:int):
         rows = curs.fetchall()
         result = [{'curtain_id' : row[0], 
                    'curtain_date' : row[1], 
-                   'curtain_desc' : row[2], 
-                   'curtain_mov' : row[3], 
-                   'curtain_pic' : row[4], 
-                   'place_name' : row[5], 
-                   'type_name' : row[6], 
-                   'title_contents' : row[7],
-                   'curtain_grade' : row[8],
-                   'curtain_area' : row[9]
+                   'curtain_time' : str(row[2]), 
+                   'curtain_desc' : row[3], 
+                   'curtain_mov' : row[4], 
+                   'curtain_pic' : row[5], 
+                   'place_name' : row[6], 
+                   'type_name' : row[7], 
+                   'title_contents' : row[8],
+                   'curtain_grade' : row[9],
+                   'curtain_area' : row[10]
                    } for row in rows]
         
         return {'results' : result}
@@ -120,6 +124,7 @@ async def search(keyword:str):
         Select 
             c.curtain_id, 
             c.curtain_date,
+            c.curtain_time,
             c.curtain_desc, 
             c.curtain_mov, 
             c.curtain_pic, 
@@ -141,14 +146,15 @@ async def search(keyword:str):
         rows = curs.fetchall()
         result = [{'curtain_id' : row[0], 
                    'curtain_date' : row[1], 
-                   'curtain_desc' : row[2], 
-                   'curtain_mov' : row[3], 
-                   'curtain_pic' : row[4], 
-                   'place_name' : row[5], 
-                   'type_name' : row[6], 
-                   'title_contents' : row[7],
-                   'curtain_grade' : row[8],
-                   'curtain_area' : row[9]
+                   'curtain_time' : str(row[2]), 
+                   'curtain_desc' : row[3], 
+                   'curtain_mov' : row[4], 
+                   'curtain_pic' : row[5], 
+                   'place_name' : row[6], 
+                   'type_name' : row[7], 
+                   'title_contents' : row[8],
+                   'curtain_grade' : row[9],
+                   'curtain_area' : row[10]
                    } for row in rows]
         
         return {'results' : result}
