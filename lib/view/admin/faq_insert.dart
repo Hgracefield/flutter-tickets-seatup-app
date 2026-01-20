@@ -1,17 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_stripe/flutter_stripe.dart'
-    hide Card;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:seatup_app/vm/faq_provider.dart';
 
-class FaqInsert extends StatefulWidget {
+class FaqInsert extends ConsumerStatefulWidget {
+  // <<<<<<<<<<<<<
   const FaqInsert({super.key});
 
   @override
-  State<FaqInsert> createState() => _FaqInsertState();
+  ConsumerState<FaqInsert> createState() =>
+      _FaqInsertState(); //<<<<<
 }
 
-class _FaqInsertState extends State<FaqInsert> {
+class _FaqInsertState extends ConsumerState<FaqInsert> {
+  //<<<<<
   // property
   TextEditingController noController =
       TextEditingController();
@@ -20,21 +23,23 @@ class _FaqInsertState extends State<FaqInsert> {
   TextEditingController contentsController =
       TextEditingController();
 
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    titleController.text.trim();
+    contentsController.text.trim();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('faq insert page')),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
         child: Center(
           child: Column(
             children: [
-              TextField(
-                controller: noController,
-                decoration: InputDecoration(
-                  labelText: 'No.',
-                ),
-              ),
               TextField(
                 controller: titleController,
                 decoration: InputDecoration(
@@ -123,17 +128,34 @@ class _FaqInsertState extends State<FaqInsert> {
   }
 
   // ========================== functions ======================================
-  void insertAction() async {
-    final int no =
-        int.tryParse(noController.text.trim()) ?? 0;
-    FirebaseFirestore.instance.collection('FAQs').add({
-      'no': no,
-      'title': titleController.text.trim(),
-      'contents': contentsController.text.trim(),
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    if (!mounted) return;
-    Navigator.pop(context);
-    // _showDialog();
+  Future<void> insertAction() async {
+    if (_saving) return;
+
+    final title = titleController.text.trim();
+    final contents = contentsController.text.trim();
+
+    if (title.isEmpty || contents.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('빈칸 없이 작성 해주세요.')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+
+    try {
+      await ref
+          .read(faqActionProvider.notifier)
+          .addFaq(title: title, contents: contents);
+
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('등록 실패 : $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 } // class

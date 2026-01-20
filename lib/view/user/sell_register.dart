@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/area.dart';
 import 'package:seatup_app/model/curtain.dart';
+import 'package:seatup_app/model/grade.dart';
+import 'package:seatup_app/vm/area_notifier.dart';
 import 'package:seatup_app/vm/curtain_list_provider.dart';
+import 'package:seatup_app/vm/curtain_notifier.dart';
+import 'package:seatup_app/vm/grade_notifier.dart';
+import 'package:seatup_app/vm/sell_register_notifier.dart';
 import 'package:seatup_app/vm/title_notifier.dart';
 
 class SellRegister extends ConsumerStatefulWidget {
@@ -12,16 +18,6 @@ class SellRegister extends ConsumerStatefulWidget {
 }
 
 class _SellRegisterState extends ConsumerState<SellRegister> {
-  // ---------- Dropdown 기본값 ----------
-  String typeValue = '뮤지컬';
-  String gradeValue = 'VIP';
-  String areaValue = 'A구역';
-
-  // ---------- Dropdown 아이템 ----------
-  final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
-  final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
-  final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역', 'E구역', 'F구역'];
-
   // ---------- TextField ----------
   final titleCtrl = TextEditingController();
   final locationCtrl = TextEditingController();
@@ -30,32 +26,72 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
   final showTimeCtrl = TextEditingController();
   final castCtrl = TextEditingController();
 
+  List<Grade> gradeList = [];
+  List<Area> areaList = [];
+   List<Curtain> curtainList = [];
+     int gradeIndex = 0;
+  int areaIndex = 0;
   @override
   void initState() {
     super.initState();
     // final c = curtainListProvider
+    initData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final titleAsync = ref.watch(titleNotifierProvider);
+    final curtainAsync = ref.watch(curtainNotifierProvider);
+    final selectState = ref.watch(sellRegisterNotifier);
 
     return Scaffold(
       appBar: AppBar(title: Text('판매 등록'), centerTitle: true),
       body: Center(
         child: Column(
           children: [
-            titleAsync.when(
-              data: (data) {
-                return _titleDropdown(
-                  label: '제목',
-                  value: titleAsync.value!.first.title_contents,
-                  items: titleAsync.value!.map((e) => e.title_contents).toList(),
-                  onChanged: (v) => setState(() => typeValue = v),
-                );
+            curtainAsync.when(
+              data: (curtainList) {
+                if (curtainList.isNotEmpty && selectState.selectCurtainIndex! < 0) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final first = curtainList.first;
+                    ref.read(sellRegisterNotifier.notifier).setCurtain(first.curtain_id!);
+                  });
+                }
+                return curtainList.isEmpty
+                    ? Center()
+                    : _selectCurtainDropdownById(
+                        label: '공연 제목',
+                        value:
+                            (selectState.selectCurtainIndex! >= 0 &&
+                                curtainList.any(
+                                  (c) => c.curtain_id == selectState.selectCurtainIndex,
+                                ))
+                            ? selectState.selectCurtainIndex
+                            : null,
+                        items: curtainList,
+                        onChanged: (id) {
+                          if (id == null) return;
+                          ref.read(sellRegisterNotifier.notifier).setCurtain(id);
+
+                          final c = curtainList.firstWhere(
+                            (x) => x.curtain_id == id,
+                          );
+                        },
+                      );
               },
-              error: (error, stackTrace) => Center(),
-              loading: () => Center(),
+              error: (e, st) => Text('curtain error: $e'),
+              loading: () => const SizedBox(
+                height: 48,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+
+            Column(
+              children: [
+                selectState.selectCurtainIndex! >= 0
+                ?
+                _buildReadOnlyLabel('공연 날짜', selectState.selectCurtainIndex.toString())//curtainList. curtainList.any((element) => element.curtain_id == selectState.selectCurtainIndex).toString())
+                : Center()
+              ],
             ),
           ],
         ),
@@ -65,16 +101,16 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
 
   // === Widgets ===
 
-  Widget _titleDropdown({
+  Widget _selectCurtainDropdownById({
     required String label,
-    required String value,
-    required List<String> items,
-    required ValueChanged<String> onChanged,
+    required int? value, // 선택된 curtain_id
+    required List<Curtain> items,
+    required ValueChanged<int?> onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _dropdownLabel(label),
+        _Label(label),
         const SizedBox(height: 6),
         Container(
           height: 48,
@@ -85,16 +121,22 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
             border: Border.all(color: const Color(0xFFE0E6FF)),
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
+            child: DropdownButton<int>(
               value: value,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2F57C9)),
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Color(0xFF2F57C9),
+              ),
               items: items
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .map(
+                    (c) => DropdownMenuItem<int>(
+                      value: c.curtain_id,
+                      child: Text(c.curtain_title),
+                    ),
+                  )
                   .toList(),
-              onChanged: (v) {
-                if (v != null) onChanged(v);
-              },
+              onChanged: onChanged,
             ),
           ),
         ),
@@ -102,7 +144,29 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
     );
   }
 
-  Widget _dropdownLabel(String text) => Text(
+  Widget _buildReadOnlyLabel(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Label(title),
+        const SizedBox(height: 6),
+        TextField(
+          controller: TextEditingController(text: content),
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF4F6FF),
+          ),
+          readOnly: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _Label(String text) => Text(
     text,
     style: const TextStyle(
       fontSize: 12,
@@ -111,5 +175,14 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
     ),
   );
 
+
   // === Functions ===
+
+  Future initData() async {
+    final gradeNotifier = ref.read(gradeNotifierProvider.notifier);
+    gradeList = await gradeNotifier.fetchGrade();
+
+    final areaNotifier = ref.read(areaNotifierProvider.notifier);
+    areaList = await areaNotifier.fetchArea();
+  }
 }
