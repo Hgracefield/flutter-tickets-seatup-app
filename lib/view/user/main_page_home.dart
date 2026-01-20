@@ -4,7 +4,7 @@ import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 // import 'package:seatup_app/view/user/category.dart';
 import 'package:http/http.dart' as http;
-import 'package:seatup_app/constants/api_keys.dart';
+// import 'package:seatup_app/constants/api_keys.dart';
 
 class MainPageHome extends StatefulWidget {
   const MainPageHome({super.key});
@@ -25,12 +25,13 @@ class _MainPageHomeState extends State<MainPageHome> {
   }
 
   // Functions ---
-  Future<void> fetchWeather() async { // 기상청 API
+  Future<void> fetchWeather() async {
+    // 기상청 API
     const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
     final uri = Uri.parse(
       '$url/getVilageFcst' // URL -> 단기예보조회
-      '?serviceKey=$weatherServiceKey' // 인증키
+      // '?serviceKey=$weatherServiceKey' // 인증키
       '&pageNo=1' // 페이지 번호
       '&numOfRows=10' // 한 페이지 결과 수
       '&dataType=JSON' // 요청자료형식(XML/JSON)
@@ -54,13 +55,13 @@ class _MainPageHomeState extends State<MainPageHome> {
     }
   }
 
-  String? getWeatherValue(String category) { // 특정 날씨 데이터 추출
+  String? getWeatherValue(String category) {
+    // 특정 날씨 데이터 추출
     if (weather == null) {
       return null;
     }
 
-    final List items =
-      weather!['response']['body']['items']['item'];
+    final List items = weather!['response']['body']['items']['item'];
 
     for (final item in items) {
       if (item['category'] == category) {
@@ -193,23 +194,18 @@ class _MainPageHomeState extends State<MainPageHome> {
                   : Colors.grey.shade300,
               width: 2,
             ),
-            color: selectedCategory == index
-                ? Colors.grey.shade900
-                : Colors.white,
+            color: selectedCategory == index ? Colors.grey.shade900 : Colors.white,
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(
             title,
             style: TextStyle(
-              color: selectedCategory == index
-                  ? Colors.white
-                  : Colors.grey.shade900,
-              fontWeight: FontWeight.bold
+              color: selectedCategory == index ? Colors.white : Colors.grey.shade900,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
       ),
     );
   }
-
 } // class
