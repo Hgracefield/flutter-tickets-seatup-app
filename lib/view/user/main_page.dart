@@ -21,7 +21,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     mainTabController = TabController(
       length: 5,
       vsync: this,
-      initialIndex: 2, // 홈 화면을 기본페이지로 설정
+      initialIndex: 2, // 홈 화면을 기본 페이지로 설정
     );
     mainTabController.addListener(() {
       setState(() {});
@@ -35,8 +35,8 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   }
 
   AppBar mainAppBar(int index) {
-    // 앱 바 메인화면에서 일괄 적용
-    final titles = ['구매', '판매', 'SeatUp', '검색', 'MY티켓'];
+    // 메인 화면에서 앱 바 일괄 적용
+    final titles = ['카테고리', '카테고리', 'SeatUp', '검색', 'MY티켓'];
 
     return AppBar(
       title: Text(titles[index], style: TextStyle(fontWeight: FontWeight.w500)),
