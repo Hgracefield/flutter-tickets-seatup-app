@@ -40,6 +40,7 @@ class RouterPage extends StatelessWidget {
           _btn(context, 'shopping_cart', AppRoute.shoppingCart),
           _btn(context, 'sell_register', AppRoute.sellRegister),
           _btn(context, 'sell_history', AppRoute.sellHistory),
+          _btn(context, 'user_faq', AppRoute.userFaq),
 
           const SizedBox(height: 24),
           _section('ADMIN'),

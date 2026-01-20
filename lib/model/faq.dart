@@ -6,19 +6,11 @@ class Faq {
   final String contents;
   final DateTime? createdAt;
 
-  Faq({
-    required this.id,
-    required this.title,
-    required this.contents,
-    this.createdAt,
-  });
+  Faq({required this.id, required this.title, required this.contents, this.createdAt});
 
   // Firestore map + docId -> Faq
-  factory Faq.fromMap(
-    Map<String, dynamic> map,
-    String id,
-  ) {
-    final ts = map['createAt'] as Timestamp?;
+  factory Faq.fromMap(Map<String, dynamic> map, String id) {
+    final ts = map['createdAt'] as Timestamp?;
     return Faq(
       id: id,
       title: (map['title'] ?? '') as String,
@@ -39,7 +31,7 @@ class Faq {
       'title': title,
       'contents': contents,
       // createdAt은 보통 생성 시에만 serverTimestamp로 넣음
-      // 'createdAt': FieldValue.serverTimestamp(),
+      'createdAt': FieldValue.serverTimestamp(),
     };
   }
 

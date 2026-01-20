@@ -39,35 +39,22 @@ class _FaqListState extends ConsumerState<FaqList> {
             contentsTitle(),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                insertBtn(),
-                SizedBox(width: 8),
-                editBtn(),
-              ],
+              children: [insertBtn(), SizedBox(width: 8), editBtn()],
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 7,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 7),
               child: boardListHeader(),
             ),
 
             Expanded(
               child: faqsAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (e, _) =>
-                    Center(child: Text('불러오기 실패: $e')),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text('불러오기 실패: $e')),
                 data: (faqs) {
                   return ListView(
                     primary: false,
                     // controller: ScrollController(),
-                    children: faqs
-                        .map(
-                          (faq) => buildItemWidget(faq),
-                        )
-                        .toList(),
+                    children: faqs.map((faq) => buildItemWidget(faq)).toList(),
                   );
                 },
               ),
@@ -108,32 +95,17 @@ class _FaqListState extends ConsumerState<FaqList> {
       child: ElevatedButton.icon(
         onPressed: canEdit
             ? () {
-                Navigator.pushNamed(
-                  context,
-                  '/faq_update',
-                  arguments: selectedDocId,
-                );
+                Navigator.pushNamed(context, '/faq_update', arguments: selectedDocId);
               }
             : null,
         style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.circular(
-              4,
-            ),
-          ),
-          backgroundColor: canEdit
-              ? const Color(0xFF4D74D6)
-              : const Color(0xFFE5E7EB),
-          foregroundColor: canEdit
-              ? Colors.white
-              : const Color(0xFF9CA3AF),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(4)),
+          backgroundColor: canEdit ? const Color(0xFF4D74D6) : const Color(0xFFE5E7EB),
+          foregroundColor: canEdit ? Colors.white : const Color(0xFF9CA3AF),
         ),
 
         icon: const Icon(Icons.mode_edit),
-        label: const Text(
-          '수정',
-          style: TextStyle(fontSize: 16),
-        ),
+        label: const Text('수정', style: TextStyle(fontSize: 16)),
       ),
     );
   }
@@ -146,9 +118,7 @@ class _FaqListState extends ConsumerState<FaqList> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
         color: Color.fromRGBO(248, 222, 125, 1),
-        border: Border(
-          bottom: BorderSide(color: Colors.black12),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.black12)),
       ),
       child: DefaultTextStyle(
         style: TextStyle(
@@ -157,23 +127,16 @@ class _FaqListState extends ConsumerState<FaqList> {
           fontSize: 14,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
             children: [
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 4,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
                     'FAQ',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -183,10 +146,7 @@ class _FaqListState extends ConsumerState<FaqList> {
                 child: Text(
                   '등록일',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],
@@ -223,22 +183,13 @@ class _FaqListState extends ConsumerState<FaqList> {
           Navigator.pushNamed(context, '/faq_insert');
         },
         style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          backgroundColor: const Color(
-            0xFFF8DE7D,
-          ), // seatupYellow
-          foregroundColor: const Color(
-            0xFF39393F,
-          ), // seatupDark
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          backgroundColor: const Color(0xFFF8DE7D), // seatupYellow
+          foregroundColor: const Color(0xFF39393F), // seatupDark
           elevation: 0,
         ),
         icon: const Icon(Icons.add_outlined),
-        label: const Text(
-          '등록',
-          style: TextStyle(fontSize: 16),
-        ),
+        label: const Text('등록', style: TextStyle(fontSize: 16)),
       ),
     );
   }
@@ -253,14 +204,10 @@ class _FaqListState extends ConsumerState<FaqList> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.black),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.black)),
       ),
       child: Theme(
-        data: Theme.of(
-          context,
-        ).copyWith(dividerColor: Colors.transparent),
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           key: PageStorageKey(faq.id),
           initiallyExpanded: isExpanded,
@@ -276,9 +223,7 @@ class _FaqListState extends ConsumerState<FaqList> {
                 child: Checkbox(
                   value: selectedDocId == faq.id,
                   onChanged: (value) {
-                    selectedDocId = (value == true)
-                        ? faq.id
-                        : null;
+                    selectedDocId = (value == true) ? faq.id : null;
                     setState(() {});
                   },
                 ),
@@ -286,24 +231,23 @@ class _FaqListState extends ConsumerState<FaqList> {
               Expanded(
                 flex: 3,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                  ),
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
                     children: [
                       Text(
+                        'Q. ',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
                         faq.title,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.black,
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
                     ],
                   ),
                 ),
@@ -323,10 +267,7 @@ class _FaqListState extends ConsumerState<FaqList> {
 
               IconButton(
                 tooltip: '삭제',
-                icon: const Icon(
-                  Icons.delete_forever,
-                  color: Colors.redAccent,
-                ),
+                icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
                 onPressed: () async {
                   // (선택) 삭제 확인 다이얼로그
                   final ok = await showDialog<bool>(
@@ -336,17 +277,11 @@ class _FaqListState extends ConsumerState<FaqList> {
                       content: Text('삭제하면 되돌릴 수 없어요.'),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(
-                            context,
-                            false,
-                          ),
+                          onPressed: () => Navigator.pop(context, false),
                           child: Text('취소'),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(
-                            context,
-                            true,
-                          ),
+                          onPressed: () => Navigator.pop(context, true),
                           child: Text('삭제'),
                         ),
                       ],
@@ -356,25 +291,17 @@ class _FaqListState extends ConsumerState<FaqList> {
                   if (ok != true) return;
 
                   try {
-                    await ref
-                        .read(faqActionProvider.notifier)
-                        .deleteFaq(faq.id);
+                    await ref.read(faqActionProvider.notifier).deleteFaq(faq.id);
                     // 삭제한 항목이 선택/확장 상태였으면 정리
-                    if (selectedDocId == faq.id)
-                      selectedDocId = null;
-                    if (expandedDocId == faq.id)
-                      expandedDocId = null;
+                    if (selectedDocId == faq.id) selectedDocId = null;
+                    if (expandedDocId == faq.id) expandedDocId = null;
 
                     if (mounted) setState(() {});
                   } catch (e) {
                     if (!mounted) return;
                     ScaffoldMessenger.of(
                       context,
-                    ).showSnackBar(
-                      SnackBar(
-                        content: Text('삭제 실패 : $e'),
-                      ),
-                    );
+                    ).showSnackBar(SnackBar(content: Text('삭제 실패 : $e')));
                   }
                 },
               ),
@@ -383,41 +310,33 @@ class _FaqListState extends ConsumerState<FaqList> {
           // 클릭시 내용 보기
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                20,
-                0,
-                20,
-                14,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(
-                      255,
-                      221,
-                      221,
-                      221,
-                    ),
-                    borderRadius: BorderRadius.circular(
-                      10,
-                    ),
+                    color: const Color.fromARGB(255, 221, 221, 221),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text(
-                      faq.contents,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color.fromARGB(
-                          255,
-                          0,
-                          0,
-                          0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'A.',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                         ),
-                        height: 1.4,
-                      ),
+                        Text(
+                          faq.contents,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

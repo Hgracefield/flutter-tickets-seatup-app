@@ -31,6 +31,7 @@ class AppRoute {
   static const shoppingCart = '/shopping_cart'; // 찜하기
   static const sellRegister = '/sell_register'; // 판매 등록
   static const sellHistory = '/sell_history'; // 판매 내역
+  static const userFaq = '/user_faq'; // 고객쪽 faq 목록
 
   // ===== ADMIN =====
   static const adminLogin = '/admin_login'; // 관리자 로그인
