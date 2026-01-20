@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/model/area.dart';
 import 'package:seatup_app/model/curtain.dart';
-import 'package:seatup_app/model/grade.dart';
+import 'package:seatup_app/model/post.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
-import 'package:seatup_app/vm/curtain_list_provider.dart';
 import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/grade_notifier.dart';
+import 'package:seatup_app/vm/post_notifier.dart';
 import 'package:seatup_app/vm/sell_register_notifier.dart';
-import 'package:seatup_app/vm/title_notifier.dart';
 
 class SellRegister extends ConsumerStatefulWidget {
   const SellRegister({super.key});
@@ -19,23 +17,23 @@ class SellRegister extends ConsumerStatefulWidget {
 
 class _SellRegisterState extends ConsumerState<SellRegister> {
   // ---------- TextField ----------
-  final titleCtrl = TextEditingController();
-  final locationCtrl = TextEditingController();
-  final placeCtrl = TextEditingController();
-  final showDateCtrl = TextEditingController();
-  final showTimeCtrl = TextEditingController();
-  final castCtrl = TextEditingController();
+  final amountController = TextEditingController();
+  final priceController = TextEditingController();
+  final descController = TextEditingController();
 
-  List<Grade> gradeList = [];
-  List<Area> areaList = [];
-   List<Curtain> curtainList = [];
-     int gradeIndex = 0;
-  int areaIndex = 0;
+
+  Curtain? _curtain;
   @override
   void initState() {
     super.initState();
-    // final c = curtainListProvider
-    initData();
+  }
+
+  @override
+  void dispose() {
+    amountController.dispose();
+    priceController.dispose();
+    descController.dispose();
+    super.dispose();
   }
 
   @override
@@ -50,10 +48,13 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
           children: [
             curtainAsync.when(
               data: (curtainList) {
-                if (curtainList.isNotEmpty && selectState.selectCurtainIndex! < 0) {
+                if (curtainList.isNotEmpty &&
+                    selectState.selectCurtainIndex! < 0) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     final first = curtainList.first;
-                    ref.read(sellRegisterNotifier.notifier).setCurtain(first.curtain_id!);
+                    ref
+                        .read(sellRegisterNotifier.notifier)
+                        .setCurtain(first.curtain_id!);
                   });
                 }
                 return curtainList.isEmpty
@@ -63,18 +64,26 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
                         value:
                             (selectState.selectCurtainIndex! >= 0 &&
                                 curtainList.any(
-                                  (c) => c.curtain_id == selectState.selectCurtainIndex,
+                                  (c) =>
+                                      c.curtain_id ==
+                                      selectState.selectCurtainIndex,
                                 ))
                             ? selectState.selectCurtainIndex
                             : null,
                         items: curtainList,
                         onChanged: (id) {
                           if (id == null) return;
-                          ref.read(sellRegisterNotifier.notifier).setCurtain(id);
-
-                          final c = curtainList.firstWhere(
-                            (x) => x.curtain_id == id,
+                          ref
+                              .read(sellRegisterNotifier.notifier)
+                              .setCurtain(id);
+                          _curtain = curtainList.firstWhere(
+                            (element) =>
+                                element.curtain_id ==
+                                selectState.selectCurtainIndex,
                           );
+                          // final c = curtainList.firstWhere(
+                          //   (x) => x.curtain_id == id,
+                          // );
                         },
                       );
               },
@@ -84,15 +93,41 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
                 child: Center(child: CircularProgressIndicator()),
               ),
             ),
-
-            Column(
+            _curtain != null 
+            ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                selectState.selectCurtainIndex! >= 0
-                ?
-                _buildReadOnlyLabel('공연 날짜', selectState.selectCurtainIndex.toString())//curtainList. curtainList.any((element) => element.curtain_id == selectState.selectCurtainIndex).toString())
-                : Center()
+                _buildReadOnlyLabel(
+                  '공연 날짜',
+                  _curtain == null ? '' : _curtain!.curtain_date,
+                ),
+                _buildReadOnlyLabel(
+                  '위치',
+                  _curtain == null ? '' : _curtain!.curtain_place,
+                ),
+                _Label('좌석 등급'),
+                _buildGradeDropDown(),
+                _Label('구역'),
+                _buildAreaDropDown(),
+                _buildTextFiled('판매 매수', amountController, TextInputType.number),
+                _buildTextFiled('판매 금액', priceController, TextInputType.number),
+                _buildTextFiled('설명', descController, TextInputType.none),
+                ElevatedButton(onPressed: () async{
+                  Post post = Post(
+                    post_user_id: 1, 
+                    post_curtain_id: _curtain!.curtain_id! , 
+                    post_area: ref.watch(sellRegisterNotifier).selectAreaIndex!,
+                    post_grade: ref.watch(sellRegisterNotifier).selectGradeIndex!,
+                    post_quantity: int.parse(amountController.text.trim()), 
+                    post_price: int.parse(priceController.text.trim()),
+                    post_desc: descController.text.trim(),
+                    );
+                    final result = await ref.read(postNotifierProvider.notifier).insertPost(post);
+                    print(result);
+                }, child: Text('등록'))
               ],
-            ),
+            )
+            : SizedBox()
           ],
         ),
       ),
@@ -144,6 +179,118 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
     );
   }
 
+  Widget _buildGradeDropDown() {
+    final gradeAsync = ref.watch(gradeNotifierProvider);
+    return gradeAsync.when(
+      data: (data) {
+        if (_curtain == null) return const SizedBox();
+
+        final grades = data
+            .where((g) => (_curtain!.curtain_grade & g.bit) != 0)
+            .toList();
+
+        final selectedGradeBit = ref
+            .watch(sellRegisterNotifier)
+            .selectGradeIndex; 
+
+        final int? value =
+            (selectedGradeBit != null &&
+                grades.any((g) => g.bit == selectedGradeBit))
+            ? selectedGradeBit
+            : null;
+
+        if (grades.isNotEmpty && value == null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(sellRegisterNotifier.notifier).setGrade(grades.first.bit);
+          });
+        }
+        return Container(
+           height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF4F6FF),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE0E6FF)),
+          ),
+          child: DropdownButton<int>(
+            value: value,
+            hint: const Text('좌석 등급 선택'),
+            items: grades
+                .map(
+                  (g) => DropdownMenuItem<int>(
+                    value: g.bit,
+                    child: Text(g.grade_name),
+                  ),
+                )
+                .toList(),
+            onChanged: (bit) {
+              if (bit == null) return;
+              ref.read(sellRegisterNotifier.notifier).setGrade(bit);
+            },
+          ),
+        );
+      },
+      error: (e, st) => const SizedBox(),
+      loading: () => const SizedBox(),
+    );
+  } // _buildGradeDropDown
+
+  Widget _buildAreaDropDown() {
+    final areaAsync = ref.watch(areaNotifierProvider);
+    return areaAsync.when(
+      data: (data) {
+        if (_curtain == null) return const SizedBox();
+
+        final areas = data
+            .where((a) => (_curtain!.curtain_area & a.bit) != 0)
+            .toList();
+
+        final selectedAreaBit = ref
+            .watch(sellRegisterNotifier)
+            .selectAreaIndex; 
+
+        final int? value =
+            (selectedAreaBit != null &&
+                areas.any((a) => a.bit == selectedAreaBit))
+            ? selectedAreaBit
+            : null;
+
+        if (areas.isNotEmpty && value == null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(sellRegisterNotifier.notifier).setArea(areas.first.bit);
+          });
+        }
+        return Container(
+           height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF4F6FF),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE0E6FF)),
+          ),
+          child: DropdownButton<int>(
+            value: value,
+            hint: const Text('구역 선택'),
+            items: areas
+                .map(
+                  (a) => DropdownMenuItem<int>(
+                    value: a.bit,
+                    child: Text(a.area_number),
+                  ),
+                )
+                .toList(),
+            onChanged: (bit) {
+              if (bit == null) return;
+              ref.read(sellRegisterNotifier.notifier).setArea(bit);
+            },
+          ),
+        );
+      },
+      error: (e, st) => const SizedBox(),
+      loading: () => const SizedBox(),
+    );
+  } // _buildAreaDropDown
+
   Widget _buildReadOnlyLabel(String title, String content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,6 +313,28 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
     );
   }
 
+  Widget _buildTextFiled(String title, TextEditingController controller, TextInputType type ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Label(title),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF4F6FF),
+          ),
+          keyboardType: type,
+        ),
+      ],
+    );
+  }
+
   Widget _Label(String text) => Text(
     text,
     style: const TextStyle(
@@ -175,14 +344,6 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
     ),
   );
 
-
   // === Functions ===
 
-  Future initData() async {
-    final gradeNotifier = ref.read(gradeNotifierProvider.notifier);
-    gradeList = await gradeNotifier.fetchGrade();
-
-    final areaNotifier = ref.read(areaNotifierProvider.notifier);
-    areaList = await areaNotifier.fetchArea();
-  }
-}
+} // class
