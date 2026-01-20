@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/view/user/ticket_list_option.dart';
 
 import '../../vm/curtain_list_provider.dart';
-import '../../model/curtain_list.dart' as model;
+// 모델 경로를 프로젝트 구조에 맞게 확인해주세요.
+import '../../model/curtain_list.dart' as model; 
 
-class CurtainList extends ConsumerStatefulWidget {
-  const CurtainList({super.key});
+// 1. 클래스명을 CurtainListScreen으로 변경 (모델명 CurtainList와 중복 방지)
+class CurtainListScreen extends ConsumerStatefulWidget {
+  const CurtainListScreen({super.key});
 
   @override
-  ConsumerState<CurtainList> createState() => _CurtainListState();
+  ConsumerState<CurtainListScreen> createState() => _CurtainListScreenState();
 }
 
-class _CurtainListState extends ConsumerState<CurtainList> {
+class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
   bool _isSearching = false;
 
   late final TextEditingController _searchController;
@@ -47,7 +50,6 @@ class _CurtainListState extends ConsumerState<CurtainList> {
   Future<void> _doSearch() async {
     final keyword = _searchController.text.trim();
 
-    // 빈 값이면 전체 리스트로 복귀
     if (keyword.isEmpty) {
       await ref.read(curtainListProvider.notifier).clearSearch();
     } else {
@@ -75,11 +77,11 @@ class _CurtainListState extends ConsumerState<CurtainList> {
               style: const TextStyle(fontSize: 16),
               textInputAction: TextInputAction.search,
               onSubmitted: (_) async {
-                //  엔터 누르면 검색
                 await _doSearch();
               },
             )
-          : const Text("뮤지컬",style: TextStyle(fontWeight: FontWeight.w700),),centerTitle:true ,
+          : const Text("뮤지컬", style: TextStyle(fontWeight: FontWeight.w700)),
+      centerTitle: true,
       actions: [
         if (!_isSearching)
           IconButton(
@@ -91,11 +93,9 @@ class _CurtainListState extends ConsumerState<CurtainList> {
             tooltip: "검색 실행",
             icon: const Icon(Icons.search),
             onPressed: () async {
-              //  버튼 눌러서 검색
               await _doSearch();
             },
           ),
-          
           IconButton(
             tooltip: "검색 닫기",
             icon: const Icon(Icons.close),
@@ -128,20 +128,22 @@ class _CurtainListState extends ConsumerState<CurtainList> {
               padding: const EdgeInsets.only(top: 2),
               itemCount: list.length,
               itemBuilder: (_, index) {
+                // model.CurtainList는 model 파일에 정의된 클래스
                 final model.CurtainList item = list[index];
 
                 return _CurtainCard(
                   item: item,
                   onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (_) =>
-                    //         NextPage(curtainId: item.curtain_id),
-                    //   ),
-                    // );
+                    FocusScope.of(context).unfocus();
 
-                    //  curtain_id 넘겨서 상세/판매/구매로 이동하면 됨
+                    // 2. 화면 이동 시 인스턴스 'item'을 전달
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TicketListOption(item: item), 
+                      ),
+                    );
+
                     debugPrint("클릭한 curtain_id = ${item.curtain_id}");
                   },
                 );
@@ -149,8 +151,7 @@ class _CurtainListState extends ConsumerState<CurtainList> {
             ),
           );
         },
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("에러: $e")),
       ),
     );
@@ -170,13 +171,8 @@ class _CurtainCard extends StatelessWidget {
       child: Card(
         color: Colors.white,
         elevation: 0,
-        margin: const EdgeInsets.symmetric(
-          horizontal: 3,
-          vertical: 0,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
           padding: const EdgeInsets.all(4),
           child: Row(
@@ -211,16 +207,13 @@ class _CurtainCard extends StatelessWidget {
                         item.title_contents,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),SizedBox(height: 2,),
-                       if (item.place_name.isNotEmpty)
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 2),
+                      if (item.place_name.isNotEmpty)
                         Text(
                           item.place_name,
                           maxLines: 1,
-
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 13,
