@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+// import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
 
 class UserLoginSelectPage extends StatelessWidget {
@@ -26,7 +26,7 @@ class UserLoginSelectPage extends StatelessWidget {
               ),
             ),
 
-            _buildButton('카카오로 로그인',Colors.yellow, Colors.black, (){_kakaoLogin();}, context),
+            // _buildButton('카카오로 로그인',Colors.yellow, Colors.black, (){_kakaoLogin();}, context),
             _buildButton('구글로 로그인',Colors.blueAccent, Colors.white, _googleLogIn, context),
             _buildButton('이메일로 로그인',Colors.black, Colors.white, (){
               moveUserLogin(context);
@@ -96,83 +96,83 @@ class UserLoginSelectPage extends StatelessWidget {
 //     }
 //   }
 
-  Future<void> _kakaoLogin() async {
-    try {
-      // setState(() => _status = 'Logging in...');
-      print('Logging in ...');
-      final installed = await isKakaoTalkInstalled();
-      if (installed) {
-        await UserApi.instance.loginWithKakaoTalk();
-      } else {
-        await UserApi.instance.loginWithKakaoAccount();
-      }
+  // Future<void> _kakaoLogin() async {
+  //   try {
+  //     // setState(() => _status = 'Logging in...');
+  //     print('Logging in ...');
+  //     final installed = await isKakaoTalkInstalled();
+  //     if (installed) {
+  //       await UserApi.instance.loginWithKakaoTalk();
+  //     } else {
+  //       await UserApi.instance.loginWithKakaoAccount();
+  //     }
 
-      print('Logging Success');
-      // setState(() {
-      //   _isLoggedIn = true;
-      //   _status = 'Login success';
-      // });
+  //     print('Logging Success');
+  //     // setState(() {
+  //     //   _isLoggedIn = true;
+  //     //   _status = 'Login success';
+  //     // });
 
-      await _fetchMe();
-    } catch (e) {
-      // setState(() {
-      //   _isLoggedIn = false;
-      //   _status = 'Login failed: $e';
-      // });
-    }
-  }
+  //     await _fetchMe();
+  //   } catch (e) {
+  //     // setState(() {
+  //     //   _isLoggedIn = false;
+  //     //   _status = 'Login failed: $e';
+  //     // });
+  //   }
+  // }
 
-  Future<void> _fetchMe() async {
-    try {
-      final user = await UserApi.instance.me();
+  // Future<void> _fetchMe() async {
+  //   try {
+  //     final user = await UserApi.instance.me();
 
-      // setState(() {
-      //   _userId = user.id?.toString() ?? '-';
-      //   _nickname = user.kakaoAccount?.profile?.nickname ?? '-';
-      //   _status = 'Fetched user profile';
-      // });
-      print('${user.id.toString()} / ${user.kakaoAccount?.profile?.nickname}' );
-    } catch (e) {
-      // setState(() => _status = 'Fetch profile failed: $e');
-    }
-  }
+  //     // setState(() {
+  //     //   _userId = user.id?.toString() ?? '-';
+  //     //   _nickname = user.kakaoAccount?.profile?.nickname ?? '-';
+  //     //   _status = 'Fetched user profile';
+  //     // });
+  //     print('${user.id.toString()} / ${user.kakaoAccount?.profile?.nickname}' );
+  //   } catch (e) {
+  //     // setState(() => _status = 'Fetch profile failed: $e');
+  //   }
+  // }
 
-  Future<void> _logout() async {
-    try {
-      await UserApi.instance.logout();
-      // setState(() {
-      //   _isLoggedIn = false;
-      //   _userId = '-';
-      //   _nickname = '-';
-      //   _status = 'Logged out';
-      // });
-    } catch (e) {
-      // setState(() => _status = 'Logout failed: $e');
-    }
-  }
+  // Future<void> _logout() async {
+  //   try {
+  //     await UserApi.instance.logout();
+  //     // setState(() {
+  //     //   _isLoggedIn = false;
+  //     //   _userId = '-';
+  //     //   _nickname = '-';
+  //     //   _status = 'Logged out';
+  //     // });
+  //   } catch (e) {
+  //     // setState(() => _status = 'Logout failed: $e');
+  //   }
+  // }
 
-  Future<void> _unlink() async {
-    try {
-      await UserApi.instance.unlink(); // 카카오 계정과 앱 연결 끊기
-      // setState(() {
-      //   _isLoggedIn = false;
-      //   _userId = '-';
-      //   _nickname = '-';
-      //   _status = 'Unlinked (disconnected)';
-      // });
-    } catch (e) {
-      // setState(() => _status = 'Unlink failed: $e');
-    }
-  }
+  // Future<void> _unlink() async {
+  //   try {
+  //     await UserApi.instance.unlink(); // 카카오 계정과 앱 연결 끊기
+  //     // setState(() {
+  //     //   _isLoggedIn = false;
+  //     //   _userId = '-';
+  //     //   _nickname = '-';
+  //     //   _status = 'Unlinked (disconnected)';
+  //     // });
+  //   } catch (e) {
+  //     // setState(() => _status = 'Unlink failed: $e');
+  //   }
+  // }
 
-  Future<void> _checkToken() async {
-    try {
-      final info = await UserApi.instance.accessTokenInfo();
-      // setState(() => _status = 'Token valid. Expires in: ${info.expiresIn}s');
-    } catch (e) {
-      // setState(() => _status = 'Token check failed (need login): $e');
-    }
-  }
+  // Future<void> _checkToken() async {
+  //   try {
+  //     final info = await UserApi.instance.accessTokenInfo();
+  //     // setState(() => _status = 'Token valid. Expires in: ${info.expiresIn}s');
+  //   } catch (e) {
+  //     // setState(() => _status = 'Token check failed (need login): $e');
+  //   }
+  // }
 
   // @override
   // Widget build(BuildContext context) {
