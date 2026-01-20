@@ -201,7 +201,7 @@ async def delete(user : int):
         sql = """
         update user set
         user_withdraw_date = now() 
-        where user_seq = %s
+        where user_id = %s
         """
         curs.execute(sql, (user))
         conn.commit()

@@ -23,7 +23,7 @@ class AddressNotifier extends Notifier<AddressState>{
   }
 }
 // DB에 주소가 문자열만 가지고 있어서  주소 -> 좌표(위도 , 경도) 정방향 지오코딩(Forward Geocoding)
-  // 길찾기 기능때문에 추가한 함수
+  // 길찾기 기능때문에 추가한 함수  추가 pjs
   Future<Location?> getCoordinatesFromAddress(String address) async {
     final locations = await locationFromAddress(address);
 
