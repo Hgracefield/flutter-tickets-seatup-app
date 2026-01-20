@@ -7,6 +7,8 @@ class SellRegisterNotifier extends Notifier<SellRegisterState>{
   void setCurtain(int id) => state = state.copyWith(curtainIndex: id);
   void setGrade(int id)   => state = state.copyWith(gradeIndex: id);
   void setArea(int id)    => state = state.copyWith(areaIndex: id);
+
+  void reset() => state = SellRegisterState();
 }
 
 final sellRegisterNotifier = NotifierProvider<SellRegisterNotifier, SellRegisterState>(

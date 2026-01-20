@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/model/post.dart';
+import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
 import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/grade_notifier.dart';
@@ -21,7 +22,8 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
   final priceController = TextEditingController();
   final descController = TextEditingController();
 
-
+  Message mmessage = Message();
+ 
   Curtain? _curtain;
   @override
   void initState() {
@@ -43,92 +45,118 @@ class _SellRegisterState extends ConsumerState<SellRegister> {
 
     return Scaffold(
       appBar: AppBar(title: Text('판매 등록'), centerTitle: true),
-      body: Center(
-        child: Column(
-          children: [
-            curtainAsync.when(
-              data: (curtainList) {
-                if (curtainList.isNotEmpty &&
-                    selectState.selectCurtainIndex! < 0) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    final first = curtainList.first;
-                    ref
-                        .read(sellRegisterNotifier.notifier)
-                        .setCurtain(first.curtain_id!);
-                  });
-                }
-                return curtainList.isEmpty
-                    ? Center()
-                    : _selectCurtainDropdownById(
-                        label: '공연 제목',
-                        value:
-                            (selectState.selectCurtainIndex! >= 0 &&
-                                curtainList.any(
-                                  (c) =>
-                                      c.curtain_id ==
-                                      selectState.selectCurtainIndex,
-                                ))
-                            ? selectState.selectCurtainIndex
-                            : null,
-                        items: curtainList,
-                        onChanged: (id) {
-                          if (id == null) return;
-                          ref
-                              .read(sellRegisterNotifier.notifier)
-                              .setCurtain(id);
-                          _curtain = curtainList.firstWhere(
-                            (element) =>
-                                element.curtain_id ==
-                                selectState.selectCurtainIndex,
-                          );
-                          // final c = curtainList.firstWhere(
-                          //   (x) => x.curtain_id == id,
-                          // );
-                        },
-                      );
-              },
-              error: (e, st) => Text('curtain error: $e'),
-              loading: () => const SizedBox(
-                height: 48,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-            _curtain != null 
-            ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
               children: [
-                _buildReadOnlyLabel(
-                  '공연 날짜',
-                  _curtain == null ? '' : _curtain!.curtain_date,
+                curtainAsync.when(
+                  data: (curtainList) {
+                    if (curtainList.isNotEmpty &&
+                        selectState.selectCurtainIndex! < 0) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        final first = curtainList.first;
+                        ref
+                            .read(sellRegisterNotifier.notifier)
+                            .setCurtain(first.curtain_id!);
+                      });
+                    }
+                    return curtainList.isEmpty
+                        ? SizedBox()
+                        : _selectCurtainDropdownById(
+                            label: '공연 제목',
+                            value:
+                                (selectState.selectCurtainIndex! >= 0 &&
+                                    curtainList.any(
+                                      (c) =>
+                                          c.curtain_id ==
+                                          selectState.selectCurtainIndex,
+                                    ))
+                                ? selectState.selectCurtainIndex
+                                : null,
+                            items: curtainList,
+                            onChanged: (id) {
+                              if (id == null) return;
+                              ref
+                                  .read(sellRegisterNotifier.notifier)
+                                  .setCurtain(id);
+                              _curtain = curtainList.firstWhere(
+                                (element) =>
+                                    element.curtain_id ==
+                                    selectState.selectCurtainIndex,
+                              );
+                              // final c = curtainList.firstWhere(
+                              //   (x) => x.curtain_id == id,
+                              // );
+                            },
+                          );
+                  },
+                  error: (e, st) => Text('curtain error: $e'),
+                  loading: () => const SizedBox(
+                    height: 48,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
                 ),
-                _buildReadOnlyLabel(
-                  '위치',
-                  _curtain == null ? '' : _curtain!.curtain_place,
-                ),
-                _Label('좌석 등급'),
-                _buildGradeDropDown(),
-                _Label('구역'),
-                _buildAreaDropDown(),
-                _buildTextFiled('판매 매수', amountController, TextInputType.number),
-                _buildTextFiled('판매 금액', priceController, TextInputType.number),
-                _buildTextFiled('설명', descController, TextInputType.none),
-                ElevatedButton(onPressed: () async{
-                  Post post = Post(
-                    post_user_id: 1, 
-                    post_curtain_id: _curtain!.curtain_id! , 
-                    post_area: ref.watch(sellRegisterNotifier).selectAreaIndex!,
-                    post_grade: ref.watch(sellRegisterNotifier).selectGradeIndex!,
-                    post_quantity: int.parse(amountController.text.trim()), 
-                    post_price: int.parse(priceController.text.trim()),
-                    post_desc: descController.text.trim(),
-                    );
-                    final result = await ref.read(postNotifierProvider.notifier).insertPost(post);
-                    print(result);
-                }, child: Text('등록'))
+                _curtain != null 
+                ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10,),
+                    _buildReadOnlyLabel(
+                      '공연 날짜',
+                      _curtain == null ? '' : _curtain!.curtain_date,
+                    ),
+                    SizedBox(height: 10,),
+                    _buildReadOnlyLabel(
+                      '위치',
+                      _curtain == null ? '' : _curtain!.curtain_place,
+                    ),
+                    SizedBox(height: 10,),
+                    _Label('좌석 등급'),
+                    _buildGradeDropDown(),
+                    SizedBox(height: 10,),
+                    _Label('구역'),
+                    _buildAreaDropDown(),
+                    SizedBox(height: 10,),
+                    _buildTextFiled('판매 매수', amountController, TextInputType.number),
+                    SizedBox(height: 10,),
+                    _buildTextFiled('판매 금액', priceController, TextInputType.number),
+                    SizedBox(height: 10,),
+                    _buildTextFiled('설명', descController, TextInputType.text),
+                    SizedBox(height: 10,),
+                    ElevatedButton(onPressed: () async {
+                      Post post = Post(
+                        post_user_id: 1, 
+                        post_curtain_id: _curtain!.curtain_id! , 
+                        post_area: ref.watch(sellRegisterNotifier).selectAreaIndex!,
+                        post_grade: ref.watch(sellRegisterNotifier).selectGradeIndex!,
+                        post_quantity: int.parse(amountController.text.trim()), 
+                        post_price: int.parse(priceController.text.trim()),
+                        post_desc: descController.text.trim(),
+                        );
+                        final result = await ref.read(postNotifierProvider.notifier).insertPost(post);
+                        // print(result);
+            
+                        if (!mounted) return;
+                        if(result == "OK")
+                        {
+                          ref.read(sellRegisterNotifier.notifier).reset();
+                          Navigator.pop(context);
+                          mmessage.successSnackBar(context, '등록에 성공 했답니다');
+                        }
+                        else
+                        {
+                            mmessage.errorSnackBar(context, '등록에 실패 했답니다');
+                        }
+                    }, child: Text('등록'))
+                  ],
+                )
+                : SizedBox()
               ],
-            )
-            : SizedBox()
-          ],
+            ),
+          ),
         ),
       ),
     );
