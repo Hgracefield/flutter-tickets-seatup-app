@@ -39,7 +39,9 @@ async def search():
             join place as p
                 on c.curtain_place_seq = p.place_seq
             join type 
-                on c.curtain_type_seq = type.type_seq     
+                on c.curtain_type_seq = type.type_seq
+        where curtain_date > now()
+order by curtain_date asc     
         """
         curs.execute(sql)
         rows = curs.fetchall()
