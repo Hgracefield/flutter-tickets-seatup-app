@@ -1,24 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/vm/faq_provider.dart';
 
-class FaqUpdate extends StatefulWidget {
+class FaqUpdate extends ConsumerStatefulWidget {
   const FaqUpdate({super.key});
 
   @override
-  State<FaqUpdate> createState() => _FaqUpdateState();
+  ConsumerState<FaqUpdate> createState() =>
+      _FaqUpdateState();
 }
 
-class _FaqUpdateState extends State<FaqUpdate> {
+class _FaqUpdateState extends ConsumerState<FaqUpdate> {
   // property
-  TextEditingController noController =
-      TextEditingController();
   TextEditingController titleController =
       TextEditingController();
   TextEditingController contentsController =
       TextEditingController();
+  TextEditingController createdController =
+      TextEditingController();
+
   String? docId;
   bool _loaded = false;
-
+  bool _saving = false;
   @override
   void initState() {
     super.initState();
@@ -36,7 +40,10 @@ class _FaqUpdateState extends State<FaqUpdate> {
     });
   }
 
+  // 데이터 불러오기
   Future<void> _loadDoc() async {
+    if (docId == null) return;
+
     try {
       final snap = await FirebaseFirestore.instance
           .collection('FAQs')
@@ -45,11 +52,8 @@ class _FaqUpdateState extends State<FaqUpdate> {
 
       final data = snap.data();
       if (data != null) {
-        noController.text = (data['no'] ?? '').toString();
-        titleController.text = (data['title'] ?? '')
-            .toString();
-        contentsController.text = (data['contents'] ?? '')
-            .toString();
+        titleController.text = data['title'] ?? '';
+        contentsController.text = data['contents'] ?? '';
       }
     } catch (e) {
       if (mounted) {
@@ -58,13 +62,51 @@ class _FaqUpdateState extends State<FaqUpdate> {
         );
       }
     } finally {
-      if (mounted) setState(() => _loaded = true);
+      if (mounted) {
+        setState(() => _loaded = true);
+      }
+    }
+  }
+
+  // ==========================functions ===============================
+  Future<void> updateAction() async {
+    if (docId == null) return;
+    if (_saving) return;
+
+    final title = titleController.text.trim();
+    final contents = contentsController.text.trim();
+
+    if (title.isEmpty || contents.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('빈칸 없이 작성 해주세요.')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+
+    try {
+      await ref
+          .watch(faqActionProvider.notifier)
+          .updateFaq(
+            id: docId!,
+            title: title,
+            contents: contents,
+          );
+
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('수정 실패: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   @override
   void dispose() {
-    noController.dispose();
     titleController.dispose();
     contentsController.dispose();
     super.dispose();
@@ -73,7 +115,6 @@ class _FaqUpdateState extends State<FaqUpdate> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('faq update page')),
       body: !_loaded
           ? Center(child: CircularProgressIndicator())
           : Padding(
@@ -87,16 +128,6 @@ class _FaqUpdateState extends State<FaqUpdate> {
                 child: Center(
                   child: Column(
                     children: [
-                      TextField(
-                        controller: noController,
-                        decoration: InputDecoration(
-                          labelText: '제목',
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
                       SizedBox(height: 16),
                       TextField(
                         controller: titleController,
@@ -120,6 +151,17 @@ class _FaqUpdateState extends State<FaqUpdate> {
                         ),
                         maxLines: 12,
                       ),
+                      ElevatedButton(
+                        onPressed: _saving
+                            ? null
+                            : updateAction,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text('수정하기'),
+                      ),
                     ],
                   ),
                 ),
@@ -127,33 +169,6 @@ class _FaqUpdateState extends State<FaqUpdate> {
             ),
     );
   } // build
-
-  // ==========================functions ===============================
-  Future<void> updateAction() async {
-    if (docId == null) return;
-
-    final no = noController.text.trim();
-    final title = titleController.text.trim();
-    final contents = contentsController.text.trim();
-
-    if (title.isEmpty || contents.isEmpty || no.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('빈칸 없이 작성 해주세요.')),
-      );
-      return;
-    }
-    await FirebaseFirestore.instance
-        .collection("FAQs")
-        .doc(docId)
-        .update({
-          'no': no,
-          'title': title,
-          'contents': contents,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-    if (!mounted) return;
-    Navigator.pop(context);
-  }
 
   // ================================== widgets ==============================
   // 수정 텍스트 필드

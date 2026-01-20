@@ -1,43 +1,86 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/view/user/category.dart';
 import 'package:seatup_app/view/user/curtain_search.dart';
-import 'package:seatup_app/view/user/user_to_user_chat.dart';
-import 'package:seatup_app/vm/storage_provider.dart';
+import 'package:seatup_app/view/user/main_page_home.dart';
+import 'package:seatup_app/view/user/user_mypage.dart';
 
-class MainPage extends ConsumerWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
+  // property
+  late TabController mainTabController;
+
+  @override
+  void initState() {
+    super.initState();
+    mainTabController = TabController(
+      length: 5,
+      vsync: this,
+      initialIndex: 2, // 홈 화면을 기본페이지로 설정
+    );
+    mainTabController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    mainTabController.dispose();
+    super.dispose();
+  }
+
+  AppBar mainAppBar(int index) {
+    // 앱 바 메인화면에서 일괄 적용
+    final titles = ['구매', '판매', 'SeatUp', '검색', 'MY티켓'];
+
+    return AppBar(
+      title: Text(titles[index], style: TextStyle(fontWeight: FontWeight.w500)),
+      centerTitle: true,
+      backgroundColor: Colors.white,
+      toolbarHeight: 70,
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.black),
+      actions: [
+        IconButton(
+          onPressed: () {
+            //
+          },
+          icon: Icon(Icons.notifications_outlined),
+        ),
+        IconButton(
+          onPressed: () async {
+            // final roomSnap = await ref
+            //     .read(chatNotifierProvider.notifier)
+            //     .openChat("100", "1");
+
+            // if (!mounted) return;
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) {
+            //       return UserChatList();
+            //       // return UserToUserChat(postId: "100", partnerId: roomSnap);
+                  
+            //     }
+            //   ),
+            // );
+          },
+          icon: Icon(Icons.chat_bubble_outline),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        toolbarHeight: 70,
-        title: Text('SeatUp'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CurtainSearch()),
-              );
-            },
-            icon: Icon(Icons.search),
-          ),
-          IconButton(             // 채팅확인용으로 만들음
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) => UserToUserChat(
-                  roomId: '2_3', 
-                  partnerName: '고석민', 
-                  partnerId: '3'),));
-            }, 
-            icon: Icon(Icons.chat)
-          )
-        ],
-      ),
+      appBar: mainAppBar(mainTabController.index),
       body: TabBarView(
         controller: mainTabController,
         children: [

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:seatup_app/view/user/curtain_list.dart';
 import 'package:seatup_app/view/user/purchase_history_detail.dart';
+import 'package:seatup_app/view/user/user_faq.dart';
 import 'app_route.dart';
 
 // ===== User =====
@@ -65,6 +67,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const TabBarPage());
       case AppRoute.main:
         return MaterialPageRoute(builder: (_) => const MainPage());
+      case AppRoute.curtainList:
+        return MaterialPageRoute(builder: (_) => const CurtainList());
       case AppRoute.curtainDetail:
         return MaterialPageRoute(builder: (_) => const CurtainDetail());
       case AppRoute.ticketDetail:
@@ -85,8 +89,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ReviewWrite());
       case AppRoute.reviewList:
         return MaterialPageRoute(builder: (_) => const ReviewList());
-      case AppRoute.userToUserChat:
-        // return MaterialPageRoute(builder: (_) => const UserToUserChat());
+      // case AppRoute.userToUserChat:
+      // return MaterialPageRoute(builder: (_) => const UserToUserChat());
       case AppRoute.sellerToAdminChat:
         return MaterialPageRoute(builder: (_) => const SellerToAdminChat());
       case AppRoute.transactionReviewWrite:
@@ -100,6 +104,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SellRegister());
       case AppRoute.sellHistory:
         return MaterialPageRoute(builder: (_) => const SellHistory());
+      case AppRoute.userFaq:
+        return MaterialPageRoute(builder: (_) => const UserFaq());
 
       // ===== ADMIN =====
       case AppRoute.adminLogin:
@@ -116,7 +122,7 @@ class AppRouter {
       case AppRoute.faqInsert:
         return MaterialPageRoute(builder: (_) => const FaqInsert());
       case AppRoute.faqUpdate:
-        return MaterialPageRoute(builder: (_) => const FaqUpdate());
+        return MaterialPageRoute(builder: (_) => const FaqUpdate(), settings: settings);
       case AppRoute.faqDetail:
         return MaterialPageRoute(builder: (_) => const FaqDetail());
       case AppRoute.boardWrite:

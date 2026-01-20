@@ -11,6 +11,8 @@ class Area {
     this.area_create_date
   });
 
+  int get bit => 1 << area_value;
+
   factory Area.fromJson(Map<String, dynamic> json){
     return Area(
       area_seq: json['area_seq'] ?? 0,

@@ -1,66 +1,60 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/model/faq.dart';
+import 'package:seatup_app/vm/faq_provider.dart';
 
-// 컬러
-// const seatupYellow = Color.fromRGBO(248, 222, 125, 1); // rgb(248,222,125)
-// const seatupDark   = Color.fromRGBO(57, 57, 63, 1);    // rgb(57,57,63)
-// const seatupYellow = Color(0xFFF8DE7D);
-// const seatupDark   = Color(0xFF39393F);
-
-class FaqList extends StatefulWidget {
+class FaqList extends ConsumerStatefulWidget {
   const FaqList({super.key});
 
   @override
-  State<FaqList> createState() => _FaqListState();
+  ConsumerState<FaqList> createState() => _FaqListState();
 }
 
-class _FaqListState extends State<FaqList> {
+class _FaqListState extends ConsumerState<FaqList> {
   // property
+  //선택된 faq문서 id (없으면 null)
+  String? selectedDocId;
+  // 체크 박스 상태 변수
+  bool faqCheck = false;
+  bool canEdit = false;
+  // contents 확장
+  String? expandedDocId;
+  // 초기 설정
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final faqsAsync = ref.watch(faqListProvider);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('FAQs'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/faq_insert');
-            },
-            icon: Icon(Icons.add_outlined),
-          ),
-        ],
-      ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         child: Column(
           children: [
+            contentsTitle(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [insertBtn(), SizedBox(width: 8), editBtn()],
+            ),
             Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 7,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 7),
               child: boardListHeader(),
             ),
+
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('FAQs')
-                    .orderBy('no', descending: false)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  final documents = snapshot.data!.docs;
+              child: faqsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text('불러오기 실패: $e')),
+                data: (faqs) {
                   return ListView(
-                    children: documents
-                        .map((e) => buildItemWidget(e))
-                        .toList(),
+                    primary: false,
+                    // controller: ScrollController(),
+                    children: faqs.map((faq) => buildItemWidget(faq)).toList(),
                   );
                 },
               ),
@@ -72,15 +66,59 @@ class _FaqListState extends State<FaqList> {
   } // build
 
   //============================= widgets===================================================
+  // 관리자 contents title
+  Widget contentsTitle() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 18, 24, 18),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            '게시판',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 수정 버튼
+  Widget editBtn() {
+    final canEdit = selectedDocId != null;
+
+    return SizedBox(
+      width: 100,
+      child: ElevatedButton.icon(
+        onPressed: canEdit
+            ? () {
+                Navigator.pushNamed(context, '/faq_update', arguments: selectedDocId);
+              }
+            : null,
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(4)),
+          backgroundColor: canEdit ? const Color(0xFF4D74D6) : const Color(0xFFE5E7EB),
+          foregroundColor: canEdit ? Colors.white : const Color(0xFF9CA3AF),
+        ),
+
+        icon: const Icon(Icons.mode_edit),
+        label: const Text('수정', style: TextStyle(fontSize: 16)),
+      ),
+    );
+  }
+
   // 리스트 헤더
   Widget boardListHeader() {
+    // final canEdit = selectedDocId != null;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
         color: Color.fromRGBO(248, 222, 125, 1),
-        border: Border(
-          bottom: BorderSide(color: Colors.black12),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.black12)),
       ),
       child: DefaultTextStyle(
         style: TextStyle(
@@ -88,145 +126,223 @@ class _FaqListState extends State<FaqList> {
           fontWeight: FontWeight.w700,
           fontSize: 14,
         ),
-        child: Row(
-          children: const [
-            SizedBox(
-              width: 100,
-              child: Text(
-                '글번호',
-
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    'FAQ',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Text(
-                'FAQ',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                flex: 1,
+                child: Text(
+                  '등록일',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
-            ),
-            SizedBox(
-              width: 70,
-              child: Text(
-                '등록일',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // 글 리스트
-  Widget buildItemWidget(DocumentSnapshot doc) {
-    final faq = Faq.fromFirestore(doc);
-    const seatupDark = Color(0xFF39393F);
+  // 수정 버튼 체크박스가 클릭되어야 활성화 됨.
+  Widget updateBtn() {
+    return TextButton.icon(
+      onPressed: canEdit
+          ? () {
+              Navigator.pushNamed(
+                context,
+                '/faq_update', // 수정 페이지 라우트로
+                arguments: selectedDocId,
+              );
+            }
+          : null,
+
+      icon: const Icon(Icons.mode_edit),
+      label: const Text('수정'),
+    );
+  }
+
+  // 입력 버튼
+  Widget insertBtn() {
+    return SizedBox(
+      width: 110,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.pushNamed(context, '/faq_insert');
+        },
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          backgroundColor: const Color(0xFFF8DE7D), // seatupYellow
+          foregroundColor: const Color(0xFF39393F), // seatupDark
+          elevation: 0,
+        ),
+        icon: const Icon(Icons.add_outlined),
+        label: const Text('등록', style: TextStyle(fontSize: 16)),
+      ),
+    );
+  }
+
+  // 글 리스트 (documentsnapshot => faq 로 변경)
+  Widget buildItemWidget(Faq faq) {
     final dateText = (faq.createdAt == null)
         ? ''
         : DateFormat('yy.MM.dd').format(faq.createdAt!);
+    final isExpanded = expandedDocId == faq.id;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/faq_update',
-          arguments: doc.id,
-        );
-      },
-      child: Slidable(
-        endActionPane: ActionPane(
-          motion: BehindMotion(),
-
-          children: [
-            SlidableAction(
-              backgroundColor: Colors.redAccent,
-              icon: Icons.delete_forever,
-              label: '삭제',
-              onPressed: (context) async {
-                FirebaseFirestore.instance
-                    .collection('FAQs')
-                    .doc(doc.id)
-                    .delete();
-              },
-            ),
-          ],
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              bottom: BorderSide(color: Colors.black),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 6,
-            ),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 70,
-                  child: Text(
-                    '${faq.no}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: seatupDark,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.black)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: PageStorageKey(faq.id),
+          initiallyExpanded: isExpanded,
+          onExpansionChanged: (expanded) {
+            setState(() {
+              expandedDocId = expanded ? faq.id : null;
+            });
+          },
+          title: Row(
+            children: [
+              SizedBox(
+                width: 50,
+                child: Checkbox(
+                  value: selectedDocId == faq.id,
+                  onChanged: (value) {
+                    selectedDocId = (value == true) ? faq.id : null;
+                    setState(() {});
+                  },
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+              ),
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
                     children: [
                       Text(
+                        'Q. ',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
                         faq.title,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: seatupDark,
+                          color: Colors.black,
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      // Text(
-                      //   faq.contents,
-                      //   maxLines: 1,
-                      //   overflow: TextOverflow.ellipsis,
-                      //   style: const TextStyle(
-                      //     color: Color(0xFF7A7A86),
-                      //     fontSize: 12,
-                      //     fontWeight: FontWeight.w500,
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 90,
-                  child: Text(
-                    dateText,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF7A7A86),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+              ),
+              Expanded(
+                flex: 1,
+                child: Text(
+                  dateText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF7A7A86),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              IconButton(
+                tooltip: '삭제',
+                icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+                onPressed: () async {
+                  // (선택) 삭제 확인 다이얼로그
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text('삭제할까요?'),
+                      content: Text('삭제하면 되돌릴 수 없어요.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text('취소'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text('삭제'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (ok != true) return;
+
+                  try {
+                    await ref.read(faqActionProvider.notifier).deleteFaq(faq.id);
+                    // 삭제한 항목이 선택/확장 상태였으면 정리
+                    if (selectedDocId == faq.id) selectedDocId = null;
+                    if (expandedDocId == faq.id) expandedDocId = null;
+
+                    if (mounted) setState(() {});
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('삭제 실패 : $e')));
+                  }
+                },
+              ),
+            ],
+          ),
+          // 클릭시 내용 보기
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 221, 221, 221),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'A.',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                        ),
+                        Text(
+                          faq.contents,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

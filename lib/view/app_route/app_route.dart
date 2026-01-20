@@ -12,6 +12,7 @@ class AppRoute {
   static const userMypage = '/user_mypage'; // 마이 페이지
   static const tabBar = '/tab_bar';
   static const main = '/main_page';
+  static const curtainList = '/curtain_list'; // 공연 리스트
   static const curtainDetail = '/curtain_detail'; // 공연 정보 페이지
   static const ticketDetail = '/ticket_detail'; // 티켓 상세 페이지
   static const PurchaseHistory = '/purchase_history'; // 구매 이력
@@ -31,6 +32,7 @@ class AppRoute {
   static const shoppingCart = '/shopping_cart'; // 찜하기
   static const sellRegister = '/sell_register'; // 판매 등록
   static const sellHistory = '/sell_history'; // 판매 내역
+  static const userFaq = '/user_faq'; // 고객쪽 faq 목록
 
   // ===== ADMIN =====
   static const adminLogin = '/admin_login'; // 관리자 로그인
