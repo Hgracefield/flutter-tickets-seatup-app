@@ -53,8 +53,22 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
           icon: Icon(Icons.notifications_outlined),
         ),
         IconButton(
-          onPressed: () {
-            //
+          onPressed: () async {
+            // final roomSnap = await ref
+            //     .read(chatNotifierProvider.notifier)
+            //     .openChat("100", "1");
+
+            // if (!mounted) return;
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) {
+            //       return UserChatList();
+            //       // return UserToUserChat(postId: "100", partnerId: roomSnap);
+                  
+            //     }
+            //   ),
+            // );
           },
           icon: Icon(Icons.chat_bubble_outline),
         ),
@@ -69,7 +83,13 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
       appBar: mainAppBar(mainTabController.index),
       body: TabBarView(
         controller: mainTabController,
-        children: [Category(), Category(), MainPageHome(), CurtainSearch(), UserMypage()],
+        children: [
+          Category(),
+          Category(),
+          MainPageHome(),
+          CurtainSearch(),
+          UserMypage(),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
