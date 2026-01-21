@@ -39,7 +39,7 @@ class GradeNotifier extends AsyncNotifier<List<Grade>> {
     return data['result'];
   }
 
-  Future<String> updateUser(Grade grade) async {
+  Future<String> updateGrade(Grade grade) async {
     final url = Uri.parse("${GlobalData.url}/grade/update");
     final response = await http.post(
       url,
