@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/view/user/curtain_list.dart';
+import 'package:seatup_app/view/user/curtain_list_screen.dart';
 import 'package:seatup_app/vm/category_provider.dart';
 
 class Category extends ConsumerStatefulWidget {
@@ -55,7 +55,7 @@ class _CategoryState extends ConsumerState<Category> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const CurtainList(),
+                      builder: (_) => const CurtainListScreen(),
                     ),
                   );
                 },
