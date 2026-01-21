@@ -27,17 +27,17 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      post_seq: json['post_seq'],
-      post_user_id: json['post_user_id'] ?? 0,
+      post_seq: int.tryParse(json['post_seq']?.toString() ?? ""),
+      post_user_id: int.tryParse(json['post_user_id']?.toString() ?? "0") ?? 0,
       user_name: json['user_name'],
-      post_curtain_id: json['post_curtain_id'] ?? 0,
-      curtain_title: json['title_contents'],
-      post_create_date: json['post_create_date'] ?? "",
-      post_quantity: json['post_quantity'] ?? 0,
-      post_price: json['post_price'] ?? 0,
-      post_area: json['post_area'] ?? 0,
-      post_grade: json['post_grade'] ?? 0,
-      post_desc: json['post_desc'] ?? "",
+      post_curtain_id: int.tryParse(json['post_curtain_id']?.toString() ?? "0") ?? 0,
+      curtain_title: json['title_contents'] ?? json['curtain_title'],
+      post_create_date: json['post_create_date']?.toString() ?? "",
+      post_quantity: int.tryParse(json['post_quantity']?.toString() ?? "0") ?? 0,
+      post_price: int.tryParse(json['post_price']?.toString() ?? "0") ?? 0,
+      post_area: int.tryParse(json['post_area']?.toString() ?? "0") ?? 0,
+      post_grade: int.tryParse(json['post_grade']?.toString() ?? "0") ?? 0,
+      post_desc: json['post_desc']?.toString() ?? "",
     );
   }
 
