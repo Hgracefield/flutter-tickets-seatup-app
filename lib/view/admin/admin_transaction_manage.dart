@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:seatup_app/util/color.dart';
+import 'package:seatup_app/util/side_menu.dart';
+import 'package:seatup_app/view/admin/admin_side_bar.dart';
 
 // ========================================== 더미 데이터 모델 ==========================================
 
@@ -47,34 +49,40 @@ class AdminTransactionManage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+      body: SafeArea(
+        child: Row(
           children: [
-            contentsTitle(),
-            const SizedBox(height: 12),
+            AdminSideBar(selectedMenu: SideMenu.transaction, onMenuSelected: (menu) {}),
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    _tableHeader(),
-                    const Divider(height: 1),
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: dummyAdminPosts.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          return _tableRow(dummyAdminPosts[index]);
-                        },
+              child: Column(
+                children: [
+                  contentsTitle(),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          _tableHeader(),
+                          const Divider(height: 1),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: dummyAdminPosts.length,
+                              separatorBuilder: (_, __) =>
+                                  const Divider(height: 1),
+                              itemBuilder: (context, index) {
+                                return _tableRow(dummyAdminPosts[index]);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

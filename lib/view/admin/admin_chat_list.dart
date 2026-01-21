@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/util/side_menu.dart';
+import 'package:seatup_app/view/admin/admin_side_bar.dart';
 import 'package:seatup_app/vm/chat_provider.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
 
@@ -54,86 +56,95 @@ class _AdminChatListState extends ConsumerState<AdminChatList> {
 
     final emptyRoomsAsync = ref.watch(adminEmptyRoomsProvider);
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("관리자 채팅 (staff_seq: $staffId)"),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: "미배정"),
-              Tab(text: "내 담당"),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            //  1) 미배정 채팅방
-            emptyRoomsAsync.when(
-              data: (snapshot) {
-                final docs = snapshot.docs;
-
-                if (docs.isEmpty) {
-                  return const Center(child: Text("미배정 채팅방이 없습니다."));
-                }
-
-                return ListView.separated(
-                  itemCount: docs.length,
-                  separatorBuilder: (_, __) =>
-                      const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final doc = docs[index];
-                    final data = doc.data();
-                    final userId = doc.id;
-
-                    final startAt = (data["startAt"] ?? "")
-                        .toString();
-                    final dialog = (data["dialog"] as List?) ?? [];
-
-                    String lastMsg = "";
-                    if (dialog.isNotEmpty) {
-                      final last = dialog.last;
-                      if (last is Map) {
-                        lastMsg = (last["message"] ?? "").toString();
-                      }
-                    }
-
-                    return ListTile(
-                      title: Text("고객: $userId"),
-                      subtitle: Text(
-                        "시작일: $startAt\n마지막내용: $lastMsg",
-                      ),
-                      isThreeLine: true,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          OutlinedButton(
-                            onPressed: () => _assignStaff(
-                              userId: userId,
-                              staffId: staffId,
-                            ),
-                            child: const Text("배정"),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            onPressed: () => _openDetail(userId),
-                            icon: const Icon(Icons.chat),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text("에러: $e")),
+    return SafeArea(
+      child: Row(
+        children: [
+          AdminSideBar(selectedMenu: SideMenu.chatlist, onMenuSelected: (menu) {}),
+          Expanded(
+            child: DefaultTabController(
+              length: 2,
+              child: Scaffold(
+                appBar: AppBar(
+                  title: Text("관리자 채팅 (staff_seq: $staffId)"),
+                  bottom: const TabBar(
+                    tabs: [
+                      Tab(text: "미배정"),
+                      Tab(text: "내 담당"),
+                    ],
+                  ),
+                ),
+                body: TabBarView(
+                  children: [
+                    //  1) 미배정 채팅방
+                    emptyRoomsAsync.when(
+                      data: (snapshot) {
+                        final docs = snapshot.docs;
+            
+                        if (docs.isEmpty) {
+                          return const Center(child: Text("미배정 채팅방이 없습니다."));
+                        }
+            
+                        return ListView.separated(
+                          itemCount: docs.length,
+                          separatorBuilder: (_, __) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final doc = docs[index];
+                            final data = doc.data();
+                            final userId = doc.id;
+            
+                            final startAt = (data["startAt"] ?? "")
+                                .toString();
+                            final dialog = (data["dialog"] as List?) ?? [];
+            
+                            String lastMsg = "";
+                            if (dialog.isNotEmpty) {
+                              final last = dialog.last;
+                              if (last is Map) {
+                                lastMsg = (last["message"] ?? "").toString();
+                              }
+                            }
+            
+                            return ListTile(
+                              title: Text("고객: $userId"),
+                              subtitle: Text(
+                                "시작일: $startAt\n마지막내용: $lastMsg",
+                              ),
+                              isThreeLine: true,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  OutlinedButton(
+                                    onPressed: () => _assignStaff(
+                                      userId: userId,
+                                      staffId: staffId,
+                                    ),
+                                    child: const Text("배정"),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    onPressed: () => _openDetail(userId),
+                                    icon: const Icon(Icons.chat),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => Center(child: Text("에러: $e")),
+                    ),
+            
+                    // 2) 내 담당 채팅방 (입력 필요 X)
+                    _MyRoomsList(staffId: staffId, onOpen: _openDetail),
+                  ],
+                ),
+              ),
             ),
-
-            // 2) 내 담당 채팅방 (입력 필요 X)
-            _MyRoomsList(staffId: staffId, onOpen: _openDetail),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
