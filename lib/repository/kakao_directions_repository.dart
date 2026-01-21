@@ -49,15 +49,11 @@ class KakaoDirectionsRepository {
   }) async {
     //  카카오 directions API 주소 만들기
     //  중요: origin/destination은 "경도,위도" 순서로 넣어야 한다!
-    final uri = Uri.https(
-      'apis-navi.kakaomobility.com',
-      '/v1/directions',
-      {
-        'origin': '$originLng,$originLat', //  lng,lat
-        'destination': '$destLng,$destLat', //  lng,lat
-        'summary': 'false', //  경로 상세 점(vertexes) 받으려면 false 추천
-      },
-    );
+    final uri = Uri.https('apis-navi.kakaomobility.com', '/v1/directions', {
+      'origin': '$originLng,$originLat', //  lng,lat
+      'destination': '$destLng,$destLat', //  lng,lat
+      'summary': 'false', //  경로 상세 점(vertexes) 받으려면 false 추천
+    });
 
     http.Response res;
 
@@ -72,8 +68,7 @@ class KakaoDirectionsRepository {
           .get(
             uri,
             headers: {
-              'Authorization':
-                  'KakaoAK $kakaoRestApiKey', //  REST API 키 사용
+              'Authorization': 'KakaoAK $kakaoRestApiKey', //  REST API 키 사용
               'Content-Type': 'application/json',
             },
           )
@@ -95,15 +90,11 @@ class KakaoDirectionsRepository {
     final previewLen = res.body.length < 300 ? res.body.length : 300;
 
     // ignore: avoid_print
-    print(
-      'Kakao Directions body preview: ${res.body.substring(0, previewLen)}',
-    );
+    print('Kakao Directions body preview: ${res.body.substring(0, previewLen)}');
 
     //  실패 처리
     if (res.statusCode != 200) {
-      throw Exception(
-        '카카오 길찾기 API 호출 실패: ${res.statusCode}\n${res.body}',
-      );
+      throw Exception('카카오 길찾기 API 호출 실패: ${res.statusCode}\n${res.body}');
     }
 
     //  응답 JSON 파싱
@@ -112,11 +103,7 @@ class KakaoDirectionsRepository {
     //  result_code 확인 (routes는 있어도 result_code가 실패일 수 있음)
     final routes = (data['routes'] as List<dynamic>?) ?? [];
     if (routes.isEmpty) {
-      return const KakaoRouteResult(
-        points: [],
-        distanceMeter: 0,
-        durationSec: 0,
-      );
+      return const KakaoRouteResult(points: [], distanceMeter: 0, durationSec: 0);
     }
 
     final firstRoute = routes[0] as Map<String, dynamic>;
@@ -124,9 +111,7 @@ class KakaoDirectionsRepository {
     final resultMsg = firstRoute['result_msg'];
 
     if (resultCode != 0) {
-      throw Exception(
-        '길찾기 실패: result_code=$resultCode, msg=$resultMsg',
-      );
+      throw Exception('길찾기 실패: result_code=$resultCode, msg=$resultMsg');
     }
 
     // 거리/시간(있으면 summary에서 가져오고, 없으면 sections에서 합산)
@@ -138,12 +123,10 @@ class KakaoDirectionsRepository {
       distanceMeter = (summary['distance'] as num?)?.toInt() ?? 0;
       durationSec = (summary['duration'] as num?)?.toInt() ?? 0;
     } else {
-      final sections =
-          (firstRoute['sections'] as List<dynamic>?) ?? [];
+      final sections = (firstRoute['sections'] as List<dynamic>?) ?? [];
       for (final section in sections) {
         final sectionMap = section as Map<String, dynamic>;
-        distanceMeter +=
-            (sectionMap['distance'] as num?)?.toInt() ?? 0;
+        distanceMeter += (sectionMap['distance'] as num?)?.toInt() ?? 0;
         durationSec += (sectionMap['duration'] as num?)?.toInt() ?? 0;
       }
     }

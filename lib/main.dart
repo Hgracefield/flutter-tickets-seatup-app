@@ -6,17 +6,16 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:seatup_app/constants/api_keys.dart';
 // import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:seatup_app/firebase_options.dart';
-import 'package:seatup_app/view/app_route/app_route.dart';
 import 'package:seatup_app/view/app_route/app_router.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart'; // 카카오 지도
 // import 'package:seatup_app/constants/api_keys.dart'; //api rest java
-import 'package:seatup_app/view/app_route/router_page.dart';
 import 'package:seatup_app/view/user/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  AuthRepository.initialize(appKey: kakaoJavascriptKey,
+  AuthRepository.initialize(
+    appKey: kakaoJavascriptKey,
     baseUrl: 'http://localhost',
   ); // 카카오 지도 플러그인 초기화(JS 키 사용) pjs
   // 2. 한국어(ko_KR) 로케일 데이터 초기화 추가
