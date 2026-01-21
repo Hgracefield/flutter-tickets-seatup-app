@@ -1,89 +1,18 @@
-import 'dart:convert';
-
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:seatup_app/constants/api_keys.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/weather.dart';
 import 'package:seatup_app/view/user/curtain_list_screen.dart';
+import 'package:seatup_app/vm/weather_notifier.dart';
 
-class MainPageHome extends StatefulWidget {
+class MainPageHome extends ConsumerWidget {
   const MainPageHome({super.key});
 
   @override
-  State<MainPageHome> createState() => _MainPageHomeState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weatherAsync = ref.watch(weatherProvider); // 날씨 데이터 저장
+    // final selectedCategory = ref.watch(selectedCategoryProvider); // 선택한 카테고리
 
-class _MainPageHomeState extends State<MainPageHome> {
-  // Property
-  int selectedCategory = 0; // 선택한 카테고리 인덱스
-  WeatherModel? weather; // 날씨 데이터를 담을 모델
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchWeather(); // 화면 실행 시 기상청 API 호출
-  }
-
-  // 기상청 API
-  Future<void> _fetchWeather() async {
-    try {
-      const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
-
-      final now = DateTime.now();
-      final baseDate =
-          '${now.year}'
-          '${now.month.toString().padLeft(2, '0')}'
-          '${now.day.toString().padLeft(2, '0')}';
-
-      final uri = Uri.parse(
-        '$url/getVilageFcst' // URL -> 단기예보조회
-        '?serviceKey=$weatherServiceKey' // 인증키
-        '&pageNo=1' // 페이지 번호
-        '&numOfRows=10' // 한 페이지 결과 수
-        '&dataType=JSON' // 요청자료형식(XML/JSON)
-        '&base_date=$baseDate' // 오늘 발표된 예보 (00~02시 제외)
-        '&base_time=${baseTime(now)}' // 최신 발표 시각
-        '&nx=61' // 예보지점의 X 좌표값 -> 강남구
-        '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
-      );
-      final response = await http.get(uri).timeout(const Duration(seconds: 8));
-
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes));
-        setState(() {
-          weather = WeatherModel.fromJson(data);
-        });
-      } else {
-        throw Exception('날씨 데이터 로딩 실패');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {});
-    }
-  }
-
-  // 현재 시각 기준 최신값
-  String baseTime(DateTime now) {
-    final hour = now.hour;
-    final minute = now.minute;
-
-    // 최신 API는 발표 시각 기준 10분 이후에 반영되므로 아래와 같이 계산
-    if (hour < 2 || (hour == 2 && minute < 10)) return '2300';
-    if (hour < 5 || (hour == 5 && minute < 10)) return '0200';
-    if (hour < 8 || (hour == 8 && minute < 10)) return '0500';
-    if (hour < 11 || (hour == 11 && minute < 10)) return '0800';
-    if (hour < 14 || (hour == 14 && minute < 10)) return '1100';
-    if (hour < 17 || (hour == 17 && minute < 10)) return '1400';
-    if (hour < 20 || (hour == 20 && minute < 10)) return '1700';
-    if (hour < 23 || (hour == 23 && minute < 10)) return '2000';
-    return '2300';
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -186,10 +115,10 @@ class _MainPageHomeState extends State<MainPageHome> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _categoryTab('뮤지컬', 0),
-                    _categoryTab('콘서트', 1),
-                    _categoryTab('연극', 3),
-                    _categoryTab('클래식/무용', 4),
+                    // _categoryTab('뮤지컬', 0),
+                    // _categoryTab('콘서트', 1),
+                    // _categoryTab('연극', 3),
+                    // _categoryTab('클래식/무용', 4),
                   ],
                 ),
               ),
@@ -201,23 +130,26 @@ class _MainPageHomeState extends State<MainPageHome> {
                 padding: const EdgeInsets.only(bottom: 20),
                 child: _title('베스트 관람후기'),
               ),
-
-              weather == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      child: Column(
-                        children: [
-                          _title('오늘의 날씨'),
-                          const SizedBox(height: 20),
-                          _mainWeatherCard(weather!),
-                          const SizedBox(height: 20),
-                          // _minMaxTempCard(weather!),
-                          // const SizedBox(height: 20),
-                          _weatherInfoGrid(weather!),
-                        ],
-                      ),
+              weatherAsync.when(
+                data: (weather) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: Column(
+                      children: [
+                        _title('오늘의 날씨'),
+                        const SizedBox(height: 20),
+                        _mainWeatherCard(weather),
+                        const SizedBox(height: 20),
+                        // _minMaxTempCard(weather!),
+                        // const SizedBox(height: 20),
+                        _weatherInfoGrid(weather),
+                      ],
                     ),
+                  );
+                },
+                error: (error, _) => const Text('날씨 정보를 불러오지 못했어요'),
+                loading: () => const Center(child: CircularProgressIndicator()),
+              ),
             ],
           ),
         ),
@@ -235,43 +167,43 @@ class _MainPageHomeState extends State<MainPageHome> {
   }
 
   // 카테고리 탭
-  Widget _categoryTab(String title, int index) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedCategory = index;
-          });
-        },
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: selectedCategory == index
-                  ? Colors.grey.shade900
-                  : Colors.grey.shade300,
-              width: 2,
-            ),
-            color: selectedCategory == index
-                ? Colors.grey.shade900
-                : Colors.white,
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            title,
-            style: TextStyle(
-              color: selectedCategory == index
-                  ? Colors.white
-                  : Colors.grey.shade900,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  } // categoryButton
+  // Widget _categoryTab(String title, int index) {
+  //   return Expanded(
+  //     child: GestureDetector(
+  //       onTap: () {
+  //         setState(() {
+  //           selectedCategory = index;
+  //         });
+  //       },
+  //       child: Container(
+  //         margin: const EdgeInsets.symmetric(horizontal: 4),
+  //         padding: const EdgeInsets.symmetric(vertical: 10),
+  //         alignment: Alignment.center,
+  //         decoration: BoxDecoration(
+  //           border: Border.all(
+  //             color: selectedCategory == index
+  //                 ? Colors.grey.shade900
+  //                 : Colors.grey.shade300,
+  //             width: 2,
+  //           ),
+  //           color: selectedCategory == index
+  //               ? Colors.grey.shade900
+  //               : Colors.white,
+  //           borderRadius: BorderRadius.circular(50),
+  //         ),
+  //         child: Text(
+  //           title,
+  //           style: TextStyle(
+  //             color: selectedCategory == index
+  //                 ? Colors.white
+  //                 : Colors.grey.shade900,
+  //             fontWeight: FontWeight.bold,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // } // categoryButton
 
   // 메인 날씨 카드 (기온 + 하늘)
   Widget _mainWeatherCard(WeatherModel weather) {
@@ -362,7 +294,10 @@ class _MainPageHomeState extends State<MainPageHome> {
           const SizedBox(height: 8),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
+          ),
         ],
       ),
     );
