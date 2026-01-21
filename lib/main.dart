@@ -15,9 +15,9 @@ import 'package:seatup_app/view/user/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // AuthRepository.initialize(appKey: kakaoJavascriptKey,
-  //   baseUrl: 'http://localhost',
-  // ); // 카카오 지도 플러그인 초기화(JS 키 사용) pjs
+  AuthRepository.initialize(appKey: kakaoJavascriptKey,
+    baseUrl: 'http://localhost',
+  ); // 카카오 지도 플러그인 초기화(JS 키 사용) pjs
   // 2. 한국어(ko_KR) 로케일 데이터 초기화 추가
   await initializeDateFormatting('ko_KR', null);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
