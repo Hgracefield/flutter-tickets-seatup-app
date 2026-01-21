@@ -58,7 +58,7 @@ class AppRouter {
       case AppRoute.userFindInfo:
         return MaterialPageRoute(builder: (_) => const UserFindInfo());
       case AppRoute.signUp:
-        return MaterialPageRoute(builder: (_) => const SignUp());
+        return MaterialPageRoute(builder: (_) => const SignUp(email: '',name: '',phone: '',));
       case AppRoute.userInfoUpdate:
         return MaterialPageRoute(builder: (_) => const UserInfoUpdate());
       case AppRoute.userMypage:
