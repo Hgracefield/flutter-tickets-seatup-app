@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/post.dart';
 import 'package:seatup_app/view/user/main_page.dart';
+import 'package:seatup_app/view/user/payment.dart';
 import 'package:seatup_app/vm/agree_check.dart';
 import 'package:seatup_app/vm/post_notifier.dart';
+import 'package:seatup_app/vm/storage_provider.dart';
 
 class TicketDetail extends ConsumerWidget {
   final int postSeq;
@@ -105,8 +107,9 @@ class TicketDetail extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: (agreeCheck.agreeNotice && agreeCheck.agreeRefund) ? () {
-                    // 여기에다가 구매값 넣으면됨
+                  onPressed: (agreeCheck.agreeNotice && agreeCheck.agreeRefund) ? () async{
+                    final post = await ref.read(postDetailProvider(postSeq).future);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage(post: post, buyerId: ref.watch(storageProvider).read('user_id')),));
                   } 
                   : null,
                   style: ElevatedButton.styleFrom(
