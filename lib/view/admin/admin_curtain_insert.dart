@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/vm/area_notifier.dart';
+import 'package:seatup_app/vm/curtain_manager_notifier.dart';
+import 'package:seatup_app/vm/grade_notifier.dart';
+import 'package:seatup_app/vm/type_provider.dart';
 
 /// ✅ 등록 버튼을 누르면 나오는 "등록 페이지"
 /// - type / grade / area : Dropdown
@@ -10,14 +15,14 @@ import 'package:flutter/material.dart';
 ///   context,
 ///   MaterialPageRoute(builder: (_) => const AdminCurtainInsert()),
 /// );
-class AdminCurtainInsert extends StatefulWidget {
+class AdminCurtainInsert extends ConsumerStatefulWidget {
   const AdminCurtainInsert({super.key});
 
   @override
-  State<AdminCurtainInsert> createState() => _AdminCurtainInsertState();
+  ConsumerState<AdminCurtainInsert> createState() => _AdminCurtainInsertState();
 }
 
-class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
+class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   final _formKey = GlobalKey<FormState>();
 
   // ---------- Dropdown 기본값 ----------
@@ -28,7 +33,14 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
   // ---------- Dropdown 아이템 ----------
   final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
   final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
-  final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역', 'E구역', 'F구역'];
+  final List<String> areaItems = const [
+    'A구역',
+    'B구역',
+    'C구역',
+    'D구역',
+    'E구역',
+    'F구역',
+  ];
 
   // ---------- TextField ----------
   final titleCtrl = TextEditingController();
@@ -100,6 +112,8 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
 
   @override
   Widget build(BuildContext context) {
+
+    final typeAsync = ref.watch(typeNotifierProvider);
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
@@ -135,7 +149,10 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
                       children: [
                         // 안내 문구 (대시보드 톤)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF4F6FF),
                             borderRadius: BorderRadius.circular(10),
@@ -143,8 +160,11 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.confirmation_number_outlined,
-                                  size: 20, color: Color(0xFF2F57C9)),
+                              Icon(
+                                Icons.confirmation_number_outlined,
+                                size: 20,
+                                color: Color(0xFF2F57C9),
+                              ),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -172,12 +192,14 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
                                   children: [
                                     Expanded(
                                       flex: 1,
-                                      child: _dashDropdown(
-                                        label: 'type',
-                                        value: typeValue,
-                                        items: typeItems,
-                                        onChanged: (v) => setState(() => typeValue = v),
-                                      ),
+                                      child: _buildTypeDropDown(),
+                                      // _dashDropdown(
+                                      //   label: 'type',
+                                      //   value: typeValue,
+                                      //   items: typeItems,
+                                      //   onChanged: (v) =>
+                                      //       setState(() => typeValue = v),
+                                      // ),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -220,25 +242,23 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
                                 // 3줄: grade + area
                                 Row(
                                   children: [
+                                    _dashLabel('grade'),
                                     Expanded(
-                                      child: _dashDropdown(
-                                        label: 'grade',
-                                        value: gradeValue,
-                                        items: gradeItems,
-                                        onChanged: (v) => setState(() => gradeValue = v),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _dashDropdown(
-                                        label: 'area',
-                                        value: areaValue,
-                                        items: areaItems,
-                                        onChanged: (v) => setState(() => areaValue = v),
-                                      ),
+                                      child: _buildGradeCheckList(),
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    _dashLabel('area'),
+                                    Expanded(
+                                      child: _buildAreaCheckList(),
+                                    ),
+                                  ],
+                                ),
+
+                               
                                 const SizedBox(height: 12),
 
                                 // 4줄: show_date + show_time (입력 가능 + picker 아이콘)
@@ -266,13 +286,6 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-
-                                // 5줄: show_cast
-                                _dashTextField(
-                                  label: 'show_cast',
-                                  controller: castCtrl,
-                                  hint: '출연진 (예: 정선아, ...)',
-                                ),
                               ],
                             ),
                           ),
@@ -286,22 +299,37 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF2F57C9),
-                                side: const BorderSide(color: Color(0xFFCFD8FF)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                side: const BorderSide(
+                                  color: Color(0xFFCFD8FF),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('취소', style: TextStyle(fontWeight: FontWeight.w800)),
+                              child: const Text(
+                                '취소',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
                             ),
                             const Spacer(),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF4D74D6),
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 12,
+                                ),
                               ),
                               onPressed: _submit,
-                              child: const Text('등록', style: TextStyle(fontWeight: FontWeight.w900)),
+                              child: const Text(
+                                '등록',
+                                style: TextStyle(fontWeight: FontWeight.w900),
+                              ),
                             ),
                           ],
                         ),
@@ -319,13 +347,13 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
 
   // ===================== 대시보드 스타일 공통 위젯 =====================
   Widget _dashLabel(String text) => Text(
-        text,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF2F57C9),
-        ),
-      );
+    text,
+    style: const TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+      color: Color(0xFF2F57C9),
+    ),
+  );
 
   Widget _dashTextField({
     required String label,
@@ -344,7 +372,10 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
             hintText: hint,
             filled: true,
             fillColor: const Color(0xFFF4F6FF),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFFE0E6FF)),
@@ -382,7 +413,10 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
             hintText: hint,
             filled: true,
             fillColor: const Color(0xFFF4F6FF),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             suffixIcon: IconButton(
               onPressed: onTapIcon,
               icon: Icon(icon, size: 18, color: const Color(0xFF2F57C9)),
@@ -424,8 +458,13 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2F57C9)),
-              items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Color(0xFF2F57C9),
+              ),
+              items: items
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: (v) {
                 if (v != null) onChanged(v);
               },
@@ -435,4 +474,130 @@ class _AdminCurtainInsertState extends State<AdminCurtainInsert> {
       ],
     );
   }
-}
+
+  Widget _buildTypeDropDown()
+  {
+    final typeAsync = ref.watch(typeNotifierProvider);
+
+  return typeAsync.when(
+    data: (types) {
+      if (types.isEmpty) return const SizedBox();
+
+      // 선택된 값(그대로 저장/사용)
+      final selected = ref.watch(curtainManagerNotifier).selectedTypeIndex; 
+      // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+
+      final int? value =
+          (selected != null && types.any((g) => g.type_seq == selected))
+              ? selected
+              : null;
+
+      // 최초 기본값 세팅(원하면 제거 가능)
+      if (value == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(curtainManagerNotifier.notifier).setType(types.first.type_seq!);
+        });
+      }
+
+      return Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF4F6FF),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE0E6FF)),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<int>(
+            isExpanded: true,
+            value: value,
+            hint: const Text('좌석 등급 선택'),
+            items: types
+                .map(
+                  (type) => DropdownMenuItem<int>(
+                    value: type.type_seq, // 여기만 id로 바꾸고 싶으면 g.id
+                    child: Text(type.type_name),
+                  ),
+                )
+                .toList(),
+            onChanged: (v) {
+              if (v == null) return;
+              ref.read(curtainManagerNotifier.notifier).setType(v);
+            },
+          ),
+        ),
+      );
+    },
+    error: (_, __) => const SizedBox(),
+    loading: () => const SizedBox(),
+  );
+  }
+
+  Widget _buildGradeCheckList() {
+    final gradeAsync = ref.watch(gradeNotifierProvider);
+    final mask = ref.watch(curtainManagerNotifier).selectedGradeMask;
+
+    return gradeAsync.when(
+      data: (grades) {
+        return Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: grades.map((g) {
+            final checked = (mask! & g.bit) != 0;
+            return Row(
+              mainAxisSize: MainAxisSize.min, // 핵심
+              children: [
+                Checkbox(
+                  value: checked,
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref
+                        .read(curtainManagerNotifier.notifier)
+                        .toggleGrade(g.bit, v);
+                  },
+                ),
+                Text(g.grade_name),
+              ],
+            );
+          }).toList(),
+        );
+      },
+      loading: () => const SizedBox(),
+      error: (_, __) => const SizedBox(),
+    );
+  } // _buildGradeDropDown
+
+  Widget _buildAreaCheckList() {
+    final areaAsync = ref.watch(areaNotifierProvider);
+    final mask = ref.watch(curtainManagerNotifier).selectedAreaMask;
+
+    return areaAsync.when(
+      data: (areas) {
+        return Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: areas.map((area) {
+            final checked = (mask! & area.bit) != 0;
+            return Row(
+              mainAxisSize: MainAxisSize.min, // 핵심
+              children: [
+                Checkbox(
+                  value: checked,
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref
+                        .read(curtainManagerNotifier.notifier)
+                        .toggleGrade(area.bit, v);
+                  },
+                ),
+                Text(area.area_number),
+              ],
+            );
+          }).toList(),
+        );
+      },
+      loading: () => const SizedBox(),
+      error: (_, __) => const SizedBox(),
+    );
+  } // _buildGradeDropDown
+} // class
