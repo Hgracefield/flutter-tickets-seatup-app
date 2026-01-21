@@ -15,6 +15,7 @@ class _AdminGradeInsertState extends ConsumerState<AdminGradeInsert> {
   // === Property ===
   late TextEditingController nameController;
   late TextEditingController valueController;
+  late TextEditingController priceController;
 
   Message message = Message();
 
@@ -23,12 +24,14 @@ class _AdminGradeInsertState extends ConsumerState<AdminGradeInsert> {
     super.initState();
     nameController = TextEditingController();
     valueController = TextEditingController();
+    priceController = TextEditingController();
   }
 
   @override
   void dispose() {
     nameController.dispose();
     valueController.dispose();
+    priceController.dispose();
     super.dispose();
   }
 
@@ -41,10 +44,13 @@ class _AdminGradeInsertState extends ConsumerState<AdminGradeInsert> {
           children: [
             _buildTextField('좌석 등급', nameController, false),
             _buildTextField('좌석 가치', valueController, false),
+            _buildTextField('가격', priceController, false),
             ElevatedButton(
               onPressed: () async {
                 if (nameController.text.trim().isEmpty ||
-                    valueController.text.trim().isEmpty) {
+                    valueController.text.trim().isEmpty || 
+                    priceController.text.trim().isEmpty
+                    ) {
                   message.errorSnackBar(context, '비어 있는 칸이 있습니다');
                 } else {
                   insert();
@@ -86,8 +92,9 @@ class _AdminGradeInsertState extends ConsumerState<AdminGradeInsert> {
     Grade grade = Grade(
       grade_name: nameController.text.trim(),
       grade_value: int.parse(valueController.text.trim()),
+      grade_price: int.parse(priceController.text.trim())
     );
-    final result = await gradeNotifier.updateUser(grade);
+    final result = await gradeNotifier.insertGrade(grade);
     if (result == 'OK') {
       if (!mounted) return;
       message.successSnackBar(context, '좌석 등급이 추가 되었습니다.');
