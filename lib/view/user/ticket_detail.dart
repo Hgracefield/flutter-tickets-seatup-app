@@ -1,66 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/post.dart';
+import 'package:seatup_app/view/user/main_page.dart';
+import 'package:seatup_app/vm/agree_check.dart';
+import 'package:seatup_app/vm/post_notifier.dart';
 
-class TicketDetail extends StatefulWidget {
-  const TicketDetail({super.key});
+class TicketDetail extends ConsumerWidget {
+  final int postSeq;
+  const TicketDetail({super.key, required this.postSeq});
+
+
+
+  // // ====== 더미 데이터(네 프로젝트 모델로 바꿔 끼우면 됨) ======
+  // final String productTitle = "티켓상세페이지";
+  // final String productNo = "6253999853264";
+
+  // final String routeText = "뮤지컬  >  title여기다가";
+  // final String showDateTime = "2026.03.06 20:00";
+
+  // final String seatTitle = "VVIP등급  | A구역";
+  // final String seatSub = "여기에는 post 설명";
+
+  // final int price = 440000;
+  // final int qty = 1;
 
   @override
-  State<TicketDetail> createState() => _TicketDetailState();
-}
-
-class _TicketDetailState extends State<TicketDetail> {
-  bool agreeNotice = false;
-  bool agreeRefund = false;
-
-  // ====== 더미 데이터(네 프로젝트 모델로 바꿔 끼우면 됨) ======
-  final String productTitle = "티켓상세페이지";
-  final String productNo = "6253999853264";
-
-  final String routeText = "뮤지컬  >  title여기다가";
-  final String showDateTime = "2026.03.06 20:00";
-
-  final String seatTitle = "VVIP등급  | A구역";
-  final String seatSub = "여기에는 post 설명";
-
-  final int price = 440000;
-  final int qty = 1;
-
-  @override
-  Widget build(BuildContext context) {
-    final total = price * qty;
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postAsync = ref.watch(postSelectAllProvider(postSeq));
+    final agreeCheck = ref.watch(agreeNotifier);
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.6,
-        title: Text(
-          productTitle,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              // 여기에 지도
+            }, 
+            icon: Icon(Icons.map)
+          )
+        ],
       ),
 
       // ✅ float 버튼 없음 (Stack/Positioned 미사용)
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _productInfoCard(),
-            const SizedBox(height: 12),
+        child: postAsync.when(
+          data: (post) {
+            final total = post['post_quantity'] * post['post_price'];
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _productInfoCard(post , ref),
+                const SizedBox(height: 12,),
 
-            _priceCard(total: total),
-            const SizedBox(height: 12),
+                _priceCard(post , ref ,total: total),
+                const SizedBox(height: 12),
 
-            _mustCheckCard(
-              agreeNotice: agreeNotice,
-              agreeRefund: agreeRefund,
-              onTapDetail: () => _showMustCheckSheet(context),
-              onChangeNotice: (v) => setState(() => agreeNotice = v),
-              onChangeRefund: (v) => setState(() => agreeRefund = v),
-            ),
-          ],
-        ),
+                _mustCheckCard(
+                  agreeNotice: agreeCheck.agreeNotice,
+                  agreeRefund: agreeCheck.agreeRefund,
+                  onTapDetail: () => _showMustCheckSheet(context),
+                  onChangeNotice: (value) => ref.read(agreeNotifier.notifier).agreeChangeNotice(value),               
+                  onChangeRefund: (value) => ref.read(agreeNotifier.notifier).agreeChangeRefund(value),
+                ),
+              ],
+            );
+          }, 
+          error: (error, stackTrace) => Text('에러: $error'), 
+          loading: () => Center(child: CircularProgressIndicator(),),
+        )
       ),
 
       bottomNavigationBar: SafeArea(
@@ -81,7 +91,9 @@ class _TicketDetailState extends State<TicketDetail> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // 장바구니 버튼
+                  },
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                     side: const BorderSide(color: Color(0xFFE6E8EE)),
@@ -93,7 +105,10 @@ class _TicketDetailState extends State<TicketDetail> {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: (agreeNotice && agreeRefund) ? () {} : null,
+                  onPressed: (agreeCheck.agreeNotice && agreeCheck.agreeRefund) ? () {
+                    // 여기에다가 구매값 넣으면됨
+                  } 
+                  : null,
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -110,7 +125,8 @@ class _TicketDetailState extends State<TicketDetail> {
 
   // ===================== UI Widgets =====================
 
-  Widget _productInfoCard() {
+  Widget _productInfoCard(Map<String,dynamic> postAsync , WidgetRef ref) {
+    final ticketNumber = ref.read(postNotifierProvider.notifier).ticketNumber(postAsync['post_create_date'], postAsync['post_seq'], postAsync['curtain_id']);
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +141,7 @@ class _TicketDetailState extends State<TicketDetail> {
                 ),
               ),
               Text(
-                '상품번호 $productNo',
+                '상품번호 $ticketNumber',
                 style: const TextStyle(
                   color: Color(0xFF9CA3AF),
                   fontWeight: FontWeight.w700,
@@ -137,7 +153,7 @@ class _TicketDetailState extends State<TicketDetail> {
 
           // 분류/경로
           Text(
-            routeText,
+            '${postAsync['type_name']} > ${postAsync['title_contents']}',
             style: const TextStyle(
               color: Color(0xFF6B7280),
               fontWeight: FontWeight.w600,
@@ -157,7 +173,7 @@ class _TicketDetailState extends State<TicketDetail> {
                 ),
               ),
               Text(
-                showDateTime,
+                '${postAsync['curtain_date']} ${postAsync['curtain_time']}',
                 style: const TextStyle(fontWeight: FontWeight.w900),
               ),
             ],
@@ -169,12 +185,12 @@ class _TicketDetailState extends State<TicketDetail> {
 
           // 좌석 정보
           Text(
-            seatTitle,
+            '${postAsync['grade_name']}등급',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 6),
           Text(
-            seatSub,
+            '${postAsync['area_number']}구역',
             style: const TextStyle(
               color: Color(0xFF6B7280),
               fontWeight: FontWeight.w700,
@@ -184,12 +200,19 @@ class _TicketDetailState extends State<TicketDetail> {
           const SizedBox(height: 14),
           const Divider(height: 1),
           const SizedBox(height: 12),
+          Text(
+            '${postAsync['post_desc']}',
+            style: const TextStyle(
+              color: Color(0xFF6B7280),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _priceCard({required int total}) {
+  Widget _priceCard(Map<String,dynamic> postAsync , WidgetRef ref ,{required int total}) {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,9 +220,9 @@ class _TicketDetailState extends State<TicketDetail> {
           const Text('결제 정보', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
           const SizedBox(height: 12),
 
-          _kv('한 매 가격', _won(price)),
+          _kv('한 매 가격', _won(postAsync['post_price'])),
           const SizedBox(height: 10),
-          _kv('수량', '$qty매'),
+          _kv('수량', '${postAsync['post_quantity']}매'),
 
           const SizedBox(height: 12),
           const Divider(height: 1),

@@ -79,7 +79,7 @@ class AppRouter {
         );
       case AppRoute.ticketDetail:
         return MaterialPageRoute(
-          builder: (_) => const TicketDetail(),
+          builder: (_) => const TicketDetail(postSeq: 1,),
         );
       case AppRoute.PurchaseHistory:
         return MaterialPageRoute(
