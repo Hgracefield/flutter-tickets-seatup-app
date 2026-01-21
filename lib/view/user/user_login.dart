@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
+import 'package:seatup_app/view/user/main_page.dart';
 import 'package:seatup_app/view/user/sign_up.dart';
 // import 'package:http/http.dart' as http;
 import 'package:seatup_app/vm/user_notifier.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/view/user/purchase_history_detail.dart';
 import 'package:tosspayments_widget_sdk_flutter/model/payment_info.dart';
 import 'package:tosspayments_widget_sdk_flutter/model/payment_widget_options.dart';
 import 'package:tosspayments_widget_sdk_flutter/payment_widget.dart';
@@ -56,9 +57,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                         .updatePostStatus(widget.post.post_seq!, 1);
 
                     if (result == "OK" && mounted) {
-                      Navigator.pop(context); // 결제창 닫기
-                      Navigator.pop(context); // 상세페이지 닫기
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("결제가 완료되어 판매가 종료되었습니다.")));
+                      // Navigator.pop(context); // 결제창 닫기
+                      // Navigator.pop(context); // 상세페이지 닫기
+                      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("결제가 완료되어 판매가 종료되었습니다.")));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => PurchaseHistoryDetail(post: widget.post),));
                     }
                   }
                 },

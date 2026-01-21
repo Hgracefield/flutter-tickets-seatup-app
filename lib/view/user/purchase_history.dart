@@ -1,71 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/view/user/main_page.dart';
 
-class PurchaseHistory extends StatefulWidget {
+class PurchaseHistory extends ConsumerWidget {
   const PurchaseHistory({super.key});
 
   @override
-  State<PurchaseHistory> createState() => _PurchaseHistoryState();
-}
-
-class _PurchaseHistoryState extends State<PurchaseHistory>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
-
-  final List<PurchaseItem> _items = [
-    PurchaseItem(
-      orderNo: "MI202308102318593CAF",
-      orderDate: "2023.08.10",
-      category: "스포츠",
-      subCategory: "야구 - 대전 이글스파크",
-      title: "금요일 113구역 M열",
-      tag: "PIN",
-      unitPrice: 25000,
-      qty: 2,
-      status: PurchaseStatus.done,
-    ),
-    PurchaseItem(
-      orderNo: "MI20230810124915166E",
-      orderDate: "2023.08.10",
-      category: "스포츠",
-      subCategory: "야구 - 고척돔 야구장",
-      title: "110구역 H열",
-      tag: "PIN",
-      unitPrice: 16000,
-      qty: 2,
-      status: PurchaseStatus.done,
-    ),
-    PurchaseItem(
-      orderNo: "MI20230727234105731F",
-      orderDate: "2023.07.27",
-      category: "스포츠",
-      subCategory: "야구 - 인천SSG랜더스필드 [SSG]",
-      title: "토요일@29구역 H열",
-      tag: "PIN",
-      unitPrice: 28500,
-      qty: 2,
-      status: PurchaseStatus.progress,
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  List<PurchaseItem> _filteredItems(PurchaseStatus status) {
-    return _items.where((e) => e.status == status).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bg = const Color(0xFFF6F7F9);
+
+    // ✅ 지금은 샘플 데이터 그대로 사용
+    final List<PurchaseItem> items = [
+      PurchaseItem(
+        orderNo: "MI202308102318593CAF",
+        orderDate: "2023.08.10",
+        category: "스포츠",
+        subCategory: "야구 - 대전 이글스파크",
+        title: "금요일 113구역 M열",
+        tag: "PIN",
+        unitPrice: 25000,
+        qty: 2,
+        status: PurchaseStatus.done,
+      ),
+      PurchaseItem(
+        orderNo: "MI20230810124915166E",
+        orderDate: "2023.08.10",
+        category: "스포츠",
+        subCategory: "야구 - 고척돔 야구장",
+        title: "110구역 H열",
+        tag: "PIN",
+        unitPrice: 16000,
+        qty: 2,
+        status: PurchaseStatus.done,
+      ),
+    ];
 
     return Scaffold(
       backgroundColor: bg,
@@ -83,74 +51,19 @@ class _PurchaseHistoryState extends State<PurchaseHistory>
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => MainPage()),
+              );
+            },
             icon: const Icon(Icons.home_outlined, color: Colors.black),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Colors.black,
-              indicatorWeight: 2,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-              tabs: const [
-                Tab(text: "거래 진행"),
-                Tab(text: "거래 완료"),
-                Tab(text: "거래 취소"),
-              ],
-            ),
-          ),
-        ),
       ),
-      body: Column(
-        children: [
-          // 기간/필터 영역
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    "2023.02.01 ~ 2026.01.13",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {},
-                  borderRadius: BorderRadius.circular(10),
-                  child: const Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Icon(Icons.tune, size: 20, color: Colors.black87),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
 
-          // 리스트
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _HistoryList(items: _filteredItems(PurchaseStatus.progress)),
-                _HistoryList(items: _filteredItems(PurchaseStatus.done)),
-                _HistoryList(items: _filteredItems(PurchaseStatus.cancel)),
-              ],
-            ),
-          ),
-        ],
-      ),
+      // ✅ 탭/날짜 영역 제거하고 리스트만
+      body: _HistoryList(items: items),
     );
   }
 }
@@ -172,7 +85,7 @@ class _HistoryList extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       itemCount: items.length,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
@@ -276,7 +189,7 @@ class _PurchaseCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // PIN 뱃지
+            // PIN 뱃지 + 수량
             Row(
               children: [
                 _TagChip(text: item.tag),
@@ -293,7 +206,7 @@ class _PurchaseCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // 하단 버튼/상태
+            // 하단 상태/버튼
             Row(
               children: [
                 Text(

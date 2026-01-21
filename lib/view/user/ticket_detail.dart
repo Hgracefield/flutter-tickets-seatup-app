@@ -6,6 +6,7 @@ import 'package:seatup_app/view/user/main_page.dart';
 import 'package:seatup_app/view/user/payment.dart';
 import 'package:seatup_app/view/user/user_to_user_chat.dart';
 import 'package:seatup_app/vm/agree_check.dart';
+import 'package:seatup_app/vm/order_notifier.dart';
 import 'package:seatup_app/vm/post_notifier.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
 import 'package:seatup_app/vm/user_chat_notifier.dart';
@@ -183,7 +184,7 @@ class TicketDetail extends ConsumerWidget {
 
   Widget _productInfoCard(Map<String, dynamic> postAsync, WidgetRef ref) {
     final ticketNumber = ref
-        .read(postNotifierProvider.notifier)
+        .read(orderProviderAsync.notifier)
         .ticketNumber(
           postAsync['post_create_date'],
           postAsync['post_seq'],

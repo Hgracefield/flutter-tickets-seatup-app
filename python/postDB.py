@@ -265,3 +265,4 @@ async def selectPost(seq:int):
         return {'result':'Error'} 
     finally:
         conn.close()
+
