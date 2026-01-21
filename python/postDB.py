@@ -25,25 +25,25 @@ def connect():
         autocommit=True
     )
 
-# 1. 구매 조건 필터링 (플러터 Post 모델과 100% 호환되도록 수정)
 @router.get("/filter")
 async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str):
     conn = connect()
     curs = conn.cursor()
     try:
-        # SELECT 절의 순서와 키 이름을 allSelect와 완전히 일치시킵니다.
         sql = """
         SELECT 
             p.post_seq,        -- 0
             p.post_user_id,     -- 1
-            p.post_curtain_id,   -- 2
-            p.post_create_date,  -- 3
-            p.post_quantity,     -- 4
-            p.post_price,        -- 5
-            p.post_grade,        -- 6
-            p.post_area,         -- 7
-            p.post_desc          -- 8
+            u.user_name,        -- 2
+            p.post_curtain_id,   -- 3
+            p.post_create_date,  -- 4
+            p.post_quantity,     -- 5
+            p.post_price,        -- 6
+            p.post_grade,        -- 7
+            p.post_area,         -- 8
+            p.post_desc          -- 9
         FROM post AS p
+        JOIN user AS u ON p.post_user_id = u.user_id
         JOIN curtain AS c ON p.post_curtain_id = c.curtain_id
         JOIN grade AS g ON p.post_grade = g.grade_seq
         JOIN area AS a ON p.post_area = a.area_seq
@@ -56,18 +56,18 @@ async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str
         curs.execute(sql, (curtain, date, f"{time}%", grade, area))
         rows = curs.fetchall()
         
-        # 결과를 담을 때 타입을 int로 강제 변환하여 'type String is not a subtype of int' 에러 방지
         result = [
             {
                 'post_seq': int(row[0]),
                 'post_user_id': int(row[1]),
-                'post_curtain_id': int(row[2]),
-                'post_create_date': str(row[3]),
-                'post_quantity': int(row[4]),
-                'post_price': int(row[5]),
-                'post_grade': int(row[6]),
-                'post_area': int(row[7]),
-                'post_desc': row[8] if row[8] else ""
+                'user_name': row[2],
+                'post_curtain_id': int(row[3]),
+                'post_create_date': str(row[4]),
+                'post_quantity': int(row[5]),
+                'post_price': int(row[6]),
+                'post_grade': int(row[7]),
+                'post_area': int(row[8]),
+                'post_desc': row[9] if row[9] else ""
             } for row in rows
         ]
         
@@ -78,49 +78,100 @@ async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str
     finally:
         conn.close()
 
-# 2. 전체 목록 (기존 코드 유지)
 @router.get("/allSelect")
 async def allSelect():
     conn = connect()
     curs = conn.cursor()
     try:
         sql = """
-        select post_seq, post_user_id, post_curtain_id, post_create_date,
-               post_quantity, post_price, post_grade, post_area, post_desc
-        from post
+        select 
+            p.post_seq,
+            p.post_user_id,
+            u.user_name,
+            p.post_curtain_id,
+            p.post_create_date,
+            p.post_quantity,
+            p.post_price,
+            p.post_grade,
+            p.post_area,
+            p.post_desc
+        from post as p
+        join user as u on p.post_user_id = u.user_id
         """
         curs.execute(sql)
         rows = curs.fetchall()
         result = [
-            {
-                'post_seq': row[0],
-                'post_user_id': row[1],
-                'post_curtain_id': row[2],
-                'post_create_date': str(row[3]),
-                'post_quantity': row[4],
-                'post_price': row[5],
-                'post_grade': row[6],
-                'post_area': row[7],
-                'post_desc': row[8]
-            } for row in rows
-        ]
-        return {'results': result}
+            {'post_seq' : row[0], 
+             'post_user_id' : row[1], 
+             'user_name' : row[2],
+             'post_curtain_id' : row[3], 
+             'post_create_date' : str(row[4]), 
+             'post_quantity' : row[5], 
+             'post_price' : row[6], 
+             'post_grade' : row[7], 
+             'post_area' : row[8], 
+             'post_desc' : row[9], 
+            } for row in rows]
+        return {'results' : result}
     except Exception as ex:
         print("Error :", ex)
-        return {'results': 'Error'}
+        return {'results':'Error'}    
     finally:
         conn.close()
 
-# 3. 등록 (기존 코드 유지)
+@router.get("/search")
+async def search(keyword:str):
+    conn = connect()
+    curs = conn.cursor()
+    try:
+        sql = """
+        select 
+            p.post_seq,
+            p.post_user_id,
+            u.user_name,
+            p.post_curtain_id,
+            p.post_create_date,
+            p.post_quantity,
+            p.post_price,
+            t.title_contents
+        from post as p
+            join user as u on p.post_user_id = u.user_id
+            join title as t on p.post_curtain_id = t.title_seq
+        where t.title_contents like %s
+        """
+        curs.execute(sql, (f"%{keyword}%",))
+        rows = curs.fetchall()
+        result = [{'post_seq' : row[0], 
+                   'post_user_id' : row[1], 
+                   'user_name' : row[2],
+                   'post_curtain_id' : row[3], 
+                   'post_create_date' : str(row[4]), 
+                   'post_quantity' : row[5], 
+                   'post_price' : row[6], 
+                    } for row in rows]
+        return {'results' : result}
+    except Exception as ex:
+        print("Error :", ex)
+        return {'results':'Error'}        
+    finally:
+        conn.close()
+
 @router.post("/insert")
 async def insert(post : Post):
     conn = connect()
     curs = conn.cursor()
     try:
         sql = """
-        insert into post (post_user_id, post_curtain_id, post_create_date,
-        post_quantity, post_price, post_grade, post_area, post_desc) 
-        values (%s, %s, now(), %s, %s, %s, %s, %s)
+        insert into post
+        (post_user_id, 
+        post_curtain_id,
+        post_create_date,
+        post_quantity,
+        post_price,
+        post_grade,
+        post_area,
+        post_desc
+        ) values (%s,%s,now(),%s,%s,%s,%s,%s)
         """
         curs.execute(sql, (post.post_user_id, post.post_curtain_id, post.post_quantity, 
                            post.post_price, post.post_grade, post.post_area, post.post_desc))
@@ -131,33 +182,6 @@ async def insert(post : Post):
     finally:
         conn.close()
 
-# 4. 키워드 검색 (기존 코드 유지)
-@router.get("/search")
-async def search(keyword:str):
-    conn = connect()
-    curs = conn.cursor()
-    try:
-        sql = """
-        select 
-            p.post_seq, p.post_user_id, p.post_curtain_id, p.post_create_date,
-            p.post_quantity, p.post_price, t.title_contents
-        from post as p
-            join curtain as c on p.post_curtain_id = c.curtain_id
-            join title as t on c.curtain_title_seq = t.title_seq
-        where t.title_contents like %s
-        """
-        curs.execute(sql, (f"%{keyword}%",))
-        rows = curs.fetchall()
-        result = [{'post_seq' : row[0], 'post_user_id' : row[1], 'post_curtain_id' : row[2], 
-                   'post_create_date' : str(row[3]), 'post_quantity' : row[4], 'post_price' : row[5]} for row in rows]
-        return {'results' : result}
-    except Exception as ex:
-        print("Error :", ex)
-        return {'results':'Error'}
-    finally:
-        conn.close()
-
-# 5. 상세 보기 (기존 코드 유지)
 @router.get("/selectPost/{seq}")
 async def selectPost(seq:int):
     conn = connect()
@@ -165,11 +189,26 @@ async def selectPost(seq:int):
     try:
         sql = """
         Select
-            post.post_seq, u.user_name, post.post_create_date, post.post_quantity,
-            g.grade_name, a.area_value, a.area_number, post.post_desc,
-            c.curtain_id, c.curtain_date, c.curtain_desc, c.curtain_mov, 
-            c.curtain_pic, p.place_name, type.type_name, t.title_contents, 
-            c.curtain_grade, c.curtain_area
+            post.post_seq,
+            u.user_name,
+            post.post_create_date,
+            post.post_quantity,
+            g.grade_name,
+            a.area_value,
+            a.area_number,
+            post.post_desc,
+            c.curtain_id, 
+            c.curtain_date,
+            c.curtain_desc, 
+            c.curtain_mov, 
+            c.curtain_pic, 
+            p.place_name, 
+            type.type_name, 
+            t.title_contents, 
+            c.curtain_grade, 
+            c.curtain_area,
+            post.post_user_id,
+            post.post_price
         from post
             join curtain as c on c.curtain_id = post.post_curtain_id
             join title as t on c.curtain_title_seq = t.title_seq
@@ -182,12 +221,28 @@ async def selectPost(seq:int):
         """
         curs.execute(sql, (seq,))
         rows = curs.fetchall()
-        result = [{'post_seq' : row[0], 'user_name' : row[1], 'post_create_date' : str(row[2]), 
-                   'post_quantity' : row[3], 'grade_name' : row[4], 'area_value' : row[5], 
-                   'area_number' : row[6], 'post_desc' : row[7], 'curtain_id' : row[8],
-                   'curtain_date' : str(row[9]), 'curtain_desc' : row[10], 'curtain_mov' : row[11],
-                   'curtain_pic' : row[12], 'place_name' : row[13], 'type_name' : row[14],
-                   'title_contents' : row[15], 'curtain_grade' : row[16], 'curtain_area' : row[17]} for row in rows]
+        result = [{'post_seq' : row[0], 
+                   'user_name' : row[1], 
+                   'post_create_date' : str(row[2]), 
+                   'post_quantity' : row[3], 
+                   'grade_name' : row[4], 
+                   'area_value' : row[5], 
+                   'area_number' : row[6],
+                   'post_desc' : row[7],
+                   'curtain_id' : row[8],
+                   'curtain_date' : str(row[9]),
+                   'curtain_desc' : row[10],
+                   'curtain_mov' : row[11],
+                   'curtain_pic' : row[12],
+                   'place_name' : row[13],
+                   'type_name' : row[14],
+                   'title_contents' : row[15],
+                   'curtain_grade' : row[16],
+                   'curtain_area' : row[17],
+                   'post_user_id' : row[18],
+                   'post_price' : row[19]
+                   } for row in rows]
+        
         return {'results' : result}
     except Exception as ex:
         print("Error :", ex)
