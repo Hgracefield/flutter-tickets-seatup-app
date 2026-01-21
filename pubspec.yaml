@@ -75,6 +75,9 @@ dependencies:
   # riverpod
   flutter_riverpod: ^3.1.0
 
+  # kakao_map_plugin
+  kakao_map_plugin: ^0.3.7
+
   # flutter_stripe(신용카드 결제)
   flutter_stripe: ^12.1.1
 

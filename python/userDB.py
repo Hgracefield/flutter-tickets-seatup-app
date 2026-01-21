@@ -201,7 +201,7 @@ async def delete(user : int):
         sql = """
         update user set
         user_withdraw_date = now() 
-        where user_seq = %s
+        where user_id = %s
         """
         curs.execute(sql, (user))
         conn.commit()
@@ -212,6 +212,27 @@ async def delete(user : int):
         return {'result':'Error'}
     finally:
         conn.close()
+@router.get("/address/{user_id}")   #주소만 뽑는 api 하나 추가함 pjs
+async def get_user_address(user_id: int):
+    conn = connect()
+    curs = conn.cursor()
+    try:
+        sql = """
+        SELECT user_id, user_address
+        FROM user
+        WHERE user_id = %s
+        """
+        curs.execute(sql, (user_id,))
+        row = curs.fetchone()
+        if row is None:
+            return {"result": "Error", "message": "User not found"}
+
+        return {"result": "OK", "user_id": row[0], "user_address": row[1]}
+    except Exception as ex:
+        print("Error:", ex)
+        return {"result": "Error"}
+    finally:
+        conn.close()        
     
 @router.get("/select")
 async def select():
