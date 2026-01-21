@@ -45,6 +45,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
       toolbarHeight: 70,
       elevation: 0,
       iconTheme: IconThemeData(color: Colors.black),
+      automaticallyImplyLeading: false,
       actions: [
         IconButton(
           onPressed: () {
