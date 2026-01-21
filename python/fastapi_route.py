@@ -4,7 +4,7 @@ from areaDB import router as area_router
 from curtainDB import router as curtain_router
 from gradeDB import router as grade_router
 # from locationDB import router as location_router
-# from placeDB import router as place_router
+from placeDB import router as place_router
 from postDB import router as post_router
 # from purchaseDB import router as purchase_router
 # from registerDB import router as register_router
@@ -23,7 +23,7 @@ app.include_router(curtain_router, prefix='/curtain', tags=['curtain'])
 app.include_router(curtain_list_router, prefix="/curtain")
 app.include_router(grade_router, prefix='/grade', tags=['grade'])
 # app.include_router(location_router, prefix='/location', tags=['location'])
-# app.include_router(place_router, prefix='/place', tags=['place'])
+app.include_router(place_router, prefix='/place', tags=['place'])
 app.include_router(post_router, prefix='/post', tags=['post'])
 # app.include_router(purchase_router, prefix='/purchase', tags=['purchase'])
 # app.include_router(register_router, prefix='/register', tags=['register'])
@@ -31,6 +31,8 @@ app.include_router(staff_router, prefix='/staff', tags=['staff'])
 app.include_router(title_router, prefix='/title', tags=['title'])
 app.include_router(type_router, prefix='/type', tags=['type'])
 # app.include_router(wishlist_router, prefix='/wishlist', tags=['wishlist'])
+
+
 
 
 

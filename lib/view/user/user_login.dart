@@ -211,25 +211,34 @@ class _UserLoginState extends ConsumerState<UserLogin> {
   }
 
   Future<void> userLogin() async {
-    final userNotifier =  ref.read(userNotifierProvider.notifier);
-    final user = await userNotifier.loginData(emailController.text.trim(), passwordController.text.trim());      // get storage 부분
-    var result = await userNotifier.login(emailController.text.trim(), passwordController.text.trim());
+    final userNotifier = ref.read(userNotifierProvider.notifier);
+    final user = await userNotifier.loginData(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    ); // get storage 부분
+    var result = await userNotifier.login(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
 
-    switch(result)
-    {
+    switch (result) {
       case LoginStatus.success:
         message.successSnackBar(context, '로그인 성공');
-        await userNotifier.saveUserLogin(user.first);       // get storage저장하는곳
+        await userNotifier.saveUserLogin(
+          user.first,
+        ); // get storage저장하는곳
         Navigator.pushNamed(context, AppRoute.main).then((value) {
           emailController.clear();
           passwordController.clear();
-        },);
+        });
+        break;
       case LoginStatus.fail:
         message.errorSnackBar(context, '로그인 실패');
+        break;
       case LoginStatus.withdraw:
         message.errorSnackBar(context, '탈퇴한 회원입니다.');
+        break;
     }
   }
 
-  
 } // class
