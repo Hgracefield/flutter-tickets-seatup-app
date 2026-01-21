@@ -10,13 +10,14 @@ import 'package:seatup_app/view/app_route/app_router.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart'; // 카카오 지도
 import 'package:seatup_app/constants/api_keys.dart'; //api rest java
 import 'package:seatup_app/view/app_route/router_page.dart';
+import 'package:seatup_app/view/user/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // AuthRepository.initialize(appKey: kakaoJavascriptKey,
-  //   baseUrl: 'http://localhost',
-  // ); // 카카오 지도 플러그인 초기화(JS 키 사용) pjs
+  AuthRepository.initialize(appKey: kakaoJavascriptKey,
+    baseUrl: 'http://localhost',
+  ); // 카카오 지도 플러그인 초기화(JS 키 사용) pjs
   // 2. 한국어(ko_KR) 로케일 데이터 초기화 추가
   await initializeDateFormatting('ko_KR', null);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
       // initialRoute: AppRoute.main,
       onGenerateRoute: AppRouter.generate,
       showSemanticsDebugger: false,
-      home: RouterPage(), // 추후 삭제 연결
+      home: SplashScreen(), // 추후 삭제 연결
     );
   }
 }
