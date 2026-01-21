@@ -15,6 +15,7 @@ class Post(BaseModel):
     post_quantity: int
     post_price: int
     post_desc: str
+    post_create_date: str
 
 # 3. DB 연결 함수
 def connect():
@@ -114,6 +115,53 @@ async def allSelect():
     except Exception as ex:
         print("Error :", ex)
         return {'results':'Error'}
+    finally:
+        conn.close()
+
+@router.get("/allSelectAdmin")
+async def allSelectAdmin():
+    conn = connect()
+    curs = conn.cursor()
+    try:
+        sql = """
+        select 
+          p.post_seq,
+          u.user_name,
+          t.type_name,
+          ti.title_contents,
+          p.post_create_date,
+          p.post_quantity,
+          p.post_price,
+          p.post_grade,
+          p.post_area,
+          p.post_desc
+        from post p
+        join user u on p.post_user_id = u.user_id
+        join curtain c on p.post_curtain_id = c.curtain_id
+        join type t on c.curtain_type_seq = t.type_seq
+        join title ti on c.curtain_title_seq = ti.title_seq
+        """
+        curs.execute(sql)
+        rows = curs.fetchall()
+
+        result = [{
+            'post_seq': row[0],
+            'user_name': row[1],
+            'type_name': row[2],
+            'title_contents': row[3],
+            'post_create_date': str(row[4]),
+            'post_quantity': row[5],
+            'post_price': row[6],
+            'post_grade': row[7],
+            'post_area': row[8],
+            'post_desc': row[9],
+        } for row in rows]
+
+        return {'results': result}
+
+    except Exception as ex:
+        print("Error :", ex)
+        return {'results': 'Error'}
     finally:
         conn.close()
 
