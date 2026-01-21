@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-// import 'package:seatup_app/view/user/category.dart';
 import 'package:http/http.dart' as http;
 import 'package:seatup_app/constants/api_keys.dart';
 import 'package:seatup_app/model/weather.dart';
+import 'package:seatup_app/view/user/curtain_list_screen.dart';
 
 class MainPageHome extends StatefulWidget {
   const MainPageHome({super.key});
@@ -27,44 +27,46 @@ class _MainPageHomeState extends State<MainPageHome> {
 
   // 기상청 API
   Future<void> _fetchWeather() async {
-    const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
+    try {
+      const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
-    final now = DateTime.now();
-    final baseDate =
-        '${now.year}'
-        '${now.month.toString().padLeft(2, '0')}'
-        '${now.day.toString().padLeft(2, '0')}';
+      final now = DateTime.now();
+      final baseDate =
+          '${now.year}'
+          '${now.month.toString().padLeft(2, '0')}'
+          '${now.day.toString().padLeft(2, '0')}';
 
-    final uri = Uri.parse(
-      '$url/getVilageFcst' // URL -> 단기예보조회
-      '?serviceKey=$weatherServiceKey' // 인증키
-      '&pageNo=1' // 페이지 번호
-      '&numOfRows=10' // 한 페이지 결과 수
-      '&dataType=JSON' // 요청자료형식(XML/JSON)
-      '&base_date=$baseDate' // 오늘 발표된 예보 (00~02시 제외)
-      '&base_time=${baseTime(now)}' // 최신 발표 시각
-      '&nx=61' // 예보지점의 X 좌표값 -> 강남구
-      '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
-    );
-    // print(baseDate);
-    // print(now);
-    // print(now.hour);
-    // print(now.minute);
-    // print(baseTime(now));
+      final uri = Uri.parse(
+        '$url/getVilageFcst' // URL -> 단기예보조회
+        '?serviceKey=$weatherServiceKey' // 인증키
+        '&pageNo=1' // 페이지 번호
+        '&numOfRows=10' // 한 페이지 결과 수
+        '&dataType=JSON' // 요청자료형식(XML/JSON)
+        '&base_date=$baseDate' // 오늘 발표된 예보 (00~02시 제외)
+        '&base_time=${baseTime(now)}' // 최신 발표 시각
+        '&nx=61' // 예보지점의 X 좌표값 -> 강남구
+        '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
+      );
+      final response = await http.get(uri).timeout(const Duration(seconds: 8));
 
-    final response = await http.get(uri);
+      if (!mounted) return;
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(utf8.decode(response.bodyBytes));
-      setState(() {
-        weather = WeatherModel.fromJson(data);
-      });
-    } else {
-      throw Exception('날씨 데이터 로딩 실패');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        setState(() {
+          weather = WeatherModel.fromJson(data);
+        });
+      } else {
+        throw Exception('날씨 데이터 로딩 실패');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {});
     }
   }
 
-  String baseTime(DateTime now) { // 현재 시각 기준 최신값
+  // 현재 시각 기준 최신값
+  String baseTime(DateTime now) {
     final hour = now.hour;
     final minute = now.minute;
 
@@ -117,47 +119,77 @@ class _MainPageHomeState extends State<MainPageHome> {
                   ),
                 ),
               ),
-              // Padding(
-              //   padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-              //   child: Row(
-              //     children: [
-              //       TextButton(
-              //         onPressed: () => Navigator.push(
-              //           context,
-              //           MaterialPageRoute(builder: (context) => Category(),)),
-              //         child: Column(
-              //           children: [
-              //             Icon(
-              //               Icons.theater_comedy,
-              //               color: Colors.black,
-              //               size: 50,
-              //             ),
-              //             Text(
-              //               '뮤지컬',
-              //               style: TextStyle(
-              //                 color: Colors.black,
-              //                 fontWeight: FontWeight.bold,
-              //               ),
-              //             ),
-              //           ],
-              //         )
-              //       ),
-              //     ],
-              //   ),
-              // ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.fromLTRB(20, 0, 10, 20),
+                child: Row(
+                  children: [
+                    CategoryButton(
+                      icon: Icons.theater_comedy_outlined,
+                      label: '뮤지컬',
+                      page: CurtainListScreen(),
+                    ),
+                    CategoryButton(
+                      icon: Icons.music_note_outlined,
+                      label: '콘서트',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.speaker_group_outlined,
+                      label: '연극',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.chair_alt_outlined,
+                      label: '클래식/무용',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.sports_baseball_outlined,
+                      label: '스포츠',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.park_outlined,
+                      label: '레저/캠핑',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.museum_outlined,
+                      label: '전시/행사',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.child_care_outlined,
+                      label: '아동/가족',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.blur_on_outlined,
+                      label: 'topping',
+                      comingSoon: true,
+                    ),
+                    CategoryButton(
+                      icon: Icons.card_giftcard_outlined,
+                      label: '이달의혜택',
+                      comingSoon: true,
+                    ),
+                  ],
+                ),
+              ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: _title('장르별 랭킹'),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 0, 20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _categoryButton('뮤지컬', 0),
-                    _categoryButton('콘서트', 1),
-                    _categoryButton('스포츠', 3),
-                    _categoryButton('전시/행사', 4),
+                    _categoryTab('뮤지컬', 0),
+                    _categoryTab('콘서트', 1),
+                    _categoryTab('연극', 3),
+                    _categoryTab('클래식/무용', 4),
                   ],
                 ),
               ),
@@ -173,19 +205,19 @@ class _MainPageHomeState extends State<MainPageHome> {
               weather == null
                   ? const Center(child: CircularProgressIndicator())
                   : Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    child: Column(
-                      children: [
-                        _title('오늘의 날씨'),
-                        const SizedBox(height: 20),
-                        _mainWeatherCard(weather!),
-                        const SizedBox(height: 20),
-                        // _minMaxTempCard(weather!),
-                        // const SizedBox(height: 20),
-                        _weatherInfoGrid(weather!),
-                      ],
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      child: Column(
+                        children: [
+                          _title('오늘의 날씨'),
+                          const SizedBox(height: 20),
+                          _mainWeatherCard(weather!),
+                          const SizedBox(height: 20),
+                          // _minMaxTempCard(weather!),
+                          // const SizedBox(height: 20),
+                          _weatherInfoGrid(weather!),
+                        ],
+                      ),
                     ),
-                  ),
             ],
           ),
         ),
@@ -194,17 +226,16 @@ class _MainPageHomeState extends State<MainPageHome> {
   } // build
 
   // --- Widgets ---
-
   // 타이틀 위젯
-  Widget _title(String title){
+  Widget _title(String title) {
     return Text(
       title,
       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
     );
   }
 
-  // 카테고리 버튼
-  Widget _categoryButton(String title, int index) {
+  // 카테고리 탭
+  Widget _categoryTab(String title, int index) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -331,18 +362,17 @@ class _MainPageHomeState extends State<MainPageHome> {
           const SizedBox(height: 8),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(title, style: const TextStyle(fontSize: 12, color: Colors.black54)),
         ],
       ),
     );
   }
   // _weatherInfoGrid
 
-
   // --- Functions ---
-
   // 날씨 상태값 변환
-  Color _skyColor(String? sky) { // 메인 날씨 카드 배경색
+  Color _skyColor(String? sky) {
+    // 메인 날씨 카드 배경색
     switch (sky) {
       case '1':
         return Colors.blue; // 맑음
@@ -355,7 +385,8 @@ class _MainPageHomeState extends State<MainPageHome> {
     }
   }
 
-  IconData _skyIcon(String? sky) { // 메인 날씨 카드 아이콘
+  IconData _skyIcon(String? sky) {
+    // 메인 날씨 카드 아이콘
     switch (sky) {
       case '1':
         return Icons.wb_sunny;
@@ -368,7 +399,8 @@ class _MainPageHomeState extends State<MainPageHome> {
     }
   }
 
-  String _skyText(String? sky) { // 메인 날씨 카드 텍스트
+  String _skyText(String? sky) {
+    // 메인 날씨 카드 텍스트
     switch (sky) {
       case '1':
         return '맑음';
@@ -381,7 +413,8 @@ class _MainPageHomeState extends State<MainPageHome> {
     }
   }
 
-  String _ptyText(String? pty) { // 강수 형태 value 텍스트
+  String _ptyText(String? pty) {
+    // 강수 형태 value 텍스트
     switch (pty) {
       case '0':
         return '없음';
@@ -395,5 +428,54 @@ class _MainPageHomeState extends State<MainPageHome> {
         return '-';
     }
   }
-
 } // class
+
+// 카테고리 버튼 위젯
+class CategoryButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Widget? page;
+  final bool comingSoon;
+
+  const CategoryButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.page,
+    this.comingSoon = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: TextButton(
+        onPressed: () {
+          if (comingSoon) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('준비중입니다 🙂'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          } else if (page != null) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => page!));
+          }
+        },
+        child: Column(
+          children: [
+            Icon(icon, size: 40, color: Colors.black87),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
