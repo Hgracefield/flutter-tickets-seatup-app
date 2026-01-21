@@ -118,7 +118,7 @@ class _TicketListState extends ConsumerState<TicketList> {
   Future search() async {
     String keyword = searchController.text.trim();
     if (keyword.isNotEmpty) {
-      postList = await ref.read(postNotifierProvider.notifier).searchPost(keyword);
+      // postList = await ref.read(postNotifierProvider.notifier).searchPost(keyword);
       setState(() {
         
       });

@@ -4,46 +4,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/post.dart';
 import 'package:seatup_app/util/global_data.dart';
 import 'dart:convert';
-class PostNotifier extends AsyncNotifier<List<Post>>{
+
+class PostNotifier extends AsyncNotifier<List<Post>> {
   @override
-  FutureOr<List<Post>> build() async{
+  FutureOr<List<Post>> build() async {
     return fetchPost();
   }
 
-  Future<List<Post>> fetchPost() async
-  {
+  Future<List<Post>> fetchPost() async {
     final res = await http.get(Uri.parse("${GlobalData.url}/post/allSelect"));
-    if (res.statusCode != 200) {
-      throw Exception('불러오기 실패 ${res.statusCode}');
-    }
-
+    if (res.statusCode != 200) throw Exception('불러오기 실패');
     final data = json.decode(utf8.decode(res.bodyBytes));
-    return (data['results'] as List).map((e) => Post.fromJson(e),).toList();
+    return (data['results'] as List).map((e) => Post.fromJson(e)).toList();
   }
 
-  Future<List<Post>> searchPost(String keyword) async
-  {
-    final res = await http.get(Uri.parse("${GlobalData.url}/post/search?keyword=$keyword"));
-    if (res.statusCode != 200) {
-      throw Exception('불러오기 실패 ${res.statusCode}');
-    }
-
-    final data = json.decode(utf8.decode(res.bodyBytes));
-    // print(data);
-    return (data['results'] as List).map((e) => Post.fromJson(e),).toList();
+  // [중요] 필터 검색 메서드
+  Future<void> fetchFilteredPosts({
+    required int curtainId,
+    required String date,
+    required String time,
+    required int gradeBit,
+    required String area,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final url = "${GlobalData.url}/post/filter?curtain=$curtainId&date=$date&time=$time&grade=$gradeBit&area=$area";
+      final res = await http.get(Uri.parse(url));
+      if (res.statusCode != 200) throw Exception('검색 실패');
+      final data = json.decode(utf8.decode(res.bodyBytes));
+      return (data['results'] as List).map((e) => Post.fromJson(e)).toList();
+    });
   }
 
-  Future insertPost(Post post) async{
+  Future insertPost(Post post) async {
     final url = Uri.parse("${GlobalData.url}/post/insert");
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: json.encode(post.toJson()),
     );
-    if (response.statusCode != 200) {
-      throw Exception('불러오기 실패 ${response.statusCode} / ${response.body}');
-    }
-
     final data = json.decode(utf8.decode(response.bodyBytes));
     await refreshPost();
     return data['results'];
@@ -51,12 +50,8 @@ class PostNotifier extends AsyncNotifier<List<Post>>{
 
   Future<void> refreshPost() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () async => fetchPost(),
-    );
+    state = await AsyncValue.guard(() async => fetchPost());
   }
-} // PostNotifier
+}
 
-final postNotifierProvider = AsyncNotifierProvider<PostNotifier, List<Post>>(
-  PostNotifier.new
-);
+final postNotifierProvider = AsyncNotifierProvider<PostNotifier, List<Post>>(PostNotifier.new);
