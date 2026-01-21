@@ -64,10 +64,35 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async => fetchPost());
   }
+
+  // 티켓번호 만드는 함수
+  String ticketNumber(String date , int postSeq , int curtainId){
+    final List<String> value = date.split('-');
+    String dateNumber = '';
+    for (int i = 0; i < value.length; i++) {
+      dateNumber = dateNumber + value[i];
+    }
+    final ticketnumber = postSeq.toString() + dateNumber + curtainId.toString();
+    return ticketnumber;
+  }
+
+  // 개별 포스트 상세 조회(2)
+  Future<Map<String, dynamic>> selectPostAll(int seq) async {
+    final res = await http.get(Uri.parse("${GlobalData.url}/post/selectPost/$seq"));
+    if (res.statusCode != 200) throw Exception('상세 정보 로드 실패');
+    final data = json.decode(utf8.decode(res.bodyBytes));
+    final List list = data['results'];
+    if (list.isEmpty) throw Exception('데이터가 없습니다.');
+    return list.first;
+  }
 }
 
 final postNotifierProvider = AsyncNotifierProvider<PostNotifier, List<Post>>(PostNotifier.new);
 
 final postDetailProvider = FutureProvider.family<Post, int>((ref, postSeq) async {
   return await ref.read(postNotifierProvider.notifier).selectPost(postSeq);
+});
+
+final postSelectAllProvider = FutureProvider.family<Map<String, dynamic>, int>((ref, postSeq) async {
+  return await ref.read(postNotifierProvider.notifier).selectPostAll(postSeq);
 });
