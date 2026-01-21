@@ -69,12 +69,12 @@ class TicketResultScreen extends ConsumerWidget {
                     final post = list[index];
                     return GestureDetector(
                       onTap: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => TicketDetail(postSeq: post.post_seq!),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TicketDetail(postSeq: post.post_seq!),
+                          ),
+                        );
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 16),

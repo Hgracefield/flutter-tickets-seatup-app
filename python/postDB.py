@@ -191,7 +191,7 @@ async def selectPost(seq:int):
             g.grade_name, a.area_value, a.area_number, post.post_desc,
             c.curtain_id, c.curtain_date, c.curtain_desc, c.curtain_mov, 
             c.curtain_pic, p.place_name, type.type_name, t.title_contents, 
-            c.curtain_grade, c.curtain_area, post.post_price, c.curtain_time
+            c.curtain_grade, c.curtain_area, post.post_price, c.curtain_time, post.post_user_id
         from post
             join curtain as c on c.curtain_id = post.post_curtain_id
             join title as t on c.curtain_title_seq = t.title_seq
@@ -210,7 +210,7 @@ async def selectPost(seq:int):
                    'curtain_date' : str(row[9]), 'curtain_desc' : row[10], 'curtain_mov' : row[11],
                    'curtain_pic' : row[12], 'place_name' : row[13], 'type_name' : row[14],
                    'title_contents' : row[15], 'curtain_grade' : row[16], 
-                   'curtain_area' : row[17],'post_price' : row[18] , 'curtain_time' : str(row[19])} for row in rows]
+                   'curtain_area' : row[17],'post_price' : row[18] , 'curtain_time' : str(row[19]), 'post_user_id' : row[20]} for row in rows]
         return {'results' : result}
     except Exception as ex:
         print("Error :", ex)

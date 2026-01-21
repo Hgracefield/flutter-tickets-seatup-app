@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/vm/admin_edit_notifier.dart';
+import 'package:seatup_app/vm/type_provider.dart';
+
+// ✅ 선택된 type 값을 Riverpod으로 관리
+final selectedTypeProvider = StateProvider.autoDispose<String?>((ref) => null);
 
 class AdminCurtainEdit extends ConsumerStatefulWidget {
   final Curtain initialData;
@@ -15,13 +20,9 @@ class AdminCurtainEdit extends ConsumerStatefulWidget {
 class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
   final _formKey = GlobalKey<FormState>();
 
-  // ---------- Dropdown (단일) ----------
-  String typeValue = '뮤지컬';
-  final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
-
   // ---------- Multi Select (복수) ----------
-  final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
-  final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역', 'E구역', 'F구역'];
+  final List<String> gradeItems = const ['VIP', 'R', 'S', 'A'];
+  final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역'];
 
   List<String> selectedGrades = [];
   List<String> selectedAreas = [];
@@ -32,7 +33,7 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
   late final TextEditingController curtainDateCtrl;
   late final TextEditingController curtainTimeCtrl;
 
-  // ✅ 추가
+  // 추가
   late final TextEditingController curtainDescCtrl;
   late final TextEditingController curtainPicCtrl;
 
@@ -42,19 +43,18 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
 
     final d = widget.initialData;
 
-    typeValue = d.curtain_type.toString();
-    if (!typeItems.contains(typeValue)) typeValue = typeItems.first;
-
     titleCtrl = TextEditingController(text: d.curtain_title.toString());
     placeCtrl = TextEditingController(text: d.curtain_place.toString());
     curtainDateCtrl = TextEditingController(text: d.curtain_date.toString());
-    curtainTimeCtrl = TextEditingController(text: d.curtain_time?.toString() ?? '');
+    curtainTimeCtrl = TextEditingController(text: d.curtain_time.toString());
 
     curtainDescCtrl = TextEditingController(text: d.curtain_desc.toString());
     curtainPicCtrl = TextEditingController(text: d.curtain_pic.toString());
 
-    // ✅ 기존 값이 단일로 들어있다면(예: "VIP") → 리스트로 변환해서 초기 체크
-    //   (DB에 "VIP,R" 같이 저장돼있으면 split(',')로 바꾸면 됨)
+    // ✅ type 초기값은 provider에 넣어둠 (setState 필요없음)
+    ref.read(selectedTypeProvider.notifier).state = d.curtain_type?.toString();
+
+    // ✅ grade/area 초기 체크
     if (d.curtain_grade != null) {
       final g = d.curtain_grade.toString();
       if (gradeItems.contains(g)) selectedGrades = [g];
@@ -79,25 +79,30 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
   void _submitUpdate() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    // ✅ 여기서 서버로 보낼 값 만들기 (예시)
+    final typeValue = ref.read(selectedTypeProvider);
+
     final payload = {
-      "type": typeValue,
+      "type": typeValue ?? "",
       "title": titleCtrl.text.trim(),
       "place": placeCtrl.text.trim(),
       "curtain_date": curtainDateCtrl.text.trim(),
       "curtain_time": curtainTimeCtrl.text.trim(),
       "curtain_desc": curtainDescCtrl.text.trim(),
       "curtain_pic": curtainPicCtrl.text.trim(),
-      "grades": selectedGrades, // ✅ 복수 선택
-      "areas": selectedAreas,   // ✅ 복수 선택
+      "grades": selectedGrades,
+      "areas": selectedAreas,
     };
 
-    // print(payload);
     // TODO: update API 호출
+    // print(payload);
   }
 
   @override
   Widget build(BuildContext context) {
+    // ✅ types는 watch + when으로 처리
+    final typesAsync = ref.watch(typeNotifierProvider);
+    final selectedType = ref.watch(selectedTypeProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
@@ -128,7 +133,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 안내 문구
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           decoration: BoxDecoration(
@@ -153,7 +157,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                             ],
                           ),
                         ),
-
                         const SizedBox(height: 14),
 
                         Expanded(
@@ -165,11 +168,37 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                   children: [
                                     Expanded(
                                       flex: 1,
-                                      child: _dashDropdown(
-                                        label: 'type',
-                                        value: typeValue,
-                                        items: typeItems,
-                                        onChanged: (v) => setState(() => typeValue = v),
+                                      child: typesAsync.when(
+                                        loading: () => _loadingDropdown(label: 'type'),
+                                        error: (e, _) => _errorDropdown(label: 'type', message: '$e'),
+                                        data: (types) {
+                                          final typeItems = types.map((e) => e.type_name).toList();
+
+                                          if (typeItems.isEmpty) {
+                                            return _errorDropdown(label: 'type', message: 'type 목록이 비어있음');
+                                          }
+
+                                          // ✅ 선택값이 items에 없으면 첫번째로 보정 + provider에 반영
+                                          final safeValue = typeItems.contains(selectedType)
+                                              ? selectedType!
+                                              : typeItems.first;
+
+                                          if (selectedType != safeValue) {
+                                            // build 중 state 변경은 다음 프레임으로 미룸
+                                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                                              ref.read(selectedTypeProvider.notifier).state = safeValue;
+                                            });
+                                          }
+
+                                          return _dashDropdown(
+                                            label: 'type',
+                                            value: safeValue,
+                                            items: typeItems,
+                                            onChanged: (v) {
+                                              ref.read(selectedTypeProvider.notifier).state = v;
+                                            },
+                                          );
+                                        },
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -186,7 +215,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 2줄: place
                                 Row(
                                   children: [
                                     Expanded(
@@ -201,7 +229,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // ✅ 3줄: grade(복수) + area(복수)
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -242,7 +269,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // 4줄: curtain_date + show_time
                                 Row(
                                   children: [
                                     Expanded(
@@ -268,7 +294,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // ✅ 추가: curtain_desc
                                 _dashTextArea(
                                   label: 'curtain_desc',
                                   controller: curtainDescCtrl,
@@ -276,7 +301,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // ✅ 추가: 이미지 링크
                                 _dashTextField(
                                   label: 'curtain_pic (image url)',
                                   controller: curtainPicCtrl,
@@ -288,7 +312,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                         ),
 
                         const SizedBox(height: 12),
-
                         Row(
                           children: [
                             OutlinedButton(
@@ -334,6 +357,52 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
           color: Color(0xFF2F57C9),
         ),
       );
+
+  Widget _loadingDropdown({required String label}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF4F6FF),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE0E6FF)),
+          ),
+          child: const Center(
+            child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _errorDropdown({required String label, required String message}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF1F2),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFFCA5A5)),
+          ),
+          alignment: Alignment.centerLeft,
+          child: Text(
+            message,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFB91C1C)),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _dashTextField({
     required String label,
@@ -448,6 +517,8 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
     required List<String> items,
     required ValueChanged<String> onChanged,
   }) {
+    final safeValue = items.contains(value) ? value : items.first;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -463,7 +534,7 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: value,
+              value: safeValue,
               isExpanded: true,
               icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2F57C9)),
               items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
@@ -477,7 +548,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
     );
   }
 
-  // ✅ 복수 선택 박스 (선택한 값은 Chip으로 보이고, 아래에서 체크박스 선택)
   Widget _multiSelectBox({
     required String label,
     required List<String> items,
@@ -489,8 +559,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
       children: [
         _dashLabel(label),
         const SizedBox(height: 6),
-
-        // 선택된 값 Chip 표시
         Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -519,8 +587,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
               ),
               const SizedBox(height: 8),
               const Divider(height: 1),
-
-              // 체크박스 리스트
               ...items.map((v) {
                 final checked = selected.contains(v);
                 return CheckboxListTile(
