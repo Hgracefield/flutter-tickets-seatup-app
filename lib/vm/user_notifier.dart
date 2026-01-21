@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,11 +25,28 @@ class UserNotifier extends AsyncNotifier<User>{
     box.write('user_name', user['user_name']);   // 유저 이름
     box.write('user_email', user['user_email']);   // 유저 이메일
 
-
+    await saveFcmToken(user['user_id'].toString());
     // print('=== GetStorage user login saved ===');
     // print('userIsLogin: ${box.read('userIsLogin')}');
     // print('user_id    : ${box.read('user_id')}');
     // print('user_name   : ${box.read('user_name')}');
+  }
+
+  Future<void> saveFcmToken(String myPk) async {
+  final token = await FirebaseMessaging.instance.getToken();
+  if (token == null) return;
+
+  await FirebaseFirestore.instance.collection('users').doc(myPk).set({
+    'fcmTokens': { token: true },
+    'updatedAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+    await FirebaseFirestore.instance.collection('users').doc(myPk).set({
+      'fcmTokens': { newToken: true },
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  });
   }
 
   Future<User> fetchUser() async {
