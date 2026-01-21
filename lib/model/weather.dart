@@ -7,7 +7,6 @@ class WeatherModel {
   final String? pty; // PTY, 강수 형태
   final String? pop; // POP, 강수 확률(%)
   final String? pcp; // PCP, 1시간 강수량(mm)
-  final String? sno; // SNO, 1시간 신적설(cm)
 
   WeatherModel({
     this.tmp,
@@ -18,7 +17,6 @@ class WeatherModel {
     this.pty,
     this.pop,
     this.pcp,
-    this.sno,
   });
 
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
@@ -42,7 +40,6 @@ class WeatherModel {
       pty: find('PTY'),
       pop: find('POP'),
       pcp: find('PCP'),
-      sno: find('SNO'),
     );
   }
 }

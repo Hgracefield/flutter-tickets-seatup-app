@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
 // import 'package:http/http.dart' as http;
@@ -138,6 +140,24 @@ class _UserLoginState extends ConsumerState<UserLogin> {
                       ],
                     ),
                   ),
+                  TextButton(
+                    onPressed: () {
+                     _googleLogIn();
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '구글로 시작하기',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_outlined, color: Colors.black),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -241,4 +261,21 @@ class _UserLoginState extends ConsumerState<UserLogin> {
     }
   }
 
+  Future<void> _googleLogIn() async {
+    final googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) return; // 취소
+
+    final googleAuth = await googleUser.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final result = await FirebaseAuth.instance.signInWithCredential(credential);
+
+    print(result);
+  }
+
+  
 } // class

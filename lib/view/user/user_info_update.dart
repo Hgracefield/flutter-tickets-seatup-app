@@ -232,7 +232,7 @@ class _UserInfoUpdateState extends ConsumerState<UserInfoUpdate> {
                         final result = await ref.read(userNotifierProvider.notifier).updateUser(user);
                           
                         if(result == 'OK'){
-                            message.showDialog('회원 정보 수정 성공', '회원 정보가 수정되었습니다.', []);
+                            message.showAlertPopup(context, '회원 정보가 수정되었습니다.', []);
                           // }else if(newPassword.isNotEmpty && newPassword != confirmPassword){ // 비밀번호 유효성 검사
                           //   message.errorSnackBar(context, '새 비밀번호가 일치하지 않습니다.');
                           }else{

@@ -10,22 +10,22 @@ import 'package:seatup_app/util/global_data.dart';
 import 'package:seatup_app/util/login_status.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
 
-class UserNotifier extends AsyncNotifier<User>{
+class UserNotifier extends AsyncNotifier<User> {
   late final GetStorage box;
 
   @override
   Future<User> build() async {
-      box = ref.read(storageProvider);
-      return await fetchUser();
+    box = ref.read(storageProvider);
+    return await fetchUser();
   }
 
-  Future<void> saveUserLogin(Map<String,dynamic> user) async{
-    box.write('userIsLogin', true);          // 유저 로그인
-    box.write('user_id', user['user_id']);   // 유저 seq
-    box.write('user_name', user['user_name']);   // 유저 이름
-    box.write('user_email', user['user_email']);   // 유저 이메일
+  Future<void> saveUserLogin(Map<String, dynamic> user) async {
+    box.write('userIsLogin', true); // 유저 로그인
+    box.write('user_id', user['user_id']); // 유저 seq
+    box.write('user_name', user['user_name']); // 유저 이름
+    box.write('user_email', user['user_email']); // 유저 이메일
 
-    await saveFcmToken(user['user_id'].toString());
+    // await saveFcmToken(user['user_id'].toString());
     // print('=== GetStorage user login saved ===');
     // print('userIsLogin: ${box.read('userIsLogin')}');
     // print('user_id    : ${box.read('user_id')}');
@@ -33,20 +33,20 @@ class UserNotifier extends AsyncNotifier<User>{
   }
 
   Future<void> saveFcmToken(String myPk) async {
-  final token = await FirebaseMessaging.instance.getToken();
-  if (token == null) return;
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return;
 
-  await FirebaseFirestore.instance.collection('users').doc(myPk).set({
-    'fcmTokens': { token: true },
-    'updatedAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-
-  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
     await FirebaseFirestore.instance.collection('users').doc(myPk).set({
-      'fcmTokens': { newToken: true },
+      'fcmTokens': {token: true},
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
-  });
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      await FirebaseFirestore.instance.collection('users').doc(myPk).set({
+        'fcmTokens': {newToken: true},
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    });
   }
 
   Future<User> fetchUser() async {
@@ -67,18 +67,18 @@ class UserNotifier extends AsyncNotifier<User>{
   }
 
   Future<LoginStatus> login(String email, String password) async {
-  final url = Uri.parse('${GlobalData.url}/user/login');
-  final res = await http.post(
-    url,
-    headers: {'Content-Type': 'application/json'},
-    body: json.encode({'email': email, 'password': password}),
-  );
+    final url = Uri.parse('${GlobalData.url}/user/login');
+    final res = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': password}),
+    );
 
-  if (res.statusCode != 200) return LoginStatus.fail;
+    if (res.statusCode != 200) return LoginStatus.fail;
 
-  // 서버가 세션/토큰을 세팅하고 /user/select가 성공한다는 전제
-  await refreshUser();
-  return LoginStatus.success;
+    // 서버가 세션/토큰을 세팅하고 /user/select가 성공한다는 전제
+    await refreshUser();
+    return LoginStatus.success;
   }
 
   Future<int> existUser(String email) async {
@@ -87,23 +87,22 @@ class UserNotifier extends AsyncNotifier<User>{
     ).replace(queryParameters: {'email': email});
     final response = await http.get(uri);
     if (response.statusCode != 200) {
-  throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
-}
+      throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
+    }
     final data = json.decode(utf8.decode(response.bodyBytes));
     return data['result'];
   }
 
-
-  Future<String> insertUser(User user) async{
-  final url = Uri.parse("${GlobalData.url}/user/insert");
+  Future<String> insertUser(User user) async {
+    final url = Uri.parse("${GlobalData.url}/user/insert");
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: json.encode(user.toJson()),
     );
     if (response.statusCode != 200) {
-  throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
-}
+      throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
+    }
     final data = json.decode(utf8.decode(response.bodyBytes));
     await refreshUser();
     return data['result'];
@@ -117,19 +116,19 @@ class UserNotifier extends AsyncNotifier<User>{
       body: json.encode(s.toJson()),
     );
     if (response.statusCode != 200) {
-  throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
-}
+      throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
+    }
     final data = json.decode(utf8.decode(response.bodyBytes));
     await refreshUser();
     return data['result'];
   }
 
-  Future<String> withdrawUser(int user) async{
+  Future<String> withdrawUser(int user) async {
     final url = Uri.parse("${GlobalData.url}/user/withdraw?user=$user");
     final response = await http.get(url);
     if (response.statusCode != 200) {
-  throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
-}
+      throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
+    }
     final data = json.decode(utf8.decode(response.bodyBytes));
     return data['result'];
   }
@@ -139,7 +138,8 @@ class UserNotifier extends AsyncNotifier<User>{
     state = await AsyncValue.guard(() async => fetchUser());
   }
 
-  Future<List<dynamic>> loginData(String email, String password) async {    // 로그인 데이터얻을려고
+  Future<List<dynamic>> loginData(String email, String password) async {
+    // 로그인 데이터얻을려고
     final url = Uri.parse('${GlobalData.url}/user/login');
     final res = await http.post(
       url,
@@ -150,14 +150,9 @@ class UserNotifier extends AsyncNotifier<User>{
     final data = json.decode(utf8.decode(res.bodyBytes));
     return data['results'];
   }
-
 }
 
-
-
-final userNotifierProvider = AsyncNotifierProvider<UserNotifier,User>(
-  UserNotifier.new  
-);
+final userNotifierProvider = AsyncNotifierProvider<UserNotifier, User>(UserNotifier.new);
 
 // 유저 이름만 뽑는 Provider  추가 pjs
 final userNameProvider = Provider<String>((ref) {
@@ -169,7 +164,7 @@ final userNameProvider = Provider<String>((ref) {
     error: (_, __) => "회원",
   );
 });
-// 배너 문구 Provider 추가 pjs 
+// 배너 문구 Provider 추가 pjs
 final greetingMessageProvider = Provider<String>((ref) {
   final name = ref.watch(userNameProvider);
   return "$name님, 오늘도 좋은 티켓 되세요!";
