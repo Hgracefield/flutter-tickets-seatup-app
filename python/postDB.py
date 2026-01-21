@@ -36,9 +36,16 @@ async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str
     try:
         sql = """
         SELECT 
-            p.post_seq, p.post_user_id, u.user_name, p.post_curtain_id,
-            p.post_create_date, p.post_quantity, p.post_price, 
-            p.post_grade, p.post_area, p.post_desc
+            p.post_seq, 
+            p.post_user_id, 
+            u.user_name, 
+            p.post_curtain_id,
+            p.post_create_date, 
+            p.post_quantity, 
+            p.post_price, 
+            p.post_grade, 
+            p.post_area, 
+            p.post_desc
         FROM post AS p
         JOIN user AS u ON p.post_user_id = u.user_id
         JOIN curtain AS c ON p.post_curtain_id = c.curtain_id
@@ -167,5 +174,46 @@ async def selectPost(seq:int):
     except Exception as ex:
         print("Error in selectPost:", ex)
         return {'results':'Error'} 
+    finally:
+        conn.close()
+
+
+
+        # 5. ticketdetail에 사용
+@router.get("/selectPostDetail/{seq}")
+async def selectPost(seq:int):
+    conn = connect()
+    curs = conn.cursor()
+    try:
+        sql = """
+        Select
+            post.post_seq, u.user_name, post.post_create_date, post.post_quantity,
+            g.grade_name, a.area_value, a.area_number, post.post_desc,
+            c.curtain_id, c.curtain_date, c.curtain_desc, c.curtain_mov, 
+            c.curtain_pic, p.place_name, type.type_name, t.title_contents, 
+            c.curtain_grade, c.curtain_area, post.post_price, c.curtain_time
+        from post
+            join curtain as c on c.curtain_id = post.post_curtain_id
+            join title as t on c.curtain_title_seq = t.title_seq
+            join place as p on c.curtain_place_seq = p.place_seq
+            join type on c.curtain_type_seq = type.type_seq
+            join user as u on u.user_id = post.post_user_id
+            join grade as g on g.grade_seq = post.post_grade
+            join area as a on a.area_seq = post.post_area
+        where post.post_seq = %s;     
+        """
+        curs.execute(sql, (seq,))
+        rows = curs.fetchall()
+        result = [{'post_seq' : row[0], 'user_name' : row[1], 'post_create_date' : str(row[2]), 
+                   'post_quantity' : row[3], 'grade_name' : row[4], 'area_value' : row[5], 
+                   'area_number' : row[6], 'post_desc' : row[7], 'curtain_id' : row[8],
+                   'curtain_date' : str(row[9]), 'curtain_desc' : row[10], 'curtain_mov' : row[11],
+                   'curtain_pic' : row[12], 'place_name' : row[13], 'type_name' : row[14],
+                   'title_contents' : row[15], 'curtain_grade' : row[16], 
+                   'curtain_area' : row[17],'post_price' : row[18] , 'curtain_time' : str(row[19])} for row in rows]
+        return {'results' : result}
+    except Exception as ex:
+        print("Error :", ex)
+        return {'result':'Error'} 
     finally:
         conn.close()
