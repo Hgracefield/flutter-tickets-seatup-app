@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/user.dart';
@@ -84,6 +83,7 @@ class _SignUpState extends ConsumerState<SignUp> {
     addressController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final gps = ref.watch(gpsNotifierProvider);
@@ -150,8 +150,10 @@ class _SignUpState extends ConsumerState<SignUp> {
                               'email@example.com',
                             ),
                             validator: (value) {
-                              if (value == null || value.isEmpty) return '이메일을 입력해주세요.';
-                              if (!emailRegex.hasMatch(value)) return '올바른 이메일 형식이 아닙니다.';
+                              if (value == null || value.isEmpty)
+                                return '이메일을 입력해주세요.';
+                              if (!emailRegex.hasMatch(value))
+                                return '올바른 이메일 형식이 아닙니다.';
                               return null;
                             },
                           ),
@@ -197,8 +199,10 @@ class _SignUpState extends ConsumerState<SignUp> {
                             ),
                           ),
                       validator: (value) {
-                          if (value == null || value.isEmpty) return '비밀번호를 입력해주세요.';
-                        if (!passwordRegex.hasMatch(value)) return '8자 이상, 영문/숫자/특수문자 포함';
+                        if (value == null || value.isEmpty)
+                          return '비밀번호를 입력해주세요.';
+                        if (!passwordRegex.hasMatch(value))
+                          return '8자 이상, 영문/숫자/특수문자 포함';
                         return null;
                       },
                     ),
@@ -226,8 +230,10 @@ class _SignUpState extends ConsumerState<SignUp> {
                             ),
                           ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return '비밀번호 확인을 입력해주세요.';
-                        if (value != passwordController.text) return '비밀번호가 일치하지 않습니다.';
+                        if (value == null || value.isEmpty)
+                          return '비밀번호 확인을 입력해주세요.';
+                        if (value != passwordController.text)
+                          return '비밀번호가 일치하지 않습니다.';
                         return null;
                       },
                     ),
@@ -239,7 +245,8 @@ class _SignUpState extends ConsumerState<SignUp> {
                       controller: nameController,
                       decoration: _buildInputDecoration('본인 이름을 입력해주세요'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return '이름을 입력해주세요.';
+                        if (value == null || value.isEmpty)
+                          return '이름을 입력해주세요.';
                         return null;
                       },
                     ),
@@ -252,8 +259,10 @@ class _SignUpState extends ConsumerState<SignUp> {
                       keyboardType: TextInputType.phone,
                       decoration: _buildInputDecoration('010-1234-5678'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return '전화번호를 입력해주세요.';
-                        if (!phoneRegex.hasMatch(value)) return '올바른 전화번호 형식이 아닙니다.';
+                        if (value == null || value.isEmpty)
+                          return '전화번호를 입력해주세요.';
+                        if (!phoneRegex.hasMatch(value))
+                          return '올바른 전화번호 형식이 아닙니다.';
                         return null;
                       },
                     ),
@@ -262,15 +271,15 @@ class _SignUpState extends ConsumerState<SignUp> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 24),
                     child: TextFormField(
-                            controller: addressController,
-                            keyboardType: TextInputType.phone,
-                            decoration: _buildInputDecoration('XX시'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) return '주소를 입력해주세요';
-                              return null;
-                            },
-                          ),
-                    
+                      controller: addressController,
+                      keyboardType: TextInputType.phone,
+                      decoration: _buildInputDecoration('XX시'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return '주소를 입력해주세요';
+                        return null;
+                      },
+                    ),
+
                     // Row(
                     //   children: [
                     //     Expanded(
@@ -313,12 +322,13 @@ class _SignUpState extends ConsumerState<SignUp> {
                       keyboardType: TextInputType.phone,
                       decoration: _buildInputDecoration('XX은행'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return '은행명을 입력해주세요';
+                        if (value == null || value.isEmpty)
+                          return '은행명을 입력해주세요';
                         return null;
                       },
                     ),
                   ),
-                   _buildLabel('계좌번호'),
+                  _buildLabel('계좌번호'),
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 24),
                     child: TextFormField(
@@ -326,13 +336,15 @@ class _SignUpState extends ConsumerState<SignUp> {
                       keyboardType: TextInputType.phone,
                       decoration: _buildInputDecoration('1234-56-7890'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return '계좌번호를 입력해주세요.';
-                        if (!accountRegex.hasMatch(value)) return '올바른 계좌번호 형식이 아닙니다.';
+                        if (value == null || value.isEmpty)
+                          return '계좌번호를 입력해주세요.';
+                        if (!accountRegex.hasMatch(value))
+                          return '올바른 계좌번호 형식이 아닙니다.';
                         return null;
                       },
                     ),
                   ),
-                 
+
                   _buildCheckboxRow(
                     agreeTOS,
                     (val) => setState(() => agreeTOS = val!),
@@ -372,8 +384,7 @@ class _SignUpState extends ConsumerState<SignUp> {
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       TextButton(
-                        onPressed: () =>
-                          Navigator.pop(context),
+                        onPressed: () => Navigator.pop(context),
                         child: const Text(
                           '로그인',
                           style: TextStyle(
@@ -474,18 +485,30 @@ class _SignUpState extends ConsumerState<SignUp> {
         message.errorSnackBar(context, '필수 약관에 동의해주세요.');
       } else {
         User user = User(
-          user_email: emailController.text.trim(), 
-          user_password: passwordController.text.trim(), 
-          user_name: nameController.text.trim(), 
-          user_phone: phoneController.text.trim(), 
-          user_address: addressController.text.trim(), 
-          user_signup_date: "", 
-          user_account: accountController.text.trim(), 
-          user_bank_name: bankController.text.trim(), 
-          user_withdraw_date: "");
+          user_id: 0,
+          user_email: emailController.text.trim(),
+          user_password: passwordController.text.trim(),
+          user_name: nameController.text.trim(),
+          user_phone: phoneController.text.trim(),
+          user_address: addressController.text.trim(),
+          user_signup_date: "",
+          user_account: accountController.text.trim(),
+          user_bank_name: bankController.text.trim(),
+          user_withdraw_date: "",
+        );
         String result = await userNotifier.insertUser(user);
-        if (result == 'OK') {
-          message.showDialog('회원가입 성공', 'SeatUp의 회원이 되신 것을 환영합니다.', [
+        // print("reuslt : $result");
+        showResultPopup(result);
+      }
+    }
+  }
+
+  void showResultPopup(String result) {
+    if (result == 'OK') {
+      message.showAlertPopup(context, 'SeatUp의 회원이 되신 것을 환영합니다.', [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -509,12 +532,12 @@ class _SignUpState extends ConsumerState<SignUp> {
               ),
               child: Text('확인'),
             ),
-          ]);
-        } else {
-          if (!mounted) return;
-          message.errorSnackBar(context, '회원가입 중 서버 오류가 발생했습니다.');
-        }
-      }
+          ],
+        ),
+      ]);
+    } else {
+      if (!mounted) return;
+      message.errorSnackBar(context, '회원가입 중 서버 오류가 발생했습니다.');
     }
   }
 
@@ -523,7 +546,9 @@ class _SignUpState extends ConsumerState<SignUp> {
     if (!emailRegex.hasMatch(email)) {
       return message.errorSnackBar(context, '올바른 이메일을 입력하세요.');
     }
-    int count = await ref.read(userNotifierProvider.notifier).existUser(emailController.text.trim());
+    int count = await ref
+        .read(userNotifierProvider.notifier)
+        .existUser(emailController.text.trim());
     if (count == 0) {
       emailChecked = true;
       if (!mounted) return;

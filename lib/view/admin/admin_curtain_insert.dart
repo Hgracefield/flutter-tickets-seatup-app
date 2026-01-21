@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
 import 'package:seatup_app/vm/curtain_manager_notifier.dart';
 import 'package:seatup_app/vm/grade_notifier.dart';
+import 'package:seatup_app/vm/place_notifier.dart';
 import 'package:seatup_app/vm/type_provider.dart';
 
 /// ✅ 등록 버튼을 누르면 나오는 "등록 페이지"
@@ -25,22 +26,22 @@ class AdminCurtainInsert extends ConsumerStatefulWidget {
 class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   final _formKey = GlobalKey<FormState>();
 
-  // ---------- Dropdown 기본값 ----------
-  String typeValue = '뮤지컬';
-  String gradeValue = 'VIP';
-  String areaValue = 'A구역';
+  // // ---------- Dropdown 기본값 ----------
+  // String typeValue = '뮤지컬';
+  // String gradeValue = 'VIP';
+  // String areaValue = 'A구역';
 
-  // ---------- Dropdown 아이템 ----------
-  final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
-  final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
-  final List<String> areaItems = const [
-    'A구역',
-    'B구역',
-    'C구역',
-    'D구역',
-    'E구역',
-    'F구역',
-  ];
+  // // ---------- Dropdown 아이템 ----------
+  // final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
+  // final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
+  // final List<String> areaItems = const [
+  //   'A구역',
+  //   'B구역',
+  //   'C구역',
+  //   'D구역',
+  //   'E구역',
+  //   'F구역',
+  // ];
 
   // ---------- TextField ----------
   final titleCtrl = TextEditingController();
@@ -49,6 +50,12 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   final showDateCtrl = TextEditingController();
   final showTimeCtrl = TextEditingController();
   final castCtrl = TextEditingController();
+  final TextEditingController curtainDescCtrl = TextEditingController();
+  final TextEditingController curtainPicCtrl = TextEditingController();
+
+  String typeValue = '뮤지컬';
+  String gradeValue = 'VIP';
+  String areaValue = 'A구역';
 
   @override
   void dispose() {
@@ -58,6 +65,9 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
     showDateCtrl.dispose();
     showTimeCtrl.dispose();
     castCtrl.dispose();
+    curtainDescCtrl.dispose();
+    curtainPicCtrl.dispose();
+
     super.dispose();
   }
 
@@ -112,26 +122,13 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
 
   @override
   Widget build(BuildContext context) {
-
-    final typeAsync = ref.watch(typeNotifierProvider);
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          '제품 정보 등록',
-          style: TextStyle(
-            color: Color(0xFF1E3A8A),
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
-      ),
+      appBar: _buildAppBar(),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 860),
+            constraints: const BoxConstraints(maxWidth: 860, maxHeight: 800),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
               child: Container(
@@ -148,40 +145,8 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // 안내 문구 (대시보드 톤)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF4F6FF),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFE0E6FF)),
-                          ),
-                          child: Row(
-                            children: const [
-                              Icon(
-                                Icons.confirmation_number_outlined,
-                                size: 20,
-                                color: Color(0xFF2F57C9),
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  '티켓 리셀 상품 정보를 입력하고 등록하세요.',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1F2937),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
+                        _buildInformation(),
                         const SizedBox(height: 14),
-
                         // 폼 영역 (스크롤 가능)
                         Expanded(
                           child: SingleChildScrollView(
@@ -190,20 +155,9 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                 // 1줄: type + title
                                 Row(
                                   children: [
-                                    Expanded(
-                                      flex: 1,
-                                      child: _buildTypeDropDown(),
-                                      // _dashDropdown(
-                                      //   label: 'type',
-                                      //   value: typeValue,
-                                      //   items: typeItems,
-                                      //   onChanged: (v) =>
-                                      //       setState(() => typeValue = v),
-                                      // ),
-                                    ),
+                                    Expanded(child: _buildTypeDropDown('type')),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      flex: 2,
                                       child: _dashTextField(
                                         label: 'title',
                                         controller: titleCtrl,
@@ -213,54 +167,53 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                     ),
                                   ],
                                 ),
+          
                                 const SizedBox(height: 12),
-
+          
                                 // 2줄: location + place
                                 Row(
                                   children: [
-                                    Expanded(
-                                      child: _dashTextField(
-                                        label: 'location',
-                                        controller: locationCtrl,
-                                        hint: '지역 (예: 서울)',
-                                        requiredField: true,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _dashTextField(
-                                        label: 'place',
-                                        controller: placeCtrl,
-                                        hint: '공연장 (예: 예술의 전당)',
-                                        requiredField: true,
-                                      ),
-                                    ),
+                                    // Expanded(
+                                    //   child: _dashTextField(
+                                    //     label: 'location',
+                                    //     controller: locationCtrl,
+                                    //     hint: '지역 (예: 서울)',
+                                    //     requiredField: true,
+                                    //   ),
+                                    // ),
+                                    Expanded(child: _buildPlaceDropDown('place')),
+                                    // const SizedBox(width: 12),
+                                    // Expanded(
+                                    //   child: _dashTextField(
+                                    //     label: 'place',
+                                    //     controller: placeCtrl,
+                                    //     hint: '공연장 (예: 예술의 전당)',
+                                    //     requiredField: true,
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
+          
                                 const SizedBox(height: 12),
-
-                                // 3줄: grade + area
+          
+                                // // 3줄: grade + area
                                 Row(
                                   children: [
-                                    _dashLabel('grade'),
-                                    Expanded(
-                                      child: _buildGradeCheckList(),
-                                    ),
+                                    Expanded(child: _buildGradeCheckList('grade')),
+                                    SizedBox(width: 12,),
+                                    // Expanded(child: _buildGradeCheckList('grade')),
+                                    Expanded(child: _buildAreaCheckList('area'))
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    _dashLabel('area'),
-                                    Expanded(
-                                      child: _buildAreaCheckList(),
-                                    ),
-                                  ],
-                                ),
-
-                               
+                                // Row(
+                                //   children: [
+                                //     // _dashLabel('area'),
+                                //     // Expanded(child: _buildAreaCheckList()),
+                                //   ],
+                                // ),
                                 const SizedBox(height: 12),
-
+          
                                 // 4줄: show_date + show_time (입력 가능 + picker 아이콘)
                                 Row(
                                   children: [
@@ -286,22 +239,33 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
+          
+                                _dashTextArea(
+                                  label: 'curtain_desc',
+                                  controller: curtainDescCtrl,
+                                  hint: '설명 (여러 줄 입력 가능)',
+                                ),
+                                const SizedBox(height: 12),
+          
+                                _dashTextField(
+                                  label: 'curtain_pic (image url)',
+                                  controller: curtainPicCtrl,
+                                  hint: 'https://...',
+                                ),
                               ],
                             ),
                           ),
                         ),
-
+          
                         const SizedBox(height: 12),
-
+          
                         // 하단 버튼
                         Row(
                           children: [
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF2F57C9),
-                                side: const BorderSide(
-                                  color: Color(0xFFCFD8FF),
-                                ),
+                                side: const BorderSide(color: Color(0xFFCFD8FF)),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -363,6 +327,7 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         _dashLabel(label),
         const SizedBox(height: 6),
@@ -435,169 +400,454 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
     );
   }
 
-  Widget _dashDropdown({
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      title: const Text(
+        '제품 정보 등록',
+        style: TextStyle(color: Color(0xFF1E3A8A), fontWeight: FontWeight.w900),
+      ),
+      iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
+    );
+  }
+
+  // Widget _dashDropdown({
+  //   required String label,
+  //   required String value,
+  //   required List<String> items,
+  //   required ValueChanged<String> onChanged,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       _dashLabel(label),
+  //       const SizedBox(height: 6),
+  //       Container(
+  //         height: 48,
+  //         padding: const EdgeInsets.symmetric(horizontal: 12),
+  //         decoration: BoxDecoration(
+  //           color: const Color(0xFFF4F6FF),
+  //           borderRadius: BorderRadius.circular(10),
+  //           border: Border.all(color: const Color(0xFFE0E6FF)),
+  //         ),
+  //         child: DropdownButtonHideUnderline(
+  //           child: DropdownButton<String>(
+  //             value: value,
+  //             isExpanded: true,
+  //             icon: const Icon(
+  //               Icons.keyboard_arrow_down,
+  //               color: Color(0xFF2F57C9),
+  //             ),
+  //             items: items
+  //                 .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+  //                 .toList(),
+  //             onChanged: (v) {
+  //               if (v != null) onChanged(v);
+  //             },
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
+
+  Widget _buildTypeDropDown(String label) {
+    final typeAsync = ref.watch(typeNotifierProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        typeAsync.when(
+          data: (types) {
+            if (types.isEmpty) return const SizedBox();
+
+            // 선택된 값(그대로 저장/사용)
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedTypeIndex;
+            // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+
+            final int? value =
+                (selected != null && types.any((g) => g.type_seq == selected))
+                ? selected
+                : null;
+
+            // 최초 기본값 세팅(원하면 제거 가능)
+            if (value == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref
+                    .read(curtainManagerNotifier.notifier)
+                    .setType(types.first.type_seq!);
+              });
+            }
+
+            return Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE0E6FF)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  value: value,
+                  hint: const Text('좌석 등급 선택'),
+                  items: types
+                      .map(
+                        (type) => DropdownMenuItem<int>(
+                          value: type.type_seq, // 여기만 id로 바꾸고 싶으면 g.id
+                          child: Text(type.type_name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref.read(curtainManagerNotifier.notifier).setType(v);
+                  },
+                ),
+              ),
+            );
+          },
+          error: (_, __) => const SizedBox(),
+          loading: () => const SizedBox(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlaceDropDown(String label) {
+    final placeAsync = ref.watch(placeNotifierProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        placeAsync.when(
+          data: (places) {
+            if (places.isEmpty) return const SizedBox();
+
+            // 선택된 값(그대로 저장/사용)
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedPlaceIndex;
+            // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+
+            final int? value =
+                (selected != null && places.any((place) => place.place_seq == selected))
+                ? selected
+                : null;
+
+            // 최초 기본값 세팅(원하면 제거 가능)
+            if (value == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref
+                    .read(curtainManagerNotifier.notifier)
+                    .setPlace(places.first.place_seq!);
+              });
+            }
+
+            return Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE0E6FF)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  value: value,
+                  hint: const Text('좌석 등급 선택'),
+                  items: places
+                      .map(
+                        (place) => DropdownMenuItem<int>(
+                          value: place.place_seq, // 여기만 id로 바꾸고 싶으면 g.id
+                          child: Text(place.place_name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref.read(curtainManagerNotifier.notifier).setPlace(v);
+                  },
+                ),
+              ),
+            );
+          },
+          error: (_, __) => const SizedBox(),
+          loading: () => const SizedBox(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGradeCheckList(String label) {
+  final gradeAsync = ref.watch(gradeNotifierProvider);
+  final mask = ref.watch(curtainManagerNotifier).selectedGradeMask ?? 0;
+
+  return gradeAsync.when(
+    loading: () => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const SizedBox(height: 48),
+      ],
+    ),
+    error: (_, __) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const Text('불러오기 실패'),
+      ],
+    ),
+    data: (grades) {
+      final items = grades.map((g) => g.grade_name).toList();
+
+      final selected = grades
+          .where((g) => (mask & g.bit) != 0)
+          .map((g) => g.grade_name)
+          .toList();
+
+      return _multiSelectBox(
+        label: label,
+        items: items,
+        selected: selected,
+        onToggle: (name) {
+          final grade = grades.firstWhere((g) => g.grade_name == name);
+          final isChecked = (mask & grade.bit) != 0;
+
+          ref
+              .read(curtainManagerNotifier.notifier)
+              .toggleGrade(grade.bit, !isChecked);
+        },
+      );
+    },
+  );
+}
+
+Widget _buildAreaCheckList(String label) {
+  final areaAsync = ref.watch(areaNotifierProvider);
+  final mask = ref.watch(curtainManagerNotifier).selectedAreaMask ?? 0;
+
+  return areaAsync.when(
+    loading: () => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const SizedBox(height: 48),
+      ],
+    ),
+    error: (_, __) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const Text('불러오기 실패'),
+      ],
+    ),
+    data: (areas) {
+      final items = areas.map((area) => area.area_number).toList();
+
+      final selected = areas
+          .where((a) => (mask & a.bit) != 0)
+          .map((a) => a.area_number)
+          .toList();
+
+      return _multiSelectBox(
+        label: label,
+        items: items,
+        selected: selected,
+        onToggle: (name) {
+          final area = areas.firstWhere((a) => a.area_number == name);
+          final isChecked = (mask & area.bit) != 0;
+
+          ref
+              .read(curtainManagerNotifier.notifier)
+              .toggleArea(area.bit, !isChecked);
+        },
+      );
+    },
+  );
+}
+
+Widget _multiSelectBox({
     required String label,
-    required String value,
     required List<String> items,
-    required ValueChanged<String> onChanged,
+    required List<String> selected,
+    required ValueChanged<String> onToggle,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _dashLabel(label),
         const SizedBox(height: 6),
+
+        // 선택된 값 Chip 표시
         Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
           decoration: BoxDecoration(
             color: const Color(0xFFF4F6FF),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: const Color(0xFFE0E6FF)),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              icon: const Icon(
-                Icons.keyboard_arrow_down,
-                color: Color(0xFF2F57C9),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: selected.isEmpty
+                    ? [const Text('선택 없음', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)))]
+                    : selected
+                        .map(
+                          (v) => Chip(
+                            label: Text(v, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () => onToggle(v),
+                          ),
+                        )
+                        .toList(),
               ),
-              items: items
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
-              onChanged: (v) {
-                if (v != null) onChanged(v);
-              },
-            ),
+              const SizedBox(height: 8),
+              const Divider(height: 1),
+
+              // 체크박스 리스트
+              ...items.map((v) {
+                final checked = selected.contains(v);
+                return CheckboxListTile(
+                  dense: true,
+                  value: checked,
+                  onChanged: (_) => onToggle(v),
+                  title: Text(v, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                );
+              }),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTypeDropDown()
-  {
-    final typeAsync = ref.watch(typeNotifierProvider);
 
-  return typeAsync.when(
-    data: (types) {
-      if (types.isEmpty) return const SizedBox();
+  // Widget _buildAreaCheckList(String label) {
+  //   final areaAsync = ref.watch(areaNotifierProvider);
+  //   final mask = ref.watch(curtainManagerNotifier).selectedAreaMask;
 
-      // 선택된 값(그대로 저장/사용)
-      final selected = ref.watch(curtainManagerNotifier).selectedTypeIndex; 
-      // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+  //   return areaAsync.when(
+  //     data: (areas) {
+  //       return Wrap(
+  //         spacing: 12,
+  //         runSpacing: 8,
+  //         children: areas.map((area) {
+  //           final checked = (mask! & area.bit) != 0;
+  //           return Row(
+  //             mainAxisSize: MainAxisSize.min, // 핵심
+  //             children: [
+  //               Checkbox(
+  //                 value: checked,
+  //                 onChanged: (v) {
+  //                   if (v == null) return;
+  //                   ref
+  //                       .read(curtainManagerNotifier.notifier)
+  //                       .toggleGrade(area.bit, v);
+  //                 },
+  //               ),
+  //               Text(area.area_number),
+  //             ],
+  //           );
+  //         }).toList(),
+  //       );
+  //     },
+  //     loading: () => const SizedBox(),
+  //     error: (_, __) => const SizedBox(),
+  //   );
+  // } // _buildGradeDropDown
 
-      final int? value =
-          (selected != null && types.any((g) => g.type_seq == selected))
-              ? selected
-              : null;
+  Widget _buildInformation() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F6FF),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE0E6FF)),
+      ),
+      child: Row(
+        children: const [
+          Icon(
+            Icons.confirmation_number_outlined,
+            size: 20,
+            color: Color(0xFF2F57C9),
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '티켓 리셀 상품 정보를 입력하고 등록하세요.',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  } // _buildInformation
 
-      // 최초 기본값 세팅(원하면 제거 가능)
-      if (value == null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(curtainManagerNotifier.notifier).setType(types.first.type_seq!);
-        });
-      }
-
-      return Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF4F6FF),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFE0E6FF)),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<int>(
-            isExpanded: true,
-            value: value,
-            hint: const Text('좌석 등급 선택'),
-            items: types
-                .map(
-                  (type) => DropdownMenuItem<int>(
-                    value: type.type_seq, // 여기만 id로 바꾸고 싶으면 g.id
-                    child: Text(type.type_name),
-                  ),
-                )
-                .toList(),
-            onChanged: (v) {
-              if (v == null) return;
-              ref.read(curtainManagerNotifier.notifier).setType(v);
-            },
+  Widget _dashTextArea({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        SizedBox(
+          height: 140, // 원하는 높이로 조절
+          child: TextField(
+            controller: controller,
+            minLines: null,
+            maxLines: null,
+            expands: true,
+            decoration: InputDecoration(
+              hintText: hint,
+              filled: true,
+              fillColor: const Color(0xFFF4F6FF),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFFE0E6FF)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: Color(0xFF4D74D6),
+                  width: 2,
+                ),
+              ),
+            ),
           ),
         ),
-      );
-    },
-    error: (_, __) => const SizedBox(),
-    loading: () => const SizedBox(),
-  );
-  }
-
-  Widget _buildGradeCheckList() {
-    final gradeAsync = ref.watch(gradeNotifierProvider);
-    final mask = ref.watch(curtainManagerNotifier).selectedGradeMask;
-
-    return gradeAsync.when(
-      data: (grades) {
-        return Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          children: grades.map((g) {
-            final checked = (mask! & g.bit) != 0;
-            return Row(
-              mainAxisSize: MainAxisSize.min, // 핵심
-              children: [
-                Checkbox(
-                  value: checked,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    ref
-                        .read(curtainManagerNotifier.notifier)
-                        .toggleGrade(g.bit, v);
-                  },
-                ),
-                Text(g.grade_name),
-              ],
-            );
-          }).toList(),
-        );
-      },
-      loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
+      ],
     );
-  } // _buildGradeDropDown
-
-  Widget _buildAreaCheckList() {
-    final areaAsync = ref.watch(areaNotifierProvider);
-    final mask = ref.watch(curtainManagerNotifier).selectedAreaMask;
-
-    return areaAsync.when(
-      data: (areas) {
-        return Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          children: areas.map((area) {
-            final checked = (mask! & area.bit) != 0;
-            return Row(
-              mainAxisSize: MainAxisSize.min, // 핵심
-              children: [
-                Checkbox(
-                  value: checked,
-                  onChanged: (v) {
-                    if (v == null) return;
-                    ref
-                        .read(curtainManagerNotifier.notifier)
-                        .toggleGrade(area.bit, v);
-                  },
-                ),
-                Text(area.area_number),
-              ],
-            );
-          }).toList(),
-        );
-      },
-      loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
-    );
-  } // _buildGradeDropDown
+  } // _dashTextArea
 } // class

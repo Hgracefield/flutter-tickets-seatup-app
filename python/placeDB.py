@@ -1,8 +1,15 @@
 from fastapi import APIRouter
 import pymysql
 import config
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class Place(BaseModel):
+    seq:int
+    name:str
+    address:str
+    date:str
 
 def connect():
     return pymysql.connect(
@@ -45,3 +52,77 @@ async def select_one(place_seq: int):
         conn.close()
 
 
+@router.get('/select')
+async def select():
+    conn = connect()
+    curs = conn.cursor()
+
+    try:
+        sql = """
+        select place_seq,
+        place_name,
+        place_create_date,
+        place_address
+        from place
+        """
+        curs.execute(sql)
+        rows = curs.fetchall()
+        conn.close()   
+        result = [{'place_seq' : row[0], 
+                   'place_name' : row[1], 
+                   'place_create_date' : row[2], 
+                   'place_address' : row[3]} for row in rows]
+        return {'results' : result}
+    except Exception as ex:
+        conn.close()
+        print("Error :", ex)
+        return {'result':'Error'}   
+
+@router.post("/insert")
+async def insert(place : Place):
+    # Connection으로 부터 Cursor 생성
+    conn = connect()
+    curs = conn.cursor()
+
+    # SQL 문장
+    try:
+        sql = """
+        insert into place
+        (place_name, 
+        place_address,
+        place_create_date
+        ) values (%s,%s,now())
+        """
+        curs.execute(sql, (place.name, place.address))
+        conn.commit()
+        return {'result':'OK'}
+    except Exception as ex:
+        conn.rollback()
+        print("Error :", ex)
+        return {'result':'Error'}
+    finally:
+        conn.close()
+@router.post("/update")
+async def insert(place : Place):
+    # Connection으로 부터 Cursor 생성
+    conn = connect()
+    curs = conn.cursor()
+
+    # SQL 문장
+    try:
+        sql = """
+        update place set
+        place_name = %s, 
+        place_address = %s,
+        place_create_date = now()
+        where place_seq = %s
+        """
+        curs.execute(sql, (place.name, place.address, place.seq))
+        conn.commit()
+        return {'result':'OK'}
+    except Exception as ex:
+        conn.rollback()
+        print("Error :", ex)
+        return {'result':'Error'}
+    finally:
+        conn.close()
