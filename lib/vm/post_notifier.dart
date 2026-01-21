@@ -18,7 +18,7 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     return (data['results'] as List).map((e) => Post.fromJson(e)).toList();
   }
 
-  // 구매 필터 검색
+  // 판매글 검색 (구매할때)
   Future<void> fetchFilteredPosts({
     required int curtainId,
     required String date,
@@ -36,7 +36,7 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     });
   }
 
-  // 개별 포스트 상세 조회
+  // 판매글 상세 조회
   Future<Post> selectPost(int seq) async {
     final res = await http.get(Uri.parse("${GlobalData.url}/post/selectPost/$seq"));
     if (res.statusCode != 200) throw Exception('상세 정보 로드 실패');

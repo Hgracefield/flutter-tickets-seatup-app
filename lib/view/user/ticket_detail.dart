@@ -1,372 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:seatup_app/view/user/payment.dart';
+import 'package:seatup_app/vm/post_notifier.dart';
+import 'package:seatup_app/vm/user_notifier.dart'; // 유저 정보 가져오기
 
-class TicketDetail extends StatefulWidget {
-  const TicketDetail({super.key});
-
-  @override
-  State<TicketDetail> createState() => _TicketDetailState();
-}
-
-class _TicketDetailState extends State<TicketDetail> {
-  bool agreeNotice = false;
-  bool agreeRefund = false;
-
-  // ====== 더미 데이터(네 프로젝트 모델로 바꿔 끼우면 됨) ======
-  final String productTitle = "티켓상세페이지";
-  final String productNo = "6253999853264";
-
-  final String routeText = "뮤지컬  >  title여기다가";
-  final String showDateTime = "2026.03.06 20:00";
-
-  final String seatTitle = "VVIP등급  | A구역";
-  final String seatSub = "여기에는 post 설명";
-
-  final int price = 440000;
-  final int qty = 1;
+class TicketDetail extends ConsumerWidget {
+  final int postSeq;
+  const TicketDetail({super.key, required this.postSeq});
 
   @override
-  Widget build(BuildContext context) {
-    final total = price * qty;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final detailAsync = ref.watch(postDetailProvider(postSeq));
+    final userAsync = ref.watch(userNotifierProvider); // 구매자(나) 정보
+    final Color accentColor = const Color(0xFFF8DE7D);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.6,
-        title: Text(
-          productTitle,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: const Text("티켓 상세 정보", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white, elevation: 0,
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black), onPressed: () => Navigator.pop(context)),
         centerTitle: true,
       ),
-
-      // ✅ float 버튼 없음 (Stack/Positioned 미사용)
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _productInfoCard(),
-            const SizedBox(height: 12),
-
-            _priceCard(total: total),
-            const SizedBox(height: 12),
-
-            _mustCheckCard(
-              agreeNotice: agreeNotice,
-              agreeRefund: agreeRefund,
-              onTapDetail: () => _showMustCheckSheet(context),
-              onChangeNotice: (v) => setState(() => agreeNotice = v),
-              onChangeRefund: (v) => setState(() => agreeRefund = v),
-            ),
-          ],
-        ),
-      ),
-
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                blurRadius: 16,
-                offset: Offset(0, -6),
-                color: Color(0x14000000),
-              )
-            ],
-          ),
-          child: Row(
+      body: detailAsync.when(
+        data: (post) {
+          return Column(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    side: const BorderSide(color: Color(0xFFE6E8EE)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoRow("공연명", post.curtain_title ?? "정보 없음"),
+                      const SizedBox(height: 10),
+                      Text("거래 금액: ${NumberFormat('#,###').format(post.post_price)}원", 
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.orange)),
+                      const SizedBox(height: 20),
+                      const Divider(),
+                      const SizedBox(height: 20),
+                      const Text("판매자 설명", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 10),
+                      Text(post.post_desc, style: const TextStyle(fontSize: 15, height: 1.5)),
+                    ],
                   ),
-                  child: const Text('장바구니', style: TextStyle(fontWeight: FontWeight.w800)),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
+              // --- 하단 결제 버튼 ---
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+                decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
                 child: ElevatedButton(
-                  onPressed: (agreeNotice && agreeRefund) ? () {} : null,
+                  onPressed: () {
+                    // 결제 페이지로 이동하며 실제 데이터를 넘겨줌
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentPage(
+                          post: post, 
+                          buyerId: userAsync.value?.user_id ?? 0,
+                        ),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    backgroundColor: accentColor, foregroundColor: Colors.black,
+                    minimumSize: const Size(double.infinity, 60),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
                   ),
-                  child: const Text('구매하기', style: TextStyle(fontWeight: FontWeight.w900)),
+                  child: const Text("안전 결제하기", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
-          ),
-        ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(child: Text("정보를 가져오는데 실패했습니다: $e")),
       ),
     );
   }
 
-  // ===================== UI Widgets =====================
-
-  Widget _productInfoCard() {
-    return _card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 상단: "상품 정보" + 상품번호
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  '상품 정보',
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
-                ),
-              ),
-              Text(
-                '상품번호 $productNo',
-                style: const TextStyle(
-                  color: Color(0xFF9CA3AF),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // 분류/경로
-          Text(
-            routeText,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontWeight: FontWeight.w600,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 6),
-
-          // 공연일시
-          Row(
-            children: [
-              const Text(
-                '공연일시  ',
-                style: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                showDateTime,
-                style: const TextStyle(fontWeight: FontWeight.w900),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-          const Divider(height: 1),
-          const SizedBox(height: 14),
-
-          // 좌석 정보
-          Text(
-            seatTitle,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            seatSub,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-
-          const SizedBox(height: 14),
-          const Divider(height: 1),
-          const SizedBox(height: 12),
-        ],
-      ),
-    );
-  }
-
-  Widget _priceCard({required int total}) {
-    return _card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('결제 정보', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
-          const SizedBox(height: 12),
-
-          _kv('한 매 가격', _won(price)),
-          const SizedBox(height: 10),
-          _kv('수량', '$qty매'),
-
-          const SizedBox(height: 12),
-          const Divider(height: 1),
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  '총 가격',
-                  style: TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              Text(
-                _won(total),
-                style: const TextStyle(
-                  color: Color(0xFFFF2D55),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-        ],
-      ),
-    );
-  }
-
-  Widget _mustCheckCard({
-    required bool agreeNotice,
-    required bool agreeRefund,
-    required VoidCallback onTapDetail,
-    required ValueChanged<bool> onChangeNotice,
-    required ValueChanged<bool> onChangeRefund,
-  }) {
-    return _card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text('구매 전 꼭 확인', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
-              ),
-              TextButton(onPressed: onTapDetail, child: const Text('자세히')),
-            ],
-          ),
-          const SizedBox(height: 6),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: agreeNotice,
-            onChanged: (v) => onChangeNotice(v ?? false),
-            title: const Text('안내 사항을 확인했어요', style: TextStyle(fontWeight: FontWeight.w800)),
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: agreeRefund,
-            onChanged: (v) => onChangeRefund(v ?? false),
-            title: const Text('취소/환불 규정을 확인했어요', style: TextStyle(fontWeight: FontWeight.w800)),
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ===================== Helpers =====================
-
-  Widget _card({required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9ECF2)),
-      ),
-      child: child,
-    );
-  }
-
-  Widget _kv(String k, String v) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            k,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        Text(v, style: const TextStyle(fontWeight: FontWeight.w900)),
-      ],
-    );
-  }
-
-  String _won(int value) {
-    // 간단 천단위
-    final s = value.toString();
-    final buf = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      final pos = s.length - i;
-      buf.write(s[i]);
-      if (pos > 1 && pos % 3 == 1) buf.write(',');
-    }
-    return '${buf.toString()}원';
-  }
-
-  void _showMustCheckSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('구매 전 꼭 확인', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 10),
-              _bullet('예매 후 취소/환불은 규정에 따라 수수료가 발생할 수 있어요.'),
-              _bullet('입장/구역/좌석 정보는 구매 후 변경이 제한될 수 있어요.'),
-              _bullet('현장 상황에 따라 운영 방식이 변동될 수 있어요.'),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: const Text('확인했어요', style: TextStyle(fontWeight: FontWeight.w900)),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _bullet(String text) {
+  Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 7),
-            child: Icon(Icons.circle, size: 6),
-          ),
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
           const SizedBox(width: 10),
-          Expanded(
-            child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         ],
       ),
     );

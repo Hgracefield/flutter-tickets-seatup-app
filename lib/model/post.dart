@@ -4,6 +4,7 @@ class Post {
   int post_user_id;
   String? user_name;
   int post_curtain_id;
+  String? curtain_title;
   int post_quantity;
   int post_price;
   int post_area;
@@ -16,6 +17,7 @@ class Post {
     required this.post_user_id,
     this.user_name,
     required this.post_curtain_id,
+    this.curtain_title,
     required this.post_quantity,
     required this.post_price,
     required this.post_area,
@@ -29,6 +31,7 @@ class Post {
       post_user_id: json['post_user_id'] ?? 0,
       user_name: json['user_name'],
       post_curtain_id: json['post_curtain_id'] ?? 0,
+      curtain_title: json['title_contents'],
       post_create_date: json['post_create_date'] ?? "",
       post_quantity: json['post_quantity'] ?? 0,
       post_price: json['post_price'] ?? 0,
