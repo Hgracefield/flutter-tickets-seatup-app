@@ -22,11 +22,11 @@ class _MainPageHomeState extends State<MainPageHome> {
   @override
   void initState() {
     super.initState();
-    fetchWeather(); // 화면 실행 시 기상청 API 호출
+    _fetchWeather(); // 화면 실행 시 기상청 API 호출
   }
 
   // Functions ---
-  Future<void> fetchWeather() async {
+  Future<void> _fetchWeather() async {
     // 기상청 API
     const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
@@ -46,7 +46,7 @@ class _MainPageHomeState extends State<MainPageHome> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      print(data);
+      // print(data);
       setState(() {
         weather = WeatherModel.fromJson(data);
       });
@@ -132,10 +132,10 @@ class _MainPageHomeState extends State<MainPageHome> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    categoryButton('뮤지컬', 0),
-                    categoryButton('콘서트', 1),
-                    categoryButton('스포츠', 3),
-                    categoryButton('전시/행사', 4),
+                    _categoryButton('뮤지컬', 0),
+                    _categoryButton('콘서트', 1),
+                    _categoryButton('스포츠', 3),
+                    _categoryButton('전시/행사', 4),
                   ],
                 ),
               ),
@@ -150,91 +150,28 @@ class _MainPageHomeState extends State<MainPageHome> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
-              
-              // Text('기온: ${weather?.temperature ?? "-"}°C'),
-              Text('최저 기온: ${weather?.tmn ?? "-"}°C'),
-              Text('최고 기온: ${weather?.tmx ?? "-"}°C'),
-              Text('1시간 기온: ${weather?.tmp ?? "-"}°C'),
-              // Text('습도: ${weather?.humidity ?? "-"}°C'),
-              Text('하늘: ${weather?.sky ?? "-"}°C'),
-              Text('강수 확률: ${weather?.pop ?? "-"}'),
-              Text('강수 형태: ${weather?.pty ?? "-"}'),
-              Text('1시간 강수량: ${weather?.pcp ?? "-"}'),
-              Text('1시간 신적설: ${weather?.sno ?? "-"}'),
+
+              // Text('1시간 기온: ${weather?.tmp ?? "-"}°C'),
+              // Text('최저 기온: ${weather?.tmn ?? "-"}°C'),
+              // Text('최고 기온: ${weather?.tmx ?? "-"}°C'),
+              // Text('습도: ${weather?.reh ?? "-"}%'),
+              // Text('하늘: ${weather?.sky ?? "-"}'),
+              // Text('강수 형태: ${weather?.pty ?? "-"}'),
+              // Text('강수 확률: ${weather?.pop ?? "-"}%'),
+              // Text('1시간 강수량: ${weather?.pcp ?? "-"}mm'),
+              // Text('1시간 신적설: ${weather?.sno ?? "-"}cm'),
 
               weather == null
                   ? const Center(child: CircularProgressIndicator())
-                  : Padding(
+                  : SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            elevation: 5,
-                            color: Colors.lightBlue[50],
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    '${weather!.temperature}°C',
-                                    style: const TextStyle(
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '하늘: ${weather!.sky ?? "-"}',
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '습도: ${weather!.humidity ?? "-"}%',
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '강수: ${weather!.pty ?? "-"}',
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          const Text(
-                            '오늘의 날씨',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // 여기서 추가 예보 카드나 다른 정보 추가 가능
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              weatherCard(
-                                '체감온도',
-                                '${weather!.temperature}°C',
-                                Icons.thermostat,
-                              ),
-                              weatherCard(
-                                '습도',
-                                '${weather!.humidity ?? "-"}%',
-                                Icons.water_drop,
-                              ),
-                              weatherCard(
-                                '강수',
-                                '${weather!.pty ?? "-"}',
-                                Icons.grain,
-                              ),
-                            ],
-                          ),
+                          _mainWeatherCard(weather!),
+                          const SizedBox(height: 16),
+                          _minMaxTempCard(weather!),
+                          const SizedBox(height: 16),
+                          _weatherInfoGrid(weather!),
                         ],
                       ),
                     ),
@@ -245,8 +182,10 @@ class _MainPageHomeState extends State<MainPageHome> {
     );
   } // build
 
-  // Widget ---
-  Widget categoryButton(String title, int index) {
+  // --- Widgets ---
+
+  // 카테고리 버튼
+  Widget _categoryButton(String title, int index) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -282,27 +221,160 @@ class _MainPageHomeState extends State<MainPageHome> {
         ),
       ),
     );
-  }
+  } // categoryButton
 
-  Widget weatherCard(String title, String text, IconData icon) {
+  // 메인 날씨 카드 (기온 + 하늘)
+  Widget _mainWeatherCard(WeatherModel weather) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: _skyColor(weather.sky),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          Icon(_skyIcon(weather.sky), size: 60, color: Colors.white),
+          const SizedBox(height: 8),
+          Text(
+            '${weather.tmp ?? "-"}°C',
+            style: const TextStyle(
+              fontSize: 40,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            _skyText(weather.sky),
+            style: const TextStyle(color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  } // _mainWeatherCard
+
+  // 날씨 최저 / 최고 기온 카드
+  Widget _minMaxTempCard(WeatherModel weather) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 3,
       child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Icon(icon, size: 32, color: Colors.blue),
-            SizedBox(height: 8),
-            Text(
-              text,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 4),
-            Text(title, style: TextStyle(fontSize: 14)),
+            _tempItem('최저', weather.tmn, Icons.arrow_downward),
+            _tempItem('최고', weather.tmx, Icons.arrow_upward),
           ],
         ),
       ),
     );
   }
+
+  Widget _tempItem(String label, String? value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.blue),
+        const SizedBox(height: 4),
+        Text(
+          '${value ?? "-"}°C',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Text(label, style: const TextStyle(color: Colors.grey)),
+      ],
+    );
+  }
+  // _minMaxTempCard
+
+  // 날씨 정보 그리드
+  Widget _weatherInfoGrid(WeatherModel weather) {
+    return GridView.count(
+      crossAxisCount: 3,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1,
+      children: [
+        _infoTile('습도', '${weather.reh ?? "-"}%', Icons.water_drop),
+        _infoTile('강수확률', '${weather.pop ?? "-"}%', Icons.umbrella),
+        _infoTile('강수형태', _ptyText(weather.pty), Icons.grain),
+        _infoTile('강수량', '${weather.pcp ?? "-"}mm', Icons.cloud),
+        _infoTile('적설', '${weather.sno ?? "-"}cm', Icons.ac_unit),
+      ],
+    );
+  }
+
+  Widget _infoTile(String title, String value, IconData icon) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 26, color: Colors.blue),
+          const SizedBox(height: 8),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+  // _weatherInfoGrid
+
+
+  // --- Functions ---
+
+  // 날씨 상태값 변환
+  Color _skyColor(String? sky) {
+    switch (sky) {
+      case '1':
+        return Colors.blue; // 맑음
+      case '3':
+        return Colors.grey; // 구름 많음
+      case '4':
+        return Colors.blueGrey; // 흐림
+      default:
+        return Colors.black26;
+    }
+  }
+
+  IconData _skyIcon(String? sky) {
+    switch (sky) {
+      case '1':
+        return Icons.wb_sunny;
+      case '3':
+        return Icons.cloud;
+      case '4':
+        return Icons.cloud_queue;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  String _skyText(String? sky) {
+    switch (sky) {
+      case '1':
+        return '맑음';
+      case '3':
+        return '구름 많음';
+      case '4':
+        return '흐림';
+      default:
+        return '정보 없음';
+    }
+  }
+
+  String _ptyText(String? pty) {
+    switch (pty) {
+      case '0':
+        return '없음';
+      case '1':
+        return '비';
+      case '2':
+        return '비/눈';
+      case '3':
+        return '눈';
+      default:
+        return '-';
+    }
+  }
+
 } // class
