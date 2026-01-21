@@ -22,7 +22,7 @@ class Curtain {
     required this.curtain_type,
     required this.curtain_title,
     required this.curtain_grade,
-    required this.curtain_area
+    required this.curtain_area,
   });
   
   
@@ -54,7 +54,7 @@ class Curtain {
       'curtain_type' : curtain_type,
       'curtain_title' : curtain_title,
       'curtain_grade' : curtain_grade,
-      'curtain_area' : curtain_area
+      'curtain_area' : curtain_area,
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/view/user/curtain_list_screen.dart';
 import 'package:seatup_app/view/user/purchase_history_detail.dart';
 import 'package:seatup_app/view/user/user_faq.dart';
@@ -139,10 +140,12 @@ class AppRouter {
         );
       case AppRoute.adminCurtainEdit:
         final data =
-            (settings.arguments as Map<String, dynamic>?) ?? {};
+            settings.arguments as Curtain;
         return MaterialPageRoute(
           builder: (_) =>
-              AdminCurtainEdit(initialData: data), // const 제거
+              AdminCurtainEdit(
+            initialData: data,
+          ), // const 제거
         );
       case AppRoute.faqList:
         return MaterialPageRoute(builder: (_) => const FaqList());

@@ -48,8 +48,30 @@ class CurtainNotifier extends AsyncNotifier<List<Curtain>> {
     // print(data);
     return (data['results'] as List).map((e) => Curtain.fromJson(e)).toList();
   }
+
+  // 시간가져오기위한 함수
+  Future<List<Map<String,dynamic>>> fetchCurtainAll() async {
+    final res = await http.get(Uri.parse("${GlobalData.url}/curtain/selectTime"));
+    if (res.statusCode != 200) {
+      throw Exception('불러오기 실패 ${res.statusCode}');
+    }
+
+    final data = json.decode(utf8.decode(res.bodyBytes));
+     final results = (data['results'] as List)
+      .map((e) => Map<String, dynamic>.from(e as Map))
+      .toList();
+
+    return results;
+  }  
+
 } // CurtainNotifier
 
 final curtainNotifierProvider =
     AsyncNotifierProvider<CurtainNotifier, List<Curtain>>(CurtainNotifier.new);
+
+// 시간가져오기위한 함수
+final curtainAllProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final notifier = ref.read(curtainNotifierProvider.notifier);
+  return await notifier.fetchCurtainAll();
+});
 
