@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/util/side_menu.dart';
 import 'package:seatup_app/view/admin/admin_side_item.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
 import 'package:seatup_app/vm/staff_notifier.dart';
-
 
 class AdminSideBar extends ConsumerWidget {
   final SideMenu selectedMenu;
@@ -30,7 +30,7 @@ class AdminSideBar extends ConsumerWidget {
             text: '대시보드',
             selected: selectedMenu == SideMenu.dashboard,
             onTap: () {
-                Navigator.pushNamed(context, AppRoute.adminDashboard);
+              Navigator.pushNamed(context, AppRoute.adminDashboard);
               // Get.to(AdminDashboard());
             },
           ),
@@ -39,7 +39,7 @@ class AdminSideBar extends ConsumerWidget {
             text: '게시판',
             selected: selectedMenu == SideMenu.board,
             onTap: () {
-                Navigator.pushNamed(context, AppRoute.faqList);
+              Navigator.pushNamed(context, AppRoute.faqList);
               // Get.to(AdminInsertProduct());
             },
           ),
@@ -48,7 +48,7 @@ class AdminSideBar extends ConsumerWidget {
             text: '거래 글 리스트',
             selected: selectedMenu == SideMenu.transaction,
             onTap: () {
-                Navigator.pushNamed(context, AppRoute.adminTransactionManage);
+              Navigator.pushNamed(context, AppRoute.adminTransactionManage);
               // Get.to(AdminDeliveryProduct());
             },
           ),
@@ -57,7 +57,7 @@ class AdminSideBar extends ConsumerWidget {
             text: '거래 후기 관리',
             selected: selectedMenu == SideMenu.transactionReviewManager,
             onTap: () {
-                Navigator.pushNamed(context, AppRoute.adminTransactionReviewManage);
+              Navigator.pushNamed(context, AppRoute.adminTransactionReviewManage);
               // Get.to(AdminPurchaseManage());
             },
           ),
@@ -66,7 +66,7 @@ class AdminSideBar extends ConsumerWidget {
             text: '관람 후기 관리',
             selected: selectedMenu == SideMenu.reviewManage,
             onTap: () {
-                Navigator.pushNamed(context, AppRoute.adminReviewManage);
+              Navigator.pushNamed(context, AppRoute.adminReviewManage);
               // Get.to(AdminReturnProduct());
             },
           ),
@@ -75,7 +75,7 @@ class AdminSideBar extends ConsumerWidget {
             text: '고객 채팅 관리',
             selected: selectedMenu == SideMenu.chatlist,
             onTap: () {
-                Navigator.pushNamed(context, AppRoute.adminChatList);
+              Navigator.pushNamed(context, AppRoute.adminChatList);
               // Get.to(AdminStockList());
             },
           ),
@@ -130,7 +130,7 @@ class AdminSideBar extends ConsumerWidget {
           //     // Get.to(AdminBoard());
           //   },
           // ),
-          
+
           // AdminSideItem(
           //   icon: Icons.settings_outlined,
           //   text: '설정',
@@ -144,12 +144,12 @@ class AdminSideBar extends ConsumerWidget {
     );
   } // build
 
-   Widget _sideLogout() {
+  Widget _sideLogout() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2F57C9),
+        color: AppColors.sublack,
         borderRadius: BorderRadius.circular(6),
       ),
       child: const Text(
