@@ -22,38 +22,56 @@ class _MainPageHomeState extends State<MainPageHome> {
   @override
   void initState() {
     super.initState();
-    _fetchWeather(); // 화면 실행 시 기상청 API 호출
+    // fetchWeather(); // 화면 실행 시 기상청 API 호출
   }
 
-  // Functions ---
-  Future<void> _fetchWeather() async {
-    // 기상청 API
-    const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
+  // // Functions ---
+  // Future<void> fetchWeather() async {
+  //   // 기상청 API
+  //   const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
-    final uri = Uri.parse(
-      '$url/getVilageFcst' // URL -> 단기예보조회
-      // '?serviceKey=$weatherServiceKey' // 인증키
-      '&pageNo=1' // 페이지 번호
-      '&numOfRows=10' // 한 페이지 결과 수
-      '&dataType=JSON' // 요청자료형식(XML/JSON)
-      '&base_date=20260119' // 작성 기준 날짜
-      '&base_time=1400' // 작성 기준 시간
-      '&nx=61' // 예보지점의 X 좌표값 -> 강남구
-      '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
-    );
+  //   final uri = Uri.parse(
+  //     '$url/getVilageFcst' // URL -> 단기예보조회
+  //     // '?serviceKey=$weatherServiceKey' // 인증키
+  //     '&pageNo=1' // 페이지 번호
+  //     '&numOfRows=10' // 한 페이지 결과 수
+  //     '&dataType=JSON' // 요청자료형식(XML/JSON)
+  //     '&base_date=20260119' // 작성 기준 날짜
+  //     '&base_time=1400' // 작성 기준 시간
+  //     '&nx=61' // 예보지점의 X 좌표값 -> 강남구
+  //     '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
+  //   );
 
-    final response = await http.get(uri);
+  //   final response = await http.get(uri);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(utf8.decode(response.bodyBytes));
-      // print(data);
-      setState(() {
-        weather = WeatherModel.fromJson(data);
-      });
-    } else {
-      throw Exception('날씨 데이터 로딩 실패');
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     final data = jsonDecode(utf8.decode(response.bodyBytes));
+  //     print(data);
+  //     setState(() {
+  //       weather = data;
+  //     });
+  //   } else {
+  //     // throw Exception('기상청 API 실패: ${response.statusCode}');
+  //     throw Exception('날씨 데이터 로딩 실패');
+  //   }
+  // }
+
+  // String? getWeatherValue(String category) {
+  //   // 특정 날씨 데이터 추출
+  //   if (weather == null) {
+  //     return null;
+  //   }
+
+  //   final List items = weather!['response']['body']['items']['item'];
+
+  //   for (final item in items) {
+  //     if (item['category'] == category) {
+  //       return item['fcstValue']?.toString();
+  //     }
+  //   }
+
+  //   return null;
+  // }
 
   @override
   Widget build(BuildContext context) {
