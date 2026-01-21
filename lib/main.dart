@@ -19,7 +19,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await GetStorage.init();
   //  KakaoSdk.init(nativeAppKey: '6a4ed9946737798d62126a14547f4c74');
-  
+
 
   runApp(ProviderScope(child: const MyApp()));
 }
