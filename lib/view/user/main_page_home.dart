@@ -4,7 +4,7 @@ import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 // import 'package:seatup_app/view/user/category.dart';
 import 'package:http/http.dart' as http;
-// import 'package:seatup_app/constants/api_keys.dart';
+import 'package:seatup_app/constants/api_keys.dart';
 import 'package:seatup_app/model/weather.dart';
 
 class MainPageHome extends StatefulWidget {
@@ -22,56 +22,63 @@ class _MainPageHomeState extends State<MainPageHome> {
   @override
   void initState() {
     super.initState();
-    // fetchWeather(); // 화면 실행 시 기상청 API 호출
+    _fetchWeather(); // 화면 실행 시 기상청 API 호출
   }
 
-  // // Functions ---
-  // Future<void> fetchWeather() async {
-  //   // 기상청 API
-  //   const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
+  // 기상청 API
+  Future<void> _fetchWeather() async {
+    const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
-  //   final uri = Uri.parse(
-  //     '$url/getVilageFcst' // URL -> 단기예보조회
-  //     // '?serviceKey=$weatherServiceKey' // 인증키
-  //     '&pageNo=1' // 페이지 번호
-  //     '&numOfRows=10' // 한 페이지 결과 수
-  //     '&dataType=JSON' // 요청자료형식(XML/JSON)
-  //     '&base_date=20260119' // 작성 기준 날짜
-  //     '&base_time=1400' // 작성 기준 시간
-  //     '&nx=61' // 예보지점의 X 좌표값 -> 강남구
-  //     '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
-  //   );
+    final now = DateTime.now();
+    final baseDate =
+        '${now.year}'
+        '${now.month.toString().padLeft(2, '0')}'
+        '${now.day.toString().padLeft(2, '0')}';
 
-  //   final response = await http.get(uri);
+    final uri = Uri.parse(
+      '$url/getVilageFcst' // URL -> 단기예보조회
+      '?serviceKey=$weatherServiceKey' // 인증키
+      '&pageNo=1' // 페이지 번호
+      '&numOfRows=10' // 한 페이지 결과 수
+      '&dataType=JSON' // 요청자료형식(XML/JSON)
+      '&base_date=$baseDate' // 오늘 발표된 예보 (00~02시 제외)
+      '&base_time=${baseTime(now)}' // 최신 발표 시각
+      '&nx=61' // 예보지점의 X 좌표값 -> 강남구
+      '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
+    );
+    // print(baseDate);
+    // print(now);
+    // print(now.hour);
+    // print(now.minute);
+    // print(baseTime(now));
 
-  //   if (response.statusCode == 200) {
-  //     final data = jsonDecode(utf8.decode(response.bodyBytes));
-  //     print(data);
-  //     setState(() {
-  //       weather = data;
-  //     });
-  //   } else {
-  //     // throw Exception('기상청 API 실패: ${response.statusCode}');
-  //     throw Exception('날씨 데이터 로딩 실패');
-  //   }
-  // }
+    final response = await http.get(uri);
 
-  // String? getWeatherValue(String category) {
-  //   // 특정 날씨 데이터 추출
-  //   if (weather == null) {
-  //     return null;
-  //   }
+    if (response.statusCode == 200) {
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      setState(() {
+        weather = WeatherModel.fromJson(data);
+      });
+    } else {
+      throw Exception('날씨 데이터 로딩 실패');
+    }
+  }
 
-  //   final List items = weather!['response']['body']['items']['item'];
+  String baseTime(DateTime now) { // 현재 시각 기준 최신값
+    final hour = now.hour;
+    final minute = now.minute;
 
-  //   for (final item in items) {
-  //     if (item['category'] == category) {
-  //       return item['fcstValue']?.toString();
-  //     }
-  //   }
-
-  //   return null;
-  // }
+    // 최신 API는 발표 시각 기준 10분 이후에 반영되므로 아래와 같이 계산
+    if (hour < 2 || (hour == 2 && minute < 10)) return '2300';
+    if (hour < 5 || (hour == 5 && minute < 10)) return '0200';
+    if (hour < 8 || (hour == 8 && minute < 10)) return '0500';
+    if (hour < 11 || (hour == 11 && minute < 10)) return '0800';
+    if (hour < 14 || (hour == 14 && minute < 10)) return '1100';
+    if (hour < 17 || (hour == 17 && minute < 10)) return '1400';
+    if (hour < 20 || (hour == 20 && minute < 10)) return '1700';
+    if (hour < 23 || (hour == 23 && minute < 10)) return '2000';
+    return '2300';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,10 +147,7 @@ class _MainPageHomeState extends State<MainPageHome> {
               // ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  '장르별 랭킹',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+                child: _title('장르별 랭킹'),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 0, 20),
@@ -163,36 +167,25 @@ class _MainPageHomeState extends State<MainPageHome> {
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
-                child: Text(
-                  '베스트 관람후기',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+                child: _title('베스트 관람후기'),
               ),
-
-              // Text('1시간 기온: ${weather?.tmp ?? "-"}°C'),
-              // Text('최저 기온: ${weather?.tmn ?? "-"}°C'),
-              // Text('최고 기온: ${weather?.tmx ?? "-"}°C'),
-              // Text('습도: ${weather?.reh ?? "-"}%'),
-              // Text('하늘: ${weather?.sky ?? "-"}'),
-              // Text('강수 형태: ${weather?.pty ?? "-"}'),
-              // Text('강수 확률: ${weather?.pop ?? "-"}%'),
-              // Text('1시간 강수량: ${weather?.pcp ?? "-"}mm'),
-              // Text('1시간 신적설: ${weather?.sno ?? "-"}cm'),
 
               weather == null
                   ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          _mainWeatherCard(weather!),
-                          const SizedBox(height: 16),
-                          _minMaxTempCard(weather!),
-                          const SizedBox(height: 16),
-                          _weatherInfoGrid(weather!),
-                        ],
-                      ),
+                  : Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: Column(
+                      children: [
+                        _title('오늘의 날씨'),
+                        const SizedBox(height: 20),
+                        _mainWeatherCard(weather!),
+                        const SizedBox(height: 20),
+                        // _minMaxTempCard(weather!),
+                        // const SizedBox(height: 20),
+                        _weatherInfoGrid(weather!),
+                      ],
                     ),
+                  ),
             ],
           ),
         ),
@@ -201,6 +194,14 @@ class _MainPageHomeState extends State<MainPageHome> {
   } // build
 
   // --- Widgets ---
+
+  // 타이틀 위젯
+  Widget _title(String title){
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    );
+  }
 
   // 카테고리 버튼
   Widget _categoryButton(String title, int index) {
@@ -212,8 +213,8 @@ class _MainPageHomeState extends State<MainPageHome> {
           });
         },
         child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 4),
-          padding: EdgeInsets.symmetric(vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             border: Border.all(
@@ -252,12 +253,12 @@ class _MainPageHomeState extends State<MainPageHome> {
       ),
       child: Column(
         children: [
-          Icon(_skyIcon(weather.sky), size: 60, color: Colors.white),
+          Icon(_skyIcon(weather.sky), size: 50, color: Colors.white),
           const SizedBox(height: 8),
           Text(
             '${weather.tmp ?? "-"}°C',
             style: const TextStyle(
-              fontSize: 40,
+              fontSize: 28,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -271,51 +272,51 @@ class _MainPageHomeState extends State<MainPageHome> {
     );
   } // _mainWeatherCard
 
-  // 날씨 최저 / 최고 기온 카드
-  Widget _minMaxTempCard(WeatherModel weather) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _tempItem('최저', weather.tmn, Icons.arrow_downward),
-            _tempItem('최고', weather.tmx, Icons.arrow_upward),
-          ],
-        ),
-      ),
-    );
-  }
+  // 날씨 최저 / 최고 기온 카드 (추후 적용 예정)
+  // Widget _minMaxTempCard(WeatherModel weather) {
+  //   return Card(
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //     child: Padding(
+  //       padding: const EdgeInsets.symmetric(vertical: 16),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //         children: [
+  //           _tempItem('최저', weather.tmn, Icons.arrow_downward),
+  //           _tempItem('최고', weather.tmx, Icons.arrow_upward),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _tempItem(String label, String? value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.blue),
-        const SizedBox(height: 4),
-        Text(
-          '${value ?? "-"}°C',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(label, style: const TextStyle(color: Colors.grey)),
-      ],
-    );
-  }
+  // Widget _tempItem(String label, String? value, IconData icon) {
+  //   return Column(
+  //     children: [
+  //       Icon(icon, color: Colors.blue),
+  //       const SizedBox(height: 4),
+  //       Text(
+  //         '${value ?? "-"}°C',
+  //         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //       ),
+  //       Text(label, style: const TextStyle(color: Colors.grey)),
+  //     ],
+  //   );
+  // }
   // _minMaxTempCard
 
   // 날씨 정보 그리드
   Widget _weatherInfoGrid(WeatherModel weather) {
     return GridView.count(
       crossAxisCount: 3,
+      crossAxisSpacing: 4,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       childAspectRatio: 1,
       children: [
-        _infoTile('습도', '${weather.reh ?? "-"}%', Icons.water_drop),
+        // _infoTile('습도', '${weather.reh ?? "-"}%', Icons.water_drop),
         _infoTile('강수확률', '${weather.pop ?? "-"}%', Icons.umbrella),
         _infoTile('강수형태', _ptyText(weather.pty), Icons.grain),
-        _infoTile('강수량', '${weather.pcp ?? "-"}mm', Icons.cloud),
-        _infoTile('적설', '${weather.sno ?? "-"}cm', Icons.ac_unit),
+        _infoTile('강수량', '${weather.pcp ?? "-"}', Icons.cloud),
       ],
     );
   }
@@ -341,7 +342,7 @@ class _MainPageHomeState extends State<MainPageHome> {
   // --- Functions ---
 
   // 날씨 상태값 변환
-  Color _skyColor(String? sky) {
+  Color _skyColor(String? sky) { // 메인 날씨 카드 배경색
     switch (sky) {
       case '1':
         return Colors.blue; // 맑음
@@ -354,7 +355,7 @@ class _MainPageHomeState extends State<MainPageHome> {
     }
   }
 
-  IconData _skyIcon(String? sky) {
+  IconData _skyIcon(String? sky) { // 메인 날씨 카드 아이콘
     switch (sky) {
       case '1':
         return Icons.wb_sunny;
@@ -367,7 +368,7 @@ class _MainPageHomeState extends State<MainPageHome> {
     }
   }
 
-  String _skyText(String? sky) {
+  String _skyText(String? sky) { // 메인 날씨 카드 텍스트
     switch (sky) {
       case '1':
         return '맑음';
@@ -380,7 +381,7 @@ class _MainPageHomeState extends State<MainPageHome> {
     }
   }
 
-  String _ptyText(String? pty) {
+  String _ptyText(String? pty) { // 강수 형태 value 텍스트
     switch (pty) {
       case '0':
         return '없음';
