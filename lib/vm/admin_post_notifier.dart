@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 final adminPostListProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   debugPrint('🔥 adminPostListProvider EXECUTED');
 
-  final res = await http.get(Uri.parse('http://172.16.250.217:8000/post/allSelectAdmin'));
+  final res = await http.get(Uri.parse('http://172.16.250.217:8001/post/allSelectAdmin'));
 
   debugPrint('STATUS CODE => ${res.statusCode}');
   debugPrint('RAW BODY => ${utf8.decode(res.bodyBytes)}');
