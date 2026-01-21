@@ -9,12 +9,14 @@ class AdminGradeUpdate extends ConsumerStatefulWidget {
   final String name;
   final int value;
   final String date;
+  final int price;
   const AdminGradeUpdate({
     super.key,
     required this.seq,
     required this.name,
     required this.value,
     required this.date,
+    required this.price
   });
 
   @override
@@ -26,6 +28,7 @@ class _AdminGradeUpdateState extends ConsumerState<AdminGradeUpdate> {
   late TextEditingController seqController;
   late TextEditingController nameController;
   late TextEditingController valueController;
+  late TextEditingController priceController;
 
   Message message = Message();
 
@@ -35,9 +38,13 @@ class _AdminGradeUpdateState extends ConsumerState<AdminGradeUpdate> {
     seqController = TextEditingController();
     nameController = TextEditingController();
     valueController = TextEditingController();
+    priceController = TextEditingController();
+
     seqController.text = widget.seq.toString();
     nameController.text = widget.name;
     valueController.text = widget.value.toString();
+    priceController.text = widget.price.toString();
+
   }
 
   @override
@@ -45,6 +52,7 @@ class _AdminGradeUpdateState extends ConsumerState<AdminGradeUpdate> {
     seqController.dispose();
     nameController.dispose();
     valueController.dispose();
+    priceController.dispose();
     super.dispose();
   }
 
@@ -56,12 +64,15 @@ class _AdminGradeUpdateState extends ConsumerState<AdminGradeUpdate> {
         child: Column(
           children: [
             _buildTextField('번호', seqController, true),
-            _buildTextField('Name', seqController, false),
-            _buildTextField('Value', seqController, false),
+            _buildTextField('좌석 등급', nameController, false),
+            _buildTextField('좌석 가치', valueController, false),
+            _buildTextField('가격', priceController, false),
             ElevatedButton(
               onPressed: () async {
                 if (nameController.text.trim().isEmpty ||
-                    valueController.text.trim().isEmpty) {
+                    valueController.text.trim().isEmpty ||
+                    priceController.text.trim().isEmpty
+                    ) {
                   message.errorSnackBar(context, '비어 있는 칸이 있습니다');
                 } else {
                   update();
@@ -104,8 +115,9 @@ class _AdminGradeUpdateState extends ConsumerState<AdminGradeUpdate> {
       grade_seq: int.parse(seqController.text),
       grade_name: nameController.text.trim(),
       grade_value: int.parse(valueController.text.trim()),
+      grade_price: int.parse(priceController.text.trim())
     );
-    final result = await gradeNotifier.updateUser(grade);
+    final result = await gradeNotifier.updateGrade(grade);
     if (result == 'OK') {
       if (!mounted) return;
       message.successSnackBar(context, '좌석 등급 수정이 완료 되었습니다');

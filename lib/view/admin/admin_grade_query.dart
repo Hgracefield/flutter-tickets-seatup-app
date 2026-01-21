@@ -41,6 +41,7 @@ class AdminGradeQuery extends ConsumerWidget {
                           name: grade.grade_name,
                           value: grade.grade_value,
                           date: grade.grade_create_date!,
+                          price: grade.grade_price,
                         ),
                       ),
                     );
