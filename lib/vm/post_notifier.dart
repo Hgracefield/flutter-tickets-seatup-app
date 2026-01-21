@@ -18,7 +18,7 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     return (data['results'] as List).map((e) => Post.fromJson(e)).toList();
   }
 
-  // 구매 필터 검색
+  // 필터 검색
   Future<void> fetchFilteredPosts({
     required int curtainId,
     required String date,
@@ -30,20 +30,26 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     state = await AsyncValue.guard(() async {
       final url = "${GlobalData.url}/post/filter?curtain=$curtainId&date=$date&time=$time&grade=$gradeBit&area=$area";
       final res = await http.get(Uri.parse(url));
-      if (res.statusCode != 200) throw Exception('필터 검색 실패');
       final data = json.decode(utf8.decode(res.bodyBytes));
       return (data['results'] as List).map((e) => Post.fromJson(e)).toList();
     });
   }
 
-  // 개별 포스트 상세 조회
+  // 티켓 거래 상태 (0: 판매중, 1: 거래완료)
+  Future<String> updatePostStatus(int postSeq, int status) async {
+    final url = Uri.parse("${GlobalData.url}/post/updateStatus?seq=$postSeq&status=$status");
+    final res = await http.get(url);
+    if (res.statusCode == 200) {
+      final data = json.decode(utf8.decode(res.bodyBytes));
+      return data['results'];
+    }
+    return "Error";
+  }
+
   Future<Post> selectPost(int seq) async {
     final res = await http.get(Uri.parse("${GlobalData.url}/post/selectPost/$seq"));
-    if (res.statusCode != 200) throw Exception('상세 정보 로드 실패');
     final data = json.decode(utf8.decode(res.bodyBytes));
-    final List list = data['results'];
-    if (list.isEmpty) throw Exception('데이터가 없습니다.');
-    return Post.fromJson(list.first);
+    return Post.fromJson(data['results'][0]);
   }
 
   Future insertPost(Post post) async {
@@ -62,7 +68,6 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
 
 final postNotifierProvider = AsyncNotifierProvider<PostNotifier, List<Post>>(PostNotifier.new);
 
-// 상세 페이지용 Provider (Family)
 final postDetailProvider = FutureProvider.family<Post, int>((ref, postSeq) async {
   return await ref.read(postNotifierProvider.notifier).selectPost(postSeq);
 });

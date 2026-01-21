@@ -52,6 +52,14 @@
 		<string>Used to capture audio for image picker plugin</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Used to demonstrate image picker plugin</string>
+	  <!--web-->
+   <key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+    <key>NSAllowsArbitraryLoadsInWebContent</key>
+    <true/>
+</dict>
 		<!--GPS-->
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>This app needs access to location when open.</string>
