@@ -24,29 +24,19 @@ class _MapViewState extends ConsumerState<MapView> {
   void initState() {
     super.initState();
 
-    //  1) route state 변화 감지 -> polyline 그리기
+    //  1) route state 변화 감지 -> 화면 맞추기
     _routeSub = ref.listenManual<RouteState>(routeNotifierProvider, (
       prev,
       next,
-    ) {
+    ) async {
       if (_controller == null) return;
+      if (next.origin == null || next.destination == null) return;
+
+      // routePoints가 생겼을 때만 화면 맞추기
       if (next.routePoints.isEmpty) return;
 
-      _controller!.clearPolyline(polylineIds: ['route']);
-
-      _controller!.addPolyline(
-        polylines: [
-          Polyline(
-            polylineId: 'route',
-            points: next.routePoints,
-            strokeWidth: 6,
-          ),
-        ],
-      );
-
-      if (next.origin != null && next.destination != null) {
-        _controller!.fitBounds([next.origin!, next.destination!]);
-      }
+      // fitBounds의 padding 파라미터가 없는 버전이면 padding 쓰면 에러남
+      await _controller!.fitBounds([next.origin!, next.destination!]);
     });
 
     //  2) placeSeq 변화 감지 -> 길찾기 실행
@@ -59,7 +49,9 @@ class _MapViewState extends ConsumerState<MapView> {
       _lastPlaceSeq = next;
 
       final box = GetStorage();
-      final userId = box.read('user_Id');
+
+      // 여기 키 무조건 user_id 로 통일
+      final userId = box.read('user_id');
 
       if (userId == null) {
         // 로그인 안 된 상태
@@ -76,7 +68,7 @@ class _MapViewState extends ConsumerState<MapView> {
       final placeSeq = ref.read(selectedPlaceSeqProvider);
       if (placeSeq == null) return;
 
-      final userId = GetStorage().read('user_Id');
+      final userId = GetStorage().read('user_id');
       if (userId == null) return;
 
       _lastPlaceSeq = placeSeq;
@@ -91,10 +83,6 @@ class _MapViewState extends ConsumerState<MapView> {
   void dispose() {
     _routeSub?.close();
     _placeSub?.close();
-
-    // 원하면 맵 나갈 때 선택값 비우기 (선택)
-    // ref.read(selectedPlaceSeqProvider.notifier).state = null;
-
     super.dispose();
   }
 
@@ -104,54 +92,131 @@ class _MapViewState extends ConsumerState<MapView> {
     final placeSeq = ref.watch(selectedPlaceSeqProvider);
 
     final markers = <Marker>[];
+
+    // 출발 마커 (images 폴더로 경로 변경)
     if (state.origin != null) {
-      markers.add(Marker(markerId: 'start', latLng: state.origin!));
+      markers.add(
+        Marker(
+          markerId: 'start',
+          latLng: state.origin!,
+          width: 42,
+          height: 42,
+          markerImageSrc: 'images/start.png',
+        ),
+      );
     }
+
+    // 도착 마커 (images 폴더로 경로 변경)
     if (state.destination != null) {
       markers.add(
-        Marker(markerId: 'end', latLng: state.destination!),
+        Marker(
+          markerId: 'end',
+          latLng: state.destination!,
+          width: 42,
+          height: 42,
+          markerImageSrc: 'images/end.png',
+        ),
+      );
+    }
+
+    final polylines = <Polyline>[];
+    if (state.routePoints.length >= 2) {
+      polylines.add(
+        Polyline(
+          polylineId: 'route',
+          points: state.routePoints,
+          strokeWidth: 6,
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(title: const Text('앱 안에서 길찾기')),
-      body: Column(
+      body: Stack(
         children: [
-          if (placeSeq == null)
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('선택된 공연장(placeSeq)이 없습니다.'),
-            ),
+          Column(
+            children: [
+              if (placeSeq == null)
+                const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text('선택된 공연장(placeSeq)이 없습니다.'),
+                ),
+              if (state.isLoading)
+                const LinearProgressIndicator(minHeight: 3),
+              if (state.error != null)
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    state.error!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              Expanded(
+                child: KakaoMap(
+                  onMapCreated: (controller) async {
+                    _controller = controller;
 
-          if (state.isLoading)
-            const LinearProgressIndicator(minHeight: 3),
-
-          if (state.error != null)
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                state.error!,
-                style: const TextStyle(color: Colors.red),
+                    if (state.origin != null &&
+                        state.destination != null) {
+                      await _controller!.fitBounds([
+                        state.origin!,
+                        state.destination!,
+                      ]);
+                    }
+                  },
+                  center:
+                      state.origin ??  LatLng(37.5665, 126.9780),
+                  markers: markers,
+                  polylines: polylines,
+                ),
               ),
-            ),
-
-          Expanded(
-            child: KakaoMap(
-              onMapCreated: (controller) => _controller = controller,
-              center: state.origin ?? LatLng(37.5665, 126.9780),
-              markers: markers,
-            ),
+            ],
           ),
-
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('출발: ${state.userAddress ?? "-"}'),
-                Text('도착: ${state.placeAddress ?? "-"}'),
-                Text('경로점 개수: ${state.routePoints.length}'),
-              ],
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 12,
+                    offset: Offset(0, 6),
+                    color: Color(0x22000000),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '출발: ${state.userAddress ?? "-"}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '도착: ${state.placeAddress ?? "-"}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '경로점 개수: ${state.routePoints.length}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
