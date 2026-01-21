@@ -30,12 +30,20 @@ class Message{
   }
 
   // Dialog
-  void showDialog(String title, String message, List<Widget> widgets)
+  void showAlertPopup(BuildContext context, String message, List<Widget> widgets)
   {
-    AlertDialog(
-      title: Text(title),
-      content: Text(message),
-      actions: widgets
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Text(message),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)
+          ),
+          actions: widgets,
+        );
+      },
     );    
   }
 }

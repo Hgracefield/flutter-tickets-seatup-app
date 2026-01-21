@@ -104,6 +104,14 @@ dependencies:
   # table calendar
   table_calendar: ^3.2.0
 
+flutter_native_splash:
+  color: "#ffffff"
+  image: images/su_app_icon.png
+  android: true
+  android_12:
+    image: images/su_app_icon.png
+  ios: true
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

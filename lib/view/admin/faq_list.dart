@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/model/faq.dart';
+import 'package:seatup_app/util/side_menu.dart';
+import 'package:seatup_app/view/admin/admin_side_bar.dart';
 import 'package:seatup_app/vm/faq_provider.dart';
 
 class FaqList extends ConsumerWidget {
@@ -14,40 +16,46 @@ class FaqList extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-        child: Column(
+      body: SafeArea(
+        child: Row(
           children: [
-            contentsTitle(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                insertBtn(context),
-                SizedBox(width: 8),
-                editBtn(context, ref),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
-              child: boardListHeader(),
-            ),
-
+            AdminSideBar(selectedMenu: SideMenu.board, onMenuSelected: (menu) {}),
             Expanded(
-              child: faqsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('불러오기 실패: $e')),
-                data: (faqs) {
-                  return ListView(
-                    primary: false,
-                    // controller: ScrollController(),
-                    children: faqs
-                        .map(
-                          (faq) => buildItemWidget(context, ref, faq),
-                        )
-                        .toList(),
-                  );
-                },
+              child: Column(
+                children: [
+                  contentsTitle(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      insertBtn(context),
+                      SizedBox(width: 8),
+                      editBtn(context, ref),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 7),
+                    child: boardListHeader(),
+                  ),
+              
+                  Expanded(
+                    child: faqsAsync.when(
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => Center(child: Text('불러오기 실패: $e')),
+                      data: (faqs) {
+                        return ListView(
+                          primary: false,
+                          // controller: ScrollController(),
+                          children: faqs
+                              .map(
+                                (faq) => buildItemWidget(context, ref, faq),
+                              )
+                              .toList(),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
