@@ -94,7 +94,7 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
 
   // 개별 포스트 상세 조회(2)
   Future<Map<String, dynamic>> selectPostAll(int seq) async {
-    final res = await http.get(Uri.parse("${GlobalData.url}/post/selectPost/$seq"));
+    final res = await http.get(Uri.parse("${GlobalData.url}/post/selectPostDetail/$seq"));
     if (res.statusCode != 200) throw Exception('상세 정보 로드 실패');
     final data = json.decode(utf8.decode(res.bodyBytes));
     final List list = data['results'];

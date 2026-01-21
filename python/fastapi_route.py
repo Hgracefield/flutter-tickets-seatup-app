@@ -34,6 +34,8 @@ app.include_router(type_router, prefix='/type', tags=['type'])
 
 
 
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host=config.FASTAPI_HOST, port=8001)

@@ -102,7 +102,6 @@ class UserChatNotifier extends Notifier<void> {
   Future<String> openChat(String postId, String partnerId) async{
     final raw = ref.read(storageProvider).read('user_id');
     final myId = raw?.toString() ?? '';
-
     final roomId =makeRoomId(postId, myId, partnerId);
     final roomRef = ref.read(chatRoomDocProvider(roomId));
     final roomSnap = await roomRef.get();

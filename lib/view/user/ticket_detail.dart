@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/post.dart';
+import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/view/user/main_page.dart';
+import 'package:seatup_app/view/user/payment.dart';
+import 'package:seatup_app/view/user/user_to_user_chat.dart';
 import 'package:seatup_app/vm/agree_check.dart';
 import 'package:seatup_app/vm/post_notifier.dart';
+import 'package:seatup_app/vm/storage_provider.dart';
+import 'package:seatup_app/vm/user_chat_notifier.dart';
 
 class TicketDetail extends ConsumerWidget {
   final int postSeq;
   const TicketDetail({super.key, required this.postSeq});
-
-
 
   // // ====== 더미 데이터(네 프로젝트 모델로 바꿔 끼우면 됨) ======
   // final String productTitle = "티켓상세페이지";
@@ -37,9 +40,9 @@ class TicketDetail extends ConsumerWidget {
           IconButton(
             onPressed: () {
               // 여기에 지도
-            }, 
-            icon: Icon(Icons.map)
-          )
+            },
+            icon: Icon(Icons.map),
+          ),
         ],
       ),
 
@@ -52,25 +55,27 @@ class TicketDetail extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _productInfoCard(post , ref),
-                const SizedBox(height: 12,),
+                _productInfoCard(post, ref),
+                const SizedBox(height: 12),
 
-                _priceCard(post , ref ,total: total),
+                _priceCard(post, ref, total: total),
                 const SizedBox(height: 12),
 
                 _mustCheckCard(
                   agreeNotice: agreeCheck.agreeNotice,
                   agreeRefund: agreeCheck.agreeRefund,
                   onTapDetail: () => _showMustCheckSheet(context),
-                  onChangeNotice: (value) => ref.read(agreeNotifier.notifier).agreeChangeNotice(value),               
-                  onChangeRefund: (value) => ref.read(agreeNotifier.notifier).agreeChangeRefund(value),
+                  onChangeNotice: (value) =>
+                      ref.read(agreeNotifier.notifier).agreeChangeNotice(value),
+                  onChangeRefund: (value) =>
+                      ref.read(agreeNotifier.notifier).agreeChangeRefund(value),
                 ),
               ],
             );
-          }, 
-          error: (error, stackTrace) => Text('에러: $error'), 
-          loading: () => Center(child: CircularProgressIndicator(),),
-        )
+          },
+          error: (error, stackTrace) => Text('에러: $error'),
+          loading: () => Center(child: CircularProgressIndicator()),
+        ),
       ),
 
       bottomNavigationBar: SafeArea(
@@ -84,36 +89,87 @@ class TicketDetail extends ConsumerWidget {
                 blurRadius: 16,
                 offset: Offset(0, -6),
                 color: Color(0x14000000),
-              )
+              ),
             ],
           ),
           child: Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {
-                    // 장바구니 버튼
+                  onPressed: () async {
+                    Message message = Message();
+                    final post = await ref
+                        .read(postNotifierProvider.notifier)
+                        .selectPostAll(postSeq);
+                    if(!context.mounted) return;
+                    if (post['post_user_id'].toString() ==
+                        ref.watch(storageProvider).read('user_id').toString()) {
+                      message.errorSnackBar(context, 'Error');
+                    } else {
+                      final roomSnap = await ref
+                          .read(chatNotifierProvider.notifier)
+                          .openChat(
+                            post['post_seq'].toString(),
+                            post['post_user_id'].toString(),
+                          );
+                      if(!context.mounted) return;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return UserToUserChat(
+                              postId: post['post_seq'].toString(),
+                              partnerId: roomSnap,
+                            );
+                          },
+                        ),
+                      );
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                     side: const BorderSide(color: Color(0xFFE6E8EE)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('장바구니', style: TextStyle(fontWeight: FontWeight.w800)),
+                  child: const Text(
+                    '1:1채팅',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: (agreeCheck.agreeNotice && agreeCheck.agreeRefund) ? () {
-                    // 여기에다가 구매값 넣으면됨
-                  } 
-                  : null,
+                  onPressed: (agreeCheck.agreeNotice && agreeCheck.agreeRefund)
+                      ? () async {
+                          final post = await ref.read(
+                            postDetailProvider(postSeq).future,
+                          );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaymentPage(
+                                post: post,
+                                buyerId: ref
+                                    .watch(storageProvider)
+                                    .read('user_id'),
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('구매하기', style: TextStyle(fontWeight: FontWeight.w900)),
+                  child: const Text(
+                    '구매하기',
+                    style: TextStyle(fontWeight: FontWeight.w900),
+                  ),
                 ),
               ),
             ],
@@ -125,8 +181,14 @@ class TicketDetail extends ConsumerWidget {
 
   // ===================== UI Widgets =====================
 
-  Widget _productInfoCard(Map<String,dynamic> postAsync , WidgetRef ref) {
-    final ticketNumber = ref.read(postNotifierProvider.notifier).ticketNumber(postAsync['post_create_date'], postAsync['post_seq'], postAsync['curtain_id']);
+  Widget _productInfoCard(Map<String, dynamic> postAsync, WidgetRef ref) {
+    final ticketNumber = ref
+        .read(postNotifierProvider.notifier)
+        .ticketNumber(
+          postAsync['post_create_date'],
+          postAsync['post_seq'],
+          postAsync['curtain_id'],
+        );
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,12 +274,19 @@ class TicketDetail extends ConsumerWidget {
     );
   }
 
-  Widget _priceCard(Map<String,dynamic> postAsync , WidgetRef ref ,{required int total}) {
+  Widget _priceCard(
+    Map<String, dynamic> postAsync,
+    WidgetRef ref, {
+    required int total,
+  }) {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('결제 정보', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+          const Text(
+            '결제 정보',
+            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+          ),
           const SizedBox(height: 12),
 
           _kv('한 매 가격', _won(postAsync['post_price'])),
@@ -269,7 +338,10 @@ class TicketDetail extends ConsumerWidget {
           Row(
             children: [
               const Expanded(
-                child: Text('구매 전 꼭 확인', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                child: Text(
+                  '구매 전 꼭 확인',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+                ),
               ),
               TextButton(onPressed: onTapDetail, child: const Text('자세히')),
             ],
@@ -279,14 +351,20 @@ class TicketDetail extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             value: agreeNotice,
             onChanged: (v) => onChangeNotice(v ?? false),
-            title: const Text('안내 사항을 확인했어요', style: TextStyle(fontWeight: FontWeight.w800)),
+            title: const Text(
+              '안내 사항을 확인했어요',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
             controlAffinity: ListTileControlAffinity.leading,
           ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
             value: agreeRefund,
             onChanged: (v) => onChangeRefund(v ?? false),
-            title: const Text('취소/환불 규정을 확인했어요', style: TextStyle(fontWeight: FontWeight.w800)),
+            title: const Text(
+              '취소/환불 규정을 확인했어요',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
             controlAffinity: ListTileControlAffinity.leading,
           ),
         ],
@@ -352,7 +430,10 @@ class TicketDetail extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('구매 전 꼭 확인', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+              const Text(
+                '구매 전 꼭 확인',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              ),
               const SizedBox(height: 10),
               _bullet('예매 후 취소/환불은 규정에 따라 수수료가 발생할 수 있어요.'),
               _bullet('입장/구역/좌석 정보는 구매 후 변경이 제한될 수 있어요.'),
@@ -364,9 +445,14 @@ class TicketDetail extends ConsumerWidget {
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('확인했어요', style: TextStyle(fontWeight: FontWeight.w900)),
+                  child: const Text(
+                    '확인했어요',
+                    style: TextStyle(fontWeight: FontWeight.w900),
+                  ),
                 ),
               ),
             ],
@@ -388,7 +474,10 @@ class TicketDetail extends ConsumerWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(
+              text,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
