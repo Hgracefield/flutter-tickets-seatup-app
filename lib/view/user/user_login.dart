@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/view/app_route/app_route.dart';
+import 'package:seatup_app/view/user/sign_up.dart';
 // import 'package:http/http.dart' as http;
 import 'package:seatup_app/vm/user_notifier.dart';
 import 'package:seatup_app/util/login_status.dart';
@@ -121,10 +122,22 @@ class _UserLoginState extends ConsumerState<UserLogin> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoute.signUp).then((value) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              SignUp(email: '', name: '', phone: ''),
+                        ),
+                      ).then((value) {
                         emailController.clear();
                         passwordController.clear();
-                      },);
+                      });
+                      // Navigator.pushNamed(context, AppRoute.signUp).then((
+                      //   value,
+                      // ) {
+                      //   emailController.clear();
+                      //   passwordController.clear();
+                      // });
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -142,7 +155,7 @@ class _UserLoginState extends ConsumerState<UserLogin> {
                   ),
                   TextButton(
                     onPressed: () {
-                     _googleLogIn();
+                      _googleLogIn();
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -187,12 +200,11 @@ class _UserLoginState extends ConsumerState<UserLogin> {
         ),
         TextField(
           controller: controller,
-          obscureText: showSuffix ? showPassword: false,
+          obscureText: showSuffix ? showPassword : false,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
-
             ),
             prefixIcon: icon,
             hintText: hint,
@@ -210,7 +222,7 @@ class _UserLoginState extends ConsumerState<UserLogin> {
                       setState(() {});
                     },
                   )
-                : null
+                : null,
           ),
         ),
       ],
@@ -232,33 +244,36 @@ class _UserLoginState extends ConsumerState<UserLogin> {
 
   Future<void> userLogin() async {
     final userNotifier = ref.read(userNotifierProvider.notifier);
-    final user = await userNotifier.loginData(
+    final users = await userNotifier.loginData(
       emailController.text.trim(),
       passwordController.text.trim(),
     ); // get storage 부분
-    var result = await userNotifier.login(
-      emailController.text.trim(),
-      passwordController.text.trim(),
-    );
+    // var result = await userNotifier.login(
+    //   emailController.text.trim(),
+    //   passwordController.text.trim(),
+    // );
 
-    switch (result) {
-      case LoginStatus.success:
-        message.successSnackBar(context, '로그인 성공');
-        await userNotifier.saveUserLogin(
-          user.first,
-        ); // get storage저장하는곳
-        Navigator.pushNamed(context, AppRoute.main).then((value) {
-          emailController.clear();
-          passwordController.clear();
-        });
-        break;
-      case LoginStatus.fail:
-        message.errorSnackBar(context, '로그인 실패');
-        break;
-      case LoginStatus.withdraw:
-        message.errorSnackBar(context, '탈퇴한 회원입니다.');
-        break;
-    }
+    decideLoginProcuess(users);
+    // if(user != [])
+    // {
+    //   if(user.first['user_withdraw_date'] == null)
+    //   {
+    //     message.successSnackBar(context, '로그인 성공');
+    //     await userNotifier.saveUserLogin(user.first); // get storage저장하는곳
+    //     Navigator.pushNamed(context, AppRoute.main).then((value) {
+    //       emailController.clear();
+    //       passwordController.clear();
+    //     });
+    //   }
+    //   else
+    //   { 
+    //     message.errorSnackBar(context, '탈퇴한 회원입니다.');
+    //   }
+    // }
+    // else
+    // {
+    //   message.errorSnackBar(context, '로그인 실패');
+    // }
   }
 
   Future<void> _googleLogIn() async {
@@ -274,8 +289,60 @@ class _UserLoginState extends ConsumerState<UserLogin> {
 
     final result = await FirebaseAuth.instance.signInWithCredential(credential);
 
-    print(result);
+    final user = await ref.read(userNotifierProvider.notifier).existUser(result.user!.email!);
+
+    if(!mounted) return;
+
+    if(user == 0)
+    {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SignUp(email: result.user!.email!, name: result.user!.displayName ?? '', phone: result.user!.phoneNumber ?? ''),
+        ),
+      ).then((value) {
+        emailController.clear();
+        passwordController.clear();
+      });
+    }
+    else
+    {
+      final users = await ref.read(userNotifierProvider.notifier).googleLoginData(result.user!.email!);
+      
+      
+      decideLoginProcuess(users);
+      // message.successSnackBar(context, '로그인 성공');
+      //   // await ref.read(userNotifierProvider.notifier).saveUserLogin(); // get storage저장하는곳
+      //   Navigator.pushNamed(context, AppRoute.main).then((value) {
+      //     emailController.clear();
+      //     passwordController.clear();
+      //   });
+    }
   }
 
-  
+  void decideLoginProcuess(List<dynamic> users) async
+  {
+    if(!mounted) return;
+
+    if(users.length > 0)
+    {
+      if(users.first['user_withdraw_date'] == null)
+      {
+        message.successSnackBar(context, '로그인 성공');
+        await ref.read(userNotifierProvider.notifier).saveUserLogin(users.first); // get storage저장하는곳
+        Navigator.pushNamed(context, AppRoute.main).then((value) {
+          emailController.clear();
+          passwordController.clear();
+        });
+      }
+      else
+      { 
+        message.errorSnackBar(context, '탈퇴한 회원입니다.');
+      }
+    }
+    else
+    {
+      message.errorSnackBar(context, '로그인 실패');
+    }
+  }
 } // class
