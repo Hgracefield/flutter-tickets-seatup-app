@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/util/side_menu.dart';
+import 'package:seatup_app/view/admin/admin_side_bar.dart';
 import 'package:seatup_app/vm/chat_provider.dart';
 
 class AdminChatDetail extends ConsumerStatefulWidget {
@@ -59,134 +61,137 @@ class _AdminChatDetailState extends ConsumerState<AdminChatDetail> {
 
     return Scaffold(
       appBar: AppBar(title: Text("고객: $selectedUserId")),
-      body: Column(
-        children: [
-          Expanded(
-            child: roomAsync.when(
-              data: (snap) {
-                final data = snap.data() ?? {};
-                final dialog = (data["dialog"] as List?) ?? [];
-                final employeeId = (data["employeeId"] ?? "")
-                    .toString();
-                final startAt = (data["startAt"] ?? "").toString();
-
-                return Column(
-                  children: [
-                    // 상단 정보
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              "담당자: $employeeId   |   시작일: $startAt",
-                              style: const TextStyle(fontSize: 13),
+      body: SafeArea(
+        child: Column(
+          children: [
+            AdminSideBar (selectedMenu: SideMenu.chatlist, onMenuSelected: (menu) {}),
+            Expanded(
+              child: roomAsync.when(
+                data: (snap) {
+                  final data = snap.data() ?? {};
+                  final dialog = (data["dialog"] as List?) ?? [];
+                  final employeeId = (data["employeeId"] ?? "")
+                      .toString();
+                  final startAt = (data["startAt"] ?? "").toString();
+        
+                  return Column(
+                    children: [
+                      // 상단 정보
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                "담당자: $employeeId   |   시작일: $startAt",
+                                style: const TextStyle(fontSize: 13),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const Divider(height: 1),
-
-                    // 채팅 내용
-                    Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(12),
-                        itemCount: dialog.length,
-                        itemBuilder: (context, index) {
-                          final item = dialog[index];
-
-                          if (item is! Map) return const SizedBox();
-
-                          final talker = (item["talker"] ?? "")
-                              .toString();
-                          final message = (item["message"] ?? "")
-                              .toString();
-
-                          final isStaff = talker == "staff";
-
-                          final timeLabel = _formatDateTime(
-                            item["date"],
-                          );
-
-                          return Align(
-                            alignment: isStaff
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Column(
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: 6,
+                      const Divider(height: 1),
+        
+                      // 채팅 내용
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(12),
+                          itemCount: dialog.length,
+                          itemBuilder: (context, index) {
+                            final item = dialog[index];
+        
+                            if (item is! Map) return const SizedBox();
+        
+                            final talker = (item["talker"] ?? "")
+                                .toString();
+                            final message = (item["message"] ?? "")
+                                .toString();
+        
+                            final isStaff = talker == "staff";
+        
+                            final timeLabel = _formatDateTime(
+                              item["date"],
+                            );
+        
+                            return Align(
+                              alignment: isStaff
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                    ),
+                                    padding: const EdgeInsets.all(10),
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 280,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isStaff
+                                          ? Colors.blue.shade100
+                                          : Colors.grey.shade200,
+                                      borderRadius:
+                                          BorderRadius.circular(12),
+                                    ),
+                                    child: Text(message),
                                   ),
-                                  padding: const EdgeInsets.all(10),
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 280,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isStaff
-                                        ? Colors.blue.shade100
-                                        : Colors.grey.shade200,
-                                    borderRadius:
-                                        BorderRadius.circular(12),
-                                  ),
-                                  child: Text(message),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 6,
-                                    right: 6,
-                                    bottom: 4,
-                                  ),
-                                  child: Text(
-                                    timeLabel,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey.shade600,
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 6,
+                                      right: 6,
+                                      bottom: 4,
+                                    ),
+                                    child: Text(
+                                      timeLabel,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade600,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text("에러: $e")),
-            ),
-          ),
-
-          // 입력창
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _msgController,
-                      decoration: const InputDecoration(
-                        hintText: "메시지 입력",
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (_) => _send(selectedUserId),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () => _send(selectedUserId),
-                    child: const Text("전송"),
-                  ),
-                ],
+                    ],
+                  );
+                },
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text("에러: $e")),
               ),
             ),
-          ),
-        ],
+        
+            // 입력창
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _msgController,
+                        decoration: const InputDecoration(
+                          hintText: "메시지 입력",
+                          border: OutlineInputBorder(),
+                        ),
+                        onSubmitted: (_) => _send(selectedUserId),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () => _send(selectedUserId),
+                      child: const Text("전송"),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

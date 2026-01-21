@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain.dart';
+import 'package:seatup_app/util/side_menu.dart';
 import 'package:seatup_app/view/admin/admin_chat_list.dart';
 import 'package:seatup_app/view/admin/admin_curtain_edit.dart';
 import 'package:seatup_app/view/admin/admin_curtain_insert.dart';
 import 'package:seatup_app/view/admin/admin_review_manage.dart';
+import 'package:seatup_app/view/admin/admin_side_bar.dart';
 import 'package:seatup_app/view/admin/admin_transaction_manage.dart';
 import 'package:seatup_app/view/admin/admin_transaction_review_manage.dart';
 import 'package:seatup_app/view/admin/faq_list.dart';
@@ -37,7 +39,8 @@ class AdminDashboard extends ConsumerWidget {
       body: SafeArea(
         child: Row(
           children: [
-            _sideBar(context, ref, dashboardAsync),
+           AdminSideBar(selectedMenu: SideMenu.dashboard, onMenuSelected: (menu) {}),
+            // _sideBar(context, ref, dashboardAsync),
             Expanded(
               child: dashboardAsync.when(
                 data: (dash) =>
@@ -272,85 +275,85 @@ class AdminDashboard extends ConsumerWidget {
   }
 
   // ---------------- Sidebar ----------------
-  Widget _sideBar(
-    BuildContext context,
-    WidgetRef ref,
-    AsyncValue<DashBoardState> dashboardAsync,
-  ) {
-    final selectedIndex = dashboardAsync.value?.selectedMenuIndex ?? 0;
+  // Widget _sideBar(
+  //   BuildContext context,
+  //   WidgetRef ref,
+  //   AsyncValue<DashBoardState> dashboardAsync,
+  // ) {
+  //   final selectedIndex = dashboardAsync.value?.selectedMenuIndex ?? 0;
 
-    return Container(
-      width: 170,
-      color: const Color(0xFF4D74D6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 18),
-          _sideItem(ref, '제품 정보', index: 0, selectedIndex: selectedIndex),
-          _sideItem(ref, '게시판', index: 1, selectedIndex: selectedIndex),
-          _sideItem(ref, '거래 글 리스트', index: 2, selectedIndex: selectedIndex),
-          _sideItem(ref, '관람 후기 관리', index: 3, selectedIndex: selectedIndex),
-          _sideItem(ref, '거래 후기 관리', index: 4, selectedIndex: selectedIndex),
-          _sideItem(ref, '고객 채팅 리스트', index: 5, selectedIndex: selectedIndex),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: GestureDetector(
-              onTap: () {
-                ref.read(staffNotifierProvider.notifier).logout();
-                Navigator.pop(context);
-              },
-              child: _sideLogout(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     width: 170,
+  //     color: const Color(0xFF4D74D6),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         const SizedBox(height: 18),
+  //         _sideItem(ref, '제품 정보', index: 0, selectedIndex: selectedIndex),
+  //         _sideItem(ref, '게시판', index: 1, selectedIndex: selectedIndex),
+  //         _sideItem(ref, '거래 글 리스트', index: 2, selectedIndex: selectedIndex),
+  //         _sideItem(ref, '관람 후기 관리', index: 3, selectedIndex: selectedIndex),
+  //         _sideItem(ref, '거래 후기 관리', index: 4, selectedIndex: selectedIndex),
+  //         _sideItem(ref, '고객 채팅 리스트', index: 5, selectedIndex: selectedIndex),
+  //         const Spacer(),
+  //         Padding(
+  //           padding: const EdgeInsets.all(12.0),
+  //           child: GestureDetector(
+  //             onTap: () {
+  //               ref.read(staffNotifierProvider.notifier).logout();
+  //               Navigator.pop(context);
+  //             },
+  //             child: _sideLogout(),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _sideItem(
-    WidgetRef ref,
-    String title, {
-    required int index,
-    required int selectedIndex,
-  }) {
-    final bool selected = selectedIndex == index;
-    return InkWell(
-      onTap: () {
-        ref.read(staffNotifierProvider.notifier).setMenuIndex(index);
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFF2F57C9) : Colors.transparent,
-        ),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _sideItem(
+  //   WidgetRef ref,
+  //   String title, {
+  //   required int index,
+  //   required int selectedIndex,
+  // }) {
+  //   final bool selected = selectedIndex == index;
+  //   return InkWell(
+  //     onTap: () {
+  //       ref.read(staffNotifierProvider.notifier).setMenuIndex(index);
+  //     },
+  //     child: Container(
+  //       width: double.infinity,
+  //       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  //       decoration: BoxDecoration(
+  //         color: selected ? const Color(0xFF2F57C9) : Colors.transparent,
+  //       ),
+  //       child: Text(
+  //         title,
+  //         style: TextStyle(
+  //           color: Colors.white,
+  //           fontSize: 13,
+  //           fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _sideLogout() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2F57C9),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: const Text(
-        '로그아웃',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-      ),
-    );
-  }
+  // Widget _sideLogout() {
+  //   return Container(
+  //     width: double.infinity,
+  //     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFF2F57C9),
+  //       borderRadius: BorderRadius.circular(6),
+  //     ),
+  //     child: const Text(
+  //       '로그아웃',
+  //       style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+  //     ),
+  //   );
+  // }
 
   // ---------------- Top Panel ----------------
   Widget _topPanel(BuildContext context) {
