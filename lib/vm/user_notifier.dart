@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/user.dart';
 import 'package:seatup_app/util/global_data.dart';
-import 'package:seatup_app/util/login_status.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
 
 class UserNotifier extends AsyncNotifier<User> {
@@ -66,20 +65,20 @@ class UserNotifier extends AsyncNotifier<User> {
     // return (data['results'] as List).map((d) => User.fromJson(d)).toList();
   }
 
-  Future<LoginStatus> login(String email, String password) async {
-    final url = Uri.parse('${GlobalData.url}/user/login');
-    final res = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'email': email, 'password': password}),
-    );
+  // Future<LoginStatus> login(String email, String password) async {
+  //   final url = Uri.parse('${GlobalData.url}/user/login');
+  //   final res = await http.post(
+  //     url,
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: json.encode({'email': email, 'password': password}),
+  //   );
 
-    if (res.statusCode != 200) return LoginStatus.fail;
+  //   if (res.statusCode != 200) return LoginStatus.fail;
 
-    // 서버가 세션/토큰을 세팅하고 /user/select가 성공한다는 전제
-    await refreshUser();
-    return LoginStatus.success;
-  }
+  //   // 서버가 세션/토큰을 세팅하고 /user/select가 성공한다는 전제
+  //   await refreshUser();
+  //   return LoginStatus.success;
+  // }
 
   Future<int> existUser(String email) async {
     final uri = Uri.parse(
@@ -90,6 +89,7 @@ class UserNotifier extends AsyncNotifier<User> {
       throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
     }
     final data = json.decode(utf8.decode(response.bodyBytes));
+
     return data['result'];
   }
 
@@ -100,6 +100,8 @@ class UserNotifier extends AsyncNotifier<User> {
       headers: {'Content-Type': 'application/json'},
       body: json.encode(user.toJson()),
     );
+
+    print("user : ${user.user_account} / ${user.user_address} / ${user.user_bank_name} / ${user.user_email} / ${user.user_id} / ${user.user_name} / ${user.user_password} / ${user.user_phone} / ${user.user_signup_date} / ${user.user_withdraw_date}");
     if (response.statusCode != 200) {
       throw Exception('요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}');
     }
@@ -138,6 +140,24 @@ class UserNotifier extends AsyncNotifier<User> {
     state = await AsyncValue.guard(() async => fetchUser());
   }
 
+  Future<List<dynamic>> googleLoginData(String email) async{
+    final url = Uri.parse('${GlobalData.url}/user/googleLogin');
+    final res = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': ''}),
+    );
+    print(email);
+    if (res.statusCode != 200) {
+      throw Exception('요청 실패 ${res.statusCode}: ${utf8.decode(res.bodyBytes)}');
+    }
+    final data = json.decode(utf8.decode(res.bodyBytes));
+
+    print(data);
+    
+    return data['results'];
+  }
+
   Future<List<dynamic>> loginData(String email, String password) async {
     // 로그인 데이터얻을려고
     final url = Uri.parse('${GlobalData.url}/user/login');
@@ -146,8 +166,14 @@ class UserNotifier extends AsyncNotifier<User> {
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'email': email, 'password': password}),
     );
+    if (res.statusCode != 200) {
+      throw Exception('요청 실패 ${res.statusCode}: ${utf8.decode(res.bodyBytes)}');
+    }
 
     final data = json.decode(utf8.decode(res.bodyBytes));
+     if (res.statusCode != 200) return [];
+
+    
     return data['results'];
   }
 }

@@ -35,7 +35,7 @@ class User {
       user_signup_date: json['user_signup_date'], 
       user_account: json['user_account'], 
       user_bank_name: json['user_bank_name'], 
-      user_withdraw_date: json['user_withdraw'] ?? "",
+      user_withdraw_date: json['user_withdraw_date'] ?? "",
     );
   }
 
@@ -50,7 +50,7 @@ class User {
       'user_signup_date' : user_signup_date,
       'user_account' : user_account,
       'user_bank_name' : user_bank_name,
-      'user_withdraw' : user_withdraw_date,
+      'user_withdraw_date' : user_withdraw_date,
     };
   }
 }

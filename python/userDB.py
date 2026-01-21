@@ -11,15 +11,16 @@ class LoginRequest(BaseModel):
     password:str
 
 class User(BaseModel):
-    email:str
-    password:str
-    name:str
-    phone:str
-    address:str
-    bank:str
-    account:str
-
-
+    user_id:int
+    user_email:str
+    user_password:str
+    user_name:str
+    user_phone:str
+    user_address:str
+    user_signup_date:str
+    user_bank_name:str
+    user_account:str
+    user_withdraw_date:str
 
 def connect():
     return pymysql.connect(
@@ -133,6 +134,49 @@ async def login(request:LoginRequest):
         conn.close()
     return {'results' : result}
 
+
+@router.post("/googleLogin")
+async def login(request:LoginRequest):
+    # Connection으로 부터 Cursor 생성
+    email = request.email
+    conn = connect()
+    curs = conn.cursor()
+    try:
+        
+        sql = """
+        select user_id, 
+        user_email, 
+        user_password, 
+        user_name, 
+        user_phone, 
+        user_address, 
+        user_signup_date, 
+        user_account, 
+        user_bank_name, 
+        user_withdraw_date
+        from user 
+        where user_email = %s
+        """
+        curs.execute(sql, (email))
+        rows = curs.fetchall()
+        # 결과값을 Dictionary로 변환
+        result = [{'user_id' : row[0], 
+                   'user_email' : row[1], 
+                   'user_password' : row[2], 
+                   'user_name' : row[3], 
+                   'user_phone' : row[4], 
+                   'user_address' : row[5], 
+                   'user_signup_date' : row[6], 
+                   'user_account' : row[7], 
+                   'user_bank_name' : row[8], 
+                   'user_withdraw_date' : row[9]} for row in rows]
+    except Exception as ex:
+        conn.rollback()
+        print("Error :", ex)
+        return {'result':'Error'}
+    finally:    
+        conn.close()
+    return {'results' : result}
 @router.post("/insert")
 async def insert(user : User):
     # Connection으로 부터 Cursor 생성
@@ -153,7 +197,7 @@ async def insert(user : User):
         user_signup_date,
         user_withdraw_date
         ) values (%s,%s,%s,%s,%s,%s,%s,now(),null)"""
-        curs.execute(sql, (user.email, user.password, user.name, user.phone, user.address, user.bank, user.account))
+        curs.execute(sql, (user.user_email, user.user_password, user.user_name, user.user_phone, user.user_address, user.user_bank_name, user.user_account))
         conn.commit()
         return {'result':'OK'}
     except Exception as ex:
@@ -180,7 +224,7 @@ async def insert(user : User):
         user_account = %s
         where user_email = %s
         """
-        curs.execute(sql, (user.password, user.name, user.phone, user.address, user.bank, user.account, user.email))
+        curs.execute(sql, (user.user_password, user.user_name, user.user_phone, user.user_address, user.user_bank_name, user.user_account, user.user_email))
         conn.commit()
         return {'result':'OK'}
     except Exception as ex:
@@ -248,4 +292,3 @@ async def select():
     # 결과값을 Dictionary로 변환
     result = [{'user_id' : row[0], 'user_email' : row[1], 'user_password' : row[2], 'user_name' : row[3], 'user_phone' : row[4], 'user_address' : row[5], 'user_signup_date' : row[6], 'user_account' : row[7], 'user_bank_name' : row[8], 'user_withdraw_date' : row[9]} for row in rows]
     return {'results' : result}
-    
