@@ -18,18 +18,35 @@ class TicketResultScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white, elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20), onPressed: () => Navigator.pop(context)),
-        title: const Text("거래 가능한 티켓", style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          "거래 가능한 티켓",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: Column(
         children: [
           Container(
-            width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20), color: bgGrey,
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+            color: bgGrey,
             child: Text(
               "${pState.selectedDate != null ? DateFormat('MM.dd').format(pState.selectedDate!) : ''} | ${pState.selectedTime} | ${pState.selectedRow}",
-              style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Expanded(
@@ -44,41 +61,96 @@ class TicketResultScreen extends ConsumerWidget {
                     return GestureDetector(
                       // --- 라우터 없이 직접 이동 ---
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TicketDetail(postSeq: post.post_seq!),
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => TicketDetail(postSeq: post.post_seq!),
+                        //   ),
+                        // );
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white, borderRadius: BorderRadius.circular(16),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                              Text("${pState.selectedRow} ${post.post_quantity}매", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black)),
-                              Text("${NumberFormat('#,###').format(post.post_price)}원", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange.shade800)),
-                            ]),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "${pState.selectedRow} ${post.post_quantity}매",
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  "${NumberFormat('#,###').format(post.post_price)}원",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange.shade800,
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 10),
-                            Text(post.post_desc ?? "설명이 없습니다.", style: const TextStyle(color: Colors.grey, fontSize: 13, height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
-                            const SizedBox(height: 15),
-                            Row(children: [
-                              const CircleAvatar(radius: 12, backgroundColor: Color(0xFFF0F0F0), child: Icon(Icons.person, size: 14, color: Colors.grey)),
-                              const SizedBox(width: 8),
-                              const Text("인증된 판매자", style: TextStyle(fontSize: 12, color: Colors.black54)),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(color: accentColor, borderRadius: BorderRadius.circular(8)),
-                                child: const Text("상세보기", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black)),
+                            Text(
+                              post.post_desc ?? "설명이 없습니다.",
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                                height: 1.4,
                               ),
-                            ])
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 15),
+                            Row(
+                              children: [
+                                const CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Color(0xFFF0F0F0),
+                                  child: Icon(Icons.person, size: 14, color: Colors.grey),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "인증된 판매자",
+                                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: accentColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    "상세보기",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
