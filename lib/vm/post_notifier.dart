@@ -18,7 +18,7 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     return (data['results'] as List).map((e) => Post.fromJson(e)).toList();
   }
 
-  // [중요] 필터 검색 메서드
+  // 구매 필터 검색
   Future<void> fetchFilteredPosts({
     required int curtainId,
     required String date,
@@ -30,21 +30,27 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
     state = await AsyncValue.guard(() async {
       final url = "${GlobalData.url}/post/filter?curtain=$curtainId&date=$date&time=$time&grade=$gradeBit&area=$area";
       final res = await http.get(Uri.parse(url));
-      if (res.statusCode != 200) throw Exception('검색 실패');
+      if (res.statusCode != 200) throw Exception('필터 검색 실패');
       final data = json.decode(utf8.decode(res.bodyBytes));
       return (data['results'] as List).map((e) => Post.fromJson(e)).toList();
     });
   }
 
+  // 개별 포스트 상세 조회
+  Future<Post> selectPost(int seq) async {
+    final res = await http.get(Uri.parse("${GlobalData.url}/post/selectPost/$seq"));
+    if (res.statusCode != 200) throw Exception('상세 정보 로드 실패');
+    final data = json.decode(utf8.decode(res.bodyBytes));
+    final List list = data['results'];
+    if (list.isEmpty) throw Exception('데이터가 없습니다.');
+    return Post.fromJson(list.first);
+  }
+
   Future insertPost(Post post) async {
     final url = Uri.parse("${GlobalData.url}/post/insert");
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(post.toJson()),
-    );
-    final data = json.decode(utf8.decode(response.bodyBytes));
+    final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode(post.toJson()));
     await refreshPost();
+    final data = json.decode(utf8.decode(response.bodyBytes));
     return data['results'];
   }
 
@@ -55,3 +61,8 @@ class PostNotifier extends AsyncNotifier<List<Post>> {
 }
 
 final postNotifierProvider = AsyncNotifierProvider<PostNotifier, List<Post>>(PostNotifier.new);
+
+// 상세 페이지용 Provider (Family)
+final postDetailProvider = FutureProvider.family<Post, int>((ref, postSeq) async {
+  return await ref.read(postNotifierProvider.notifier).selectPost(postSeq);
+});
