@@ -15,6 +15,8 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   // property
   late TabController mainTabController;
 
+  final String appLogo = 'images/su_app_icon.png'; // 앱 로고
+
   @override
   void initState() {
     super.initState();
