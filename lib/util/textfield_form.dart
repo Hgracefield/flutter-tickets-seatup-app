@@ -50,3 +50,14 @@ class TextfieldForm {
     );
   }
 }
+
+
+// =========================== 사용 예시 ============================
+// TextfieldForm.searchTextField(
+//   controller: searchController,
+//   hintText: '검색어를 입력하세요',
+//   prefixIcon: Icons.search,
+//   onSubmitted: (value) {
+//     search();
+//   },
+// ),
