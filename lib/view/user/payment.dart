@@ -48,7 +48,6 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               padding: const EdgeInsets.all(20.0),
               child: ElevatedButton(
                 onPressed: () async {
-                  final userID = ref.watch(storageProvider).read('user_id');
                   final paymentResult = await _paymentWidget.requestPayment(
                     paymentInfo: PaymentInfo(
                       orderId: 'ORDER_${widget.post.post_seq}_${DateTime.now().millisecondsSinceEpoch}', 
@@ -57,20 +56,20 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                   );
 
                   if (paymentResult.success != null) {
-                    // 1. 서버 DB 상태 업데이트 (판매완료)
-                    final result = await ref.read(postNotifierProvider.notifier)
+                    // 1. 판매글 상태 업데이트
+                    final statusResult = await ref.read(postNotifierProvider.notifier)
                         .updatePostStatus(widget.post.post_seq!, 1);
-                     final purchase =  Purchase(
-                        purchase_user_id: userID, 
-                        purchase_curtain_id: widget.post.post_curtain_id, 
-                        purchase_create_date: widget.post.post_create_date!);
+                    
+                    // 2. 구매 내역 생성 및 저장
+                    final purchase = Purchase(
+                        purchase_user_id: widget.buyerId, // 위젯에서 받은 ID 사용
+                        purchase_curtain_id: widget.post.post_seq!, 
+                        purchase_create_date: DateTime.now().toIso8601String());
 
-                      await ref.read(purchaseNotifierProvider.notifier)
-                                                    .insertPurchase(purchase);    
+                    await ref.read(purchaseNotifierProvider.notifier).insertPurchase(purchase);    
 
-                    if (result.contains("OK") && mounted) {
-                      // 2. [수정] 성공 화면으로 이동 (데이터 전달)
-                      // pushReplacement를 사용하여 결제창으로 뒤로가기 방지
+                    if (statusResult.contains("OK") && mounted) {
+                      // 3. 성공 화면으로 이동 (buyerId 전달)
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
