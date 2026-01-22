@@ -7,10 +7,9 @@ import 'package:seatup_app/constants/api_keys.dart';
 // import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:seatup_app/firebase_options.dart';
 import 'package:seatup_app/view/app_route/app_router.dart';
-import 'package:kakao_map_plugin/kakao_map_plugin.dart'; // 카카오 지도
-import 'package:seatup_app/view/app_route/router_page.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:seatup_app/view/app_route/router_page.dart'; // 카카오 지도
 // import 'package:seatup_app/constants/api_keys.dart'; //api rest java
-import 'package:seatup_app/view/user/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +20,9 @@ void main() async {
   ); // 카카오 지도 플러그인 초기화(JS 키 사용) pjs
   // 2. 한국어(ko_KR) 로케일 데이터 초기화 추가
   await initializeDateFormatting('ko_KR', null);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await GetStorage.init();
   //  KakaoSdk.init(nativeAppKey: '6a4ed9946737798d62126a14547f4c74');
 
@@ -37,7 +38,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      theme: ThemeData(
+        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+      ),
       // initialRoute: AppRoute.main,
       onGenerateRoute: AppRouter.generate,
       showSemanticsDebugger: false,
