@@ -40,13 +40,6 @@ class _UserMypageState extends ConsumerState<UserMypage> {
           );
         },
       ),
-      appBar: AppBar(
-        title: const Text("MY티켓"),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-      ),
       body: ListView(
         children: [
           const MyGreetingBanner(),
