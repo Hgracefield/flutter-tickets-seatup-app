@@ -1,9 +1,15 @@
-from fastapi import Form, APIRouter
+from fastapi import APIRouter
+from pydantic import BaseModel
 import pymysql
 import config
-
+from datetime import datetime
 
 router = APIRouter()
+
+class PurchaseIn(BaseModel):
+    purchase_user_id: int
+    purchase_curtain_id: int
+    purchase_create_date: datetime  # Flutter에서 ISO 문자열로 보내면 자동 파싱됨
 
 def connect():
     return pymysql.connect(
@@ -15,6 +21,27 @@ def connect():
         charset=config.DB_CHARSET,
         autocommit=True
     )
+
+@router.post("/insert")
+async def insert(p: PurchaseIn):
+    conn = connect()
+    curs = conn.cursor()
+    try:
+        sql = """
+        INSERT INTO purchase (purchase_user_id, purchase_curtain_id, purchase_date, purchase_create_date)
+        VALUES (%s, %s, NOW(), %s)
+        """
+        curs.execute(sql, (p.purchase_user_id, p.purchase_curtain_id, p.purchase_create_date))
+        conn.commit()
+        return {"result": "OK"}
+    except Exception as ex:
+        conn.rollback()
+        print("Error :", ex)
+        # 에러를 클라가 보게 해야 디버깅 쉬움
+        return {"result": "Error", "detail": str(ex)}
+    finally:
+        conn.close()
+
 
 @router.get("/selectPurchaseDetail/{seq}")
 async def selectPost(id:int):

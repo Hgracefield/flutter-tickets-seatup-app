@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/purchase.dart';
-import 'package:seatup_app/view/user/purchase_history_detail.dart';
+import 'package:seatup_app/view/user/payment_success.dart';
 import 'package:seatup_app/vm/purchase_notifier.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
-import 'package:seatup_app/view/user/payment_success.dart';
 import 'package:tosspayments_widget_sdk_flutter/model/payment_info.dart';
 import 'package:tosspayments_widget_sdk_flutter/model/payment_widget_options.dart';
 import 'package:tosspayments_widget_sdk_flutter/payment_widget.dart';
@@ -59,21 +58,28 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
                   if (paymentResult.success != null) {
                     // 1. 서버 DB 상태 업데이트 (판매완료)
-                      final result = await ref.read(postNotifierProvider.notifier)
-                          .updatePostStatus(widget.post.post_seq!, 1);
-                    final purchase =  Purchase(
+                    final result = await ref.read(postNotifierProvider.notifier)
+                        .updatePostStatus(widget.post.post_seq!, 1);
+                     final purchase =  Purchase(
                         purchase_user_id: userID, 
                         purchase_curtain_id: widget.post.post_curtain_id, 
                         purchase_create_date: widget.post.post_create_date!);
 
                       await ref.read(purchaseNotifierProvider.notifier)
-                                                    .insertPurchase(purchase);
+                                                    .insertPurchase(purchase);    
 
-                    if (result == "OK" && mounted) {
-                      // Navigator.pop(context); // 결제창 닫기
-                      // Navigator.pop(context); // 상세페이지 닫기
-                      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("결제가 완료되어 판매가 종료되었습니다.")));
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => PurchaseHistoryDetail(post: widget.post),));
+                    if (result.contains("OK") && mounted) {
+                      // 2. [수정] 성공 화면으로 이동 (데이터 전달)
+                      // pushReplacement를 사용하여 결제창으로 뒤로가기 방지
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentSuccessPage(
+                            post: widget.post,
+                            buyerId: widget.buyerId,
+                          ),
+                        ),
+                      );
                     }
                   }
                 },
