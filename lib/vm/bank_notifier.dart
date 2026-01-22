@@ -1,31 +1,31 @@
-import 'dart:async';
-import 'package:http/http.dart' as http;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/model/area.dart';
-import 'package:seatup_app/util/global_data.dart';
 import 'dart:convert';
-class AreaNotifier extends AsyncNotifier<List<Area>>{
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/bank.dart';
+import 'package:seatup_app/util/global_data.dart';
+import 'package:http/http.dart' as http;
+class BankNotifier extends AsyncNotifier<List<Bank>>{
   @override
-  Future<List<Area>> build() async {
-   return await fetchArea();
+  Future<List<Bank>> build() async {
+   return await fetchBank();
   }
-  Future<List<Area>> fetchArea() async {
-     String url = "${GlobalData.url}/area/select";
+  Future<List<Bank>> fetchBank() async {
+     String url = "${GlobalData.url}/bank/select";
     final res = await http.get(Uri.parse(url));
     if (res.statusCode != 200) {
       throw Exception('불러오기 실패 ${res.statusCode}');
     }
 
     final data = json.decode(utf8.decode(res.bodyBytes));
-    return (data['results'] as List).map((e) => Area.fromJson(e)).toList();
+    return (data['results'] as List).map((e) => Bank.fromJson(e)).toList();
   }
 
-  Future insertArea(Area area) async {
-    final url = Uri.parse("${GlobalData.url}/area/insert");
+  Future insertBank(Bank bank) async {
+    final url = Uri.parse("${GlobalData.url}/bank/insert");
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: json.encode(area.toJson()),
+      body: json.encode(bank.toJson()),
     );
     if (response.statusCode != 200) {
       throw Exception(
@@ -33,16 +33,16 @@ class AreaNotifier extends AsyncNotifier<List<Area>>{
       );
     }
     final data = json.decode(utf8.decode(response.bodyBytes));
-    await refreshArea();
+    await refreshBank();
     return data['result'];
   }
 
-  Future<String> updateArea(Area area) async {
-    final url = Uri.parse("${GlobalData.url}/area/update");
+  Future<String> updateBank(Bank bank) async {
+    final url = Uri.parse("${GlobalData.url}/bank/update");
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: json.encode(area.toJson()),
+      body: json.encode(bank.toJson()),
     );
     if (response.statusCode != 200) {
       throw Exception(
@@ -50,18 +50,16 @@ class AreaNotifier extends AsyncNotifier<List<Area>>{
       );
     }
     final data = json.decode(utf8.decode(response.bodyBytes));
-    await refreshArea();
+    await refreshBank();
     return data['result'];
   }
 
-  Future<void> refreshArea() async {
+  Future<void> refreshBank() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async => fetchArea());
+    state = await AsyncValue.guard(() async => fetchBank());
   }
-} // AreaNotifier
+}
 
-final areaNotifierProvider = AsyncNotifierProvider<AreaNotifier, List<Area>>(
-  AreaNotifier.new
+final bankNotifier = AsyncNotifierProvider<BankNotifier,List<Bank>>(
+  BankNotifier.new
 );
-
-

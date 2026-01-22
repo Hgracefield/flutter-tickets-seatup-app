@@ -6,9 +6,9 @@ from pydantic import BaseModel
 router = APIRouter()
 
 class Bank(BaseModel):
-    seq:int
-    name:str
-    date:str
+    bank_seq:int
+    bank_name:str
+    bank_create_date:str
 
 def connect():
     return pymysql.connect(
@@ -58,7 +58,7 @@ async def insert(bank : Bank):
         bank_create_date
         ) values (%s,now())
         """
-        curs.execute(sql, (bank.name))
+        curs.execute(sql, (bank.bank_name))
         conn.commit()
         return {'result':'OK'}
     except Exception as ex:
@@ -82,7 +82,7 @@ async def insert(bank : Bank):
         bank_create_date = now()
         where bank_seq = %s
         """
-        curs.execute(sql, (bank.name, bank.seq))
+        curs.execute(sql, (bank.bank_name, bank.bank_seq))
         conn.commit()
         return {'result':'OK'}
     except Exception as ex:
