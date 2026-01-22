@@ -5,6 +5,17 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
+class Curtain(BaseModel):
+    curtain_date:str
+    curtain_time:str
+    curtain_desc:str
+    curtain_pic:str
+    curtain_place:int
+    curtain_type:int
+    curtain_title:int
+    curtain_grade:int
+    curtain_area:int
+
 def connect():
     return pymysql.connect(
         host=config.DB_HOST,
@@ -164,7 +175,6 @@ async def search(keyword:str):
     finally:
         conn.close()
 
-
 # 시간만 가져오기위한 sql
 @router.get("/selectTime")
 async def search():
@@ -215,6 +225,47 @@ order by curtain_date asc
         return {'result':'Error'} 
     finally:
         conn.close()
-    
+
+# insert
+@router.post("/insert")
+async def insert(curtain : Curtain):
+    # Connection으로 부터 Cursor 생성
+    conn = connect()
+    curs = conn.cursor()
+
+    # SQL 문장
+    try:
+        sql = """
+        insert into curtain
+        (
+        curtain_date, 
+        curtain_time,
+        curtain_desc,
+        curtain_pic,
+        curtain_place_seq,
+        curtain_type_seq,
+        curtain_title_seq,
+        curtain_grade,
+        curtain_area
+        ) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        curs.execute(sql, (curtain.curtain_date, 
+                           curtain.curtain_time, 
+                           curtain.curtain_desc, 
+                           curtain.curtain_pic, 
+                           curtain.curtain_place, 
+                           curtain.curtain_type, 
+                           curtain.curtain_title,
+                           curtain.curtain_grade,
+                           curtain.curtain_area))
+
+        conn.commit()
+        return {'result':'OK'}
+    except Exception as ex:
+        conn.rollback()
+        print("Error :", ex)
+        return {'result':'Error'}
+    finally:
+        conn.close()
+
 
     
