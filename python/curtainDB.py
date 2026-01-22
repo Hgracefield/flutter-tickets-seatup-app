@@ -6,6 +6,7 @@ from pydantic import BaseModel
 router = APIRouter()
 
 class Curtain(BaseModel):
+    curtain_id:int
     curtain_date:str
     curtain_time:str
     curtain_desc:str
@@ -90,18 +91,12 @@ async def search(seq:int):
             c.curtain_desc, 
             c.curtain_mov, 
             c.curtain_pic, 
-            p.place_name, 
-            type.type_name, 
-            t.title_contents, 
+            c.curtain_title_seq, 
+            c.curtain_type_seq, 
+            c.curtain_place_seq, 
             c.curtain_grade, 
             c.curtain_area
         from curtain as c
-            join title as t
-                on c.curtain_title_seq = t.title_seq
-            join place as p
-                on c.curtain_place_seq = p.place_seq
-            join type 
-                on c.curtain_type_seq = type.type_seq
         where c.curtain_id = %s;     
         """
         curs.execute(sql, (seq,))
@@ -112,9 +107,9 @@ async def search(seq:int):
                    'curtain_desc' : row[3], 
                    'curtain_mov' : row[4], 
                    'curtain_pic' : row[5], 
-                   'place_name' : row[6], 
-                   'type_name' : row[7], 
-                   'title_contents' : row[8],
+                   'curtain_title_seq' : row[6], 
+                   'curtain_type_seq' : row[7], 
+                   'curtain_place_seq' : row[8],
                    'curtain_grade' : row[9],
                    'curtain_area' : row[10]
                    } for row in rows]
@@ -257,6 +252,46 @@ async def insert(curtain : Curtain):
                            curtain.curtain_title,
                            curtain.curtain_grade,
                            curtain.curtain_area))
+
+        conn.commit()
+        return {'result':'OK'}
+    except Exception as ex:
+        conn.rollback()
+        print("Error :", ex)
+        return {'result':'Error'}
+    finally:
+        conn.close()
+# insert
+@router.post("/update")
+async def insert(curtain : Curtain):
+    # Connection으로 부터 Cursor 생성
+    conn = connect()
+    curs = conn.cursor()
+
+    # SQL 문장
+    try:
+        sql = """
+        update curtain set
+        curtain_date = %s, 
+        curtain_time = %s,
+        curtain_desc = %s,
+        curtain_pic = %s,
+        curtain_place_seq = %s,
+        curtain_type_seq = %s,
+        curtain_title_seq = %s,
+        curtain_grade = %s,
+        curtain_area = %s
+        where curtain_id = %s"""
+        curs.execute(sql, (curtain.curtain_date, 
+                           curtain.curtain_time, 
+                           curtain.curtain_desc, 
+                           curtain.curtain_pic, 
+                           curtain.curtain_place, 
+                           curtain.curtain_type, 
+                           curtain.curtain_title,
+                           curtain.curtain_grade,
+                           curtain.curtain_area,
+                           curtain.curtain_id))
 
         conn.commit()
         return {'result':'OK'}

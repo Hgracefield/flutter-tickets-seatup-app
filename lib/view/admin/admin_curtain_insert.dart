@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
+import 'package:seatup_app/vm/curtain_dashboard_notifier.dart';
 import 'package:seatup_app/vm/curtain_manager_notifier.dart';
 import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/grade_notifier.dart';
@@ -48,12 +48,8 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   // ];
 
   // ---------- TextField ----------
-  final titleCtrl = TextEditingController();
-  final locationCtrl = TextEditingController();
-  final placeCtrl = TextEditingController();
   final showDateCtrl = TextEditingController();
   final showTimeCtrl = TextEditingController();
-  final castCtrl = TextEditingController();
   final TextEditingController curtainDescCtrl = TextEditingController();
   final TextEditingController curtainPicCtrl = TextEditingController();
 
@@ -61,19 +57,41 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   String gradeValue = 'VIP';
   String areaValue = 'A구역';
 
+  Message message = Message(); 
+
+  bool isLoadingComplete = false; 
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask((){
+
+    ref.read(curtainManagerNotifier.notifier).reset();
+
+    
+      // await initData();
+    },);
+  }
+
   @override
   void dispose() {
-    titleCtrl.dispose();
-    locationCtrl.dispose();
-    placeCtrl.dispose();
+    // locationCtrl.dispose();
     showDateCtrl.dispose();
     showTimeCtrl.dispose();
-    castCtrl.dispose();
+    // castCtrl.dispose();
     curtainDescCtrl.dispose();
     curtainPicCtrl.dispose();
 
     super.dispose();
   }
+
+  // Future initData() async{
+    
+  //   ref.read(curtainManagerNotifier.notifier).reset();
+  //   isLoadingComplete = true;
+
+  // }
 
   // (선택) 날짜/시간 선택 도우미: 텍스트필드 입력도 가능 + 아이콘 누르면 picker
   Future<void> _pickDate() async {
@@ -104,28 +122,57 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
     }
   }
 
-  void _submit() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+  Future _submit() async {
+  
+    if(showDateCtrl.text.trim().isEmpty ||
+    showTimeCtrl.text.trim().isEmpty ||
+    curtainPicCtrl.text.trim().isEmpty ||
+    curtainDescCtrl.text.trim().isEmpty
+     )
+     {
+      message.errorSnackBar(context, '빈 공란이 있어요');
+     }
+     else
+     {
+      final payload = <String, dynamic> {
+        'curtain_id': 0,
+        'curtain_date':showDateCtrl.text.trim(),
+        'curtain_time':showTimeCtrl.text.trim(),
+        'curtain_desc':curtainDescCtrl.text.trim(),
+        'curtain_pic':curtainPicCtrl.text.trim(),
+        'curtain_place':ref.watch(curtainManagerNotifier).selectedPlaceIndex,
+        'curtain_type':ref.watch(curtainManagerNotifier).selectedTypeIndex,
+        'curtain_title': ref.watch(curtainManagerNotifier).selectedTitleIndex,
+        'curtain_grade':ref.watch(curtainManagerNotifier).selectedGradeMask,
+        'curtain_area':ref.watch(curtainManagerNotifier).selectedAreaMask,
+      };
 
-    final payload = <String, dynamic>{
-      'type': typeValue,
-      'grade': gradeValue,
-      'area': areaValue,
-      'title': titleCtrl.text.trim(),
-      'location': locationCtrl.text.trim(),
-      'place': placeCtrl.text.trim(),
-      'show_date': showDateCtrl.text.trim(),
-      'show_time': showTimeCtrl.text.trim(),
-      'show_cast': castCtrl.text.trim(),
-    };
+      final result = await ref.read(curtainNotifierProvider.notifier).insertCurtain(payload);
 
-    // ✅ 여기서 API 호출로 등록해도 되고,
-    // ✅ 지금은 payload를 이전 화면으로 반환
-    Navigator.pop(context, payload);
+      if(!mounted) return;
+
+      if(result == 'OK')
+      {
+        Navigator.pop(context);
+        await ref.read(adminCurtainNotifer.notifier).refresh();
+        message.successSnackBar(context, '등록에 성공 했어요.');
+      }
+      else
+      {
+        message.successSnackBar(context, '등록에 실패 했어요.');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+
+    // ref.watch(curtainManagerNotifier);
+    //  if (!isLoadingComplete) {
+    //   return const Scaffold(
+    //     body: Center(child: CircularProgressIndicator()),
+    //   );
+    // }
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: _buildAppBar(),
@@ -161,14 +208,16 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                   children: [
                                     Expanded(child: _buildTypeDropDown('type')),
                                     const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _dashTextField(
-                                        label: 'title',
-                                        controller: titleCtrl,
-                                        hint: '공연 제목',
-                                        requiredField: true,
-                                      ),
-                                    ),
+
+                                    Expanded(child: _buildTtitleDropDown('title')),
+                                    // Expanded(
+                                    //   child: _dashTextField(
+                                    //     label: 'title',
+                                    //     controller: titleCtrl,
+                                    //     hint: '공연 제목',
+                                    //     requiredField: true,
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
           
@@ -524,6 +573,74 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
     );
   }
 
+  Widget _buildTtitleDropDown(String label) {
+    final titleAsync = ref.watch(titleNotifierProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        titleAsync.when(
+          data: (titles) {
+            if (titles.isEmpty) return const SizedBox();
+
+            // 선택된 값(그대로 저장/사용)
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedTitleIndex;
+            // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+
+            final int? value =
+                (selected != null && titles.any((t) => t.title_seq == selected))
+                ? selected
+                : null;
+
+            // 최초 기본값 세팅(원하면 제거 가능)
+            if (value == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref
+                    .read(curtainManagerNotifier.notifier)
+                    .setType(titles.first.title_seq!);
+              });
+            }
+
+            return Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE0E6FF)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  value: value,
+                  hint: const Text('제목 선택'),
+                  items: titles
+                      .map(
+                        (title) => DropdownMenuItem<int>(
+                          value: title.title_seq, // 여기만 id로 바꾸고 싶으면 g.id
+                          child: Text(title.title_contents),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (t) {
+                    if (t == null) return;
+                    ref.read(curtainManagerNotifier.notifier).setTitle(t);
+                  },
+                ),
+              ),
+            );
+          },
+          error: (_, __) => const SizedBox(),
+          loading: () => const SizedBox(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPlaceDropDown(String label) {
     final placeAsync = ref.watch(placeNotifierProvider);
 
@@ -638,7 +755,7 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   );
 }
 
-Widget _buildAreaCheckList(String label) {
+  Widget _buildAreaCheckList(String label) {
   final areaAsync = ref.watch(areaNotifierProvider);
   final mask = ref.watch(curtainManagerNotifier).selectedAreaMask ?? 0;
 
