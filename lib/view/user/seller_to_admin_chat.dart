@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/vm/chat_provider.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
+import 'package:seatup_app/util/color.dart';
 
 class SellerToAdminChat extends ConsumerStatefulWidget {
   const SellerToAdminChat({super.key});
@@ -40,7 +41,7 @@ class _SellerToAdminChatState
           .read(chatRepoProvider)
           .sendMessage(userId: userId, talker: "user", message: text);
 
-          ref.invalidate(chatRoomProvider(userId)); // 메세지 보낸뒤 새로고침
+      ref.invalidate(chatRoomProvider(userId)); // 메세지 보낸뒤 새로고침
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -48,7 +49,6 @@ class _SellerToAdminChatState
       ).showSnackBar(SnackBar(content: Text("메시지 전송 실패: $e")));
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +83,6 @@ class _SellerToAdminChatState
       if (s.length >= 19) return s.substring(0, 19);
       return s;
     }
-    
 
     final roomAsync = ref.watch(chatRoomProvider(userId));
 
@@ -91,12 +90,13 @@ class _SellerToAdminChatState
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios,
-            color: Colors.black,
+            color: AppColors.textColor,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -104,9 +104,9 @@ class _SellerToAdminChatState
         title: const Text(
           "채팅 상담",
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            color: AppColors.textColor,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -126,7 +126,11 @@ class _SellerToAdminChatState
                   return const Center(
                     child: Text(
                       "상담을 시작해보세요 🙂",
-                      style: TextStyle(color: Colors.black45),
+                      style: TextStyle(
+                        color: Colors.black45,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   );
                 }
@@ -137,7 +141,7 @@ class _SellerToAdminChatState
                   reverse: true,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 14,
+                    vertical: 16,
                   ),
                   itemCount: reversed.length,
                   itemBuilder: (context, index) {
@@ -146,7 +150,10 @@ class _SellerToAdminChatState
                     final d = Map<String, dynamic>.from(raw);
 
                     final timeText = _formatDateTime(d["date"]);
-                    return _ChatBubble(messageMap: d, timeText: timeText);
+                    return _ChatBubble(
+                      messageMap: d,
+                      timeText: timeText,
+                    );
                   },
                 );
               },
@@ -156,58 +163,64 @@ class _SellerToAdminChatState
           SafeArea(
             top: false,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(color: Colors.grey.shade200),
+                  top: BorderSide(color: AppColors.adminBorderColor),
                 ),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      height: 44,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
-                        borderRadius: BorderRadius.circular(22),
-                      ),
+                    child: SizedBox(
+                      height: 48,
                       child: TextField(
                         controller: _controller,
                         onSubmitted: (_) => _sendMessage(userId),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: "메시지를 입력하세요",
-                          hintStyle: TextStyle(
+                          hintStyle: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
+                            fontWeight: FontWeight.w400,
                           ),
-                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: const Color(0xFFF5F5F5),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 16),
                   SizedBox(
-                    height: 44,
+                    height: 48, //  Button height 48
                     child: ElevatedButton(
                       onPressed: () => _sendMessage(userId),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.sublack,
+                        foregroundColor: AppColors.suyellow,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
+                          horizontal: 16,
                         ),
                       ),
                       child: const Text(
                         "보내기",
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -225,8 +238,9 @@ class _ChatBubble extends StatelessWidget {
   final Map<String, dynamic> messageMap;
   final String timeText;
   const _ChatBubble({
-   required this.messageMap,
-   required this.timeText});
+    required this.messageMap,
+    required this.timeText,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +249,7 @@ class _ChatBubble extends StatelessWidget {
     final isMe = talker == "user";
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: isMe
             ? MainAxisAlignment.end
@@ -246,11 +260,12 @@ class _ChatBubble extends StatelessWidget {
               maxWidth: MediaQuery.of(context).size.width * 0.72,
             ),
             padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 10,
+              horizontal: 16,
+              vertical: 12,
             ),
             decoration: BoxDecoration(
-              color: isMe ? Colors.black : const Color(0xFFF1F1F1),
+              color: isMe ? AppColors.sublack : Colors.white,
+              border: Border.all(color: AppColors.adminBorderColor),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16),
                 topRight: const Radius.circular(16),
@@ -260,25 +275,32 @@ class _ChatBubble extends StatelessWidget {
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Text(
                   msg,
                   style: TextStyle(
-                    color: isMe ? Colors.white : Colors.black,
+                    color: isMe
+                        ? AppColors.suyellow
+                        : AppColors.textColor,
                     fontSize: 14,
                     height: 1.35,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
                   timeText,
                   style: TextStyle(
-                    fontSize: 11,
-                    color: isMe ? Colors.white70 : Colors.black45
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: isMe
+                        ? AppColors.suyellow
+                        : Colors.black45,
                   ),
-                )
+                ),
               ],
             ),
           ),

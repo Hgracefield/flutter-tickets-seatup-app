@@ -75,7 +75,6 @@ class _CurtainListScreenState
     _searchController.clear();
 
     // 검색 초기화 (typeSeq 기준 리스트로 복구)
-    // family provider를 안 쓰는 구조라 typeSeq는 provider 내부(categoryFilterProvider)에서 자동 적용됨
     await ref.read(curtainListProvider.notifier).clearSearch();
   }
 
@@ -105,15 +104,25 @@ class _CurtainListScreenState
               autofocus: true,
               decoration: const InputDecoration(
                 hintText: "공연명을 검색하세요",
+                hintStyle: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
                 border: InputBorder.none,
               ),
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
               textInputAction: TextInputAction.search,
               onSubmitted: (_) async => _doSearch(typeSeq),
             )
           : Text(
               titleText,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
             ),
       centerTitle: true,
       actions: [
@@ -145,8 +154,6 @@ class _CurtainListScreenState
     final typeSeq = filter.typeSeq;
     final titleText = _categoryTitle(filter.category);
 
-    // typeSeq에 맞는 provider를 watch (family provider)
-    // family provider 제거했기 때문에 curtainListProvider만 watch하면 됨
     // 필터(typeSeq)는 curtainListProvider 내부에서 categoryFilterProvider를 watch해서 자동 반영됨
     final asyncList = ref.watch(curtainListProvider);
 
@@ -155,7 +162,15 @@ class _CurtainListScreenState
       body: asyncList.when(
         data: (list) {
           if (list.isEmpty) {
-            return const Center(child: Text("공연 데이터가 없습니다."));
+            return const Center(
+              child: Text(
+                "공연 데이터가 없습니다.",
+                style: TextStyle(
+                  fontSize: 14, //
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            );
           }
 
           return RefreshIndicator(
@@ -252,8 +267,8 @@ class _CurtainCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 16, //
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -263,9 +278,9 @@ class _CurtainCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 14, //
                             color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                     ],
