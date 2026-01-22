@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/util/btn_style.dart';
 import 'package:seatup_app/vm/curtain_reviews_notifier.dart';
 
 class ReviewWrite extends ConsumerStatefulWidget {
@@ -36,7 +37,10 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: Text("관람 후기", style: TextStyle(fontWeight: FontWeight.w500)),
+          title: Text(
+            "관람 후기 작성",
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
           centerTitle: true,
           backgroundColor: Colors.white,
         ),
@@ -99,23 +103,55 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
                 children: [
                   Expanded(
                     flex: 1,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade300,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(10),
-                        ),
-                        minimumSize: Size(10, 50),
-                      ),
-                      child: Text("취소"),
+                    // child: ElevatedButton(
+                    //   onPressed: () => Navigator.pop(context),
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: Colors.grey.shade300,
+                    //     foregroundColor: Colors.black,
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadiusGeometry.circular(10),
+                    //     ),
+                    //     minimumSize: Size(10, 50),
+                    //   ),
+                    //   child: Text("취소"),
+                    // ),
+                    child: BtnStyle.primary(
+                      text: '취소',
+                      onPressed: () => Navigator.pop(context)
                     ),
                   ),
                   SizedBox(width: 10),
                   Expanded(
                     flex: 2,
-                    child: ElevatedButton(
+                    // child: ElevatedButton(
+                    //   onPressed: () async {
+                    //     if (titleController.text.isNotEmpty &&
+                    //         contentController.text.isNotEmpty) {
+                    //       await reviewActions.addReview(
+                    //         titleController.text,
+                    //         contentController.text,
+                    //       );
+                    //       titleController.clear();
+                    //       contentController.clear();
+                    //       if (!context.mounted) return;
+                    //       _snackBar(context, "후기가 등록되었습니다.", Colors.blue);
+                    //     } else {
+                    //       if (!context.mounted) return;
+                    //       _snackBar(context, "제목과 내용을 모두 입력해 주세요.", Colors.red);
+                    //     }
+                    //   },
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: Colors.black,
+                    //     foregroundColor: Colors.white,
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadiusGeometry.circular(10),
+                    //     ),
+                    //     minimumSize: Size(10, 50),
+                    //   ),
+                    //   child: Text("등록하기"),
+                    // ),
+                    child: BtnStyle.primary(
+                      text: '등록하기',
                       onPressed: () async {
                         if (titleController.text.isNotEmpty &&
                             contentController.text.isNotEmpty) {
@@ -132,15 +168,6 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
                           _snackBar(context, "제목과 내용을 모두 입력해 주세요.", Colors.red);
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(10),
-                        ),
-                        minimumSize: Size(10, 50),
-                      ),
-                      child: Text("등록하기"),
                     ),
                   ),
                 ],
