@@ -35,6 +35,7 @@ class RouteState {
   final int distanceMeter;
   final int durationSec;
 
+ 
   const RouteState({
     this.isLoading = false,
     this.error,

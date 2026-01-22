@@ -144,36 +144,7 @@ class _UserMypageState extends ConsumerState<UserMypage> {
             ),
           ),
            const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  // 맵 테스트용 placeSeq 지정
-                  // 너희 DB에 존재하는 공연장 seq로 바꿔줘야 정상적으로 경로가 나온다
-                  ref.read(selectedPlaceSeqProvider.notifier).state =
-                      1;
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const MapView(),
-                    ),
-                  );
-                },
-                child: const Text('맵 테스트'),
-              ),
-            ),
-          ),
+        
          
           
           
