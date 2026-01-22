@@ -60,7 +60,7 @@ async def insert(student: Type):
 
     # SQL 문장
     try:
-        sql = "insert into type(ttype_name, ttype_create_date) values (%s,%s,%s,%s,%s)"
+        sql = "insert into type(type_name, type_create_date) values (%s,%s,%s,%s,%s)"
         curs.execute(sql, (type.type_name, type.type_create_date))
         conn.commit()
         conn.close()
