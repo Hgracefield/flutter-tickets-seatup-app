@@ -62,7 +62,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                         .updatePostStatus(widget.post.post_seq!, 1);
                      final purchase =  Purchase(
                         purchase_user_id: userID, 
-                        purchase_curtain_id: widget.post.post_curtain_id, 
+                        purchase_post_id: widget.post.post_seq!, 
                         purchase_create_date: widget.post.post_create_date!);
 
                       await ref.read(purchaseNotifierProvider.notifier)
