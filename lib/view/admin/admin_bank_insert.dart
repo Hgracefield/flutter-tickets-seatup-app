@@ -1,50 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/model/area.dart';
+import 'package:seatup_app/model/bank.dart';
 import 'package:seatup_app/util/message.dart';
-import 'package:seatup_app/vm/area_notifier.dart';
+import 'package:seatup_app/vm/bank_notifier.dart';
 
-class AdminAreaInsert extends ConsumerStatefulWidget {
-  const AdminAreaInsert({super.key});
+class AdminBankInsert extends ConsumerStatefulWidget {
+  const AdminBankInsert({super.key});
 
   @override
-  ConsumerState<AdminAreaInsert> createState() => _AdminAreaInsertState();
+  ConsumerState<AdminBankInsert> createState() => _AdminBankInsertState();
 }
 
-class _AdminAreaInsertState extends ConsumerState<AdminAreaInsert> {
+class _AdminBankInsertState extends ConsumerState<AdminBankInsert> {
   // === Property ===
-  late TextEditingController numberController;
-  late TextEditingController valueController;
+  late TextEditingController nameController;
 
   Message message = Message();
 
   @override
   void initState() {
     super.initState();
-    numberController = TextEditingController();
-    valueController = TextEditingController();
+    nameController = TextEditingController();
   }
 
   @override
   void dispose() {
-    numberController.dispose();
-    valueController.dispose();
+    nameController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('구역 등록')),
+      appBar: AppBar(title: Text('은행 등록')),
       body: Center(
         child: Column(
           children: [
-            _buildTextField('구역 등급', numberController, false),
-            _buildTextField('구역 가치', valueController, false),
+            _buildTextField('은행 이름', nameController, false),
             ElevatedButton(
               onPressed: () async {
-                if (numberController.text.trim().isEmpty ||
-                    valueController.text.trim().isEmpty) {
+                if (nameController.text.trim().isEmpty) {
                   message.errorSnackBar(context, '비어 있는 칸이 있습니다');
                 } else {
                   insert();
@@ -81,16 +76,17 @@ class _AdminAreaInsertState extends ConsumerState<AdminAreaInsert> {
   // === Functions ===
 
   Future insert() async {
-    final areaNotifier = ref.watch(areaNotifierProvider.notifier);
+    final bankNotifierProvider = ref.watch(bankNotifier.notifier);
 
-    Area grade = Area(
-      area_number: numberController.text.trim(),
-      area_value: int.parse(valueController.text.trim()),
+    Bank grade = Bank(
+      bank_seq: 0,
+      bank_name: nameController.text.trim(),
+      bank_create_date: ''
     );
-    final result = await areaNotifier.insertArea(grade);
+    final result = await bankNotifierProvider.insertBank(grade);
     if (result == 'OK') {
       if (!mounted) return;
-      message.successSnackBar(context, '구역이 추가 되었습니다.');
+      message.successSnackBar(context, '은행이 추가 되었습니다.');
     }
   }
 } // class
