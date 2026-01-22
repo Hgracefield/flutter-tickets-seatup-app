@@ -86,7 +86,7 @@ class AppRouter {
       case AppRoute.curtainSearch:
         return MaterialPageRoute(builder: (_) => const CurtainSearch());
       case AppRoute.reviewWrite:
-        return MaterialPageRoute(builder: (_) => const ReviewWrite());
+        return MaterialPageRoute(builder: (_) => ReviewWrite());
       case AppRoute.reviewList:
         return MaterialPageRoute(builder: (_) => const ReviewList());
       // case AppRoute.userToUserChat:

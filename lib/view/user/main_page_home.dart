@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/weather.dart';
 import 'package:seatup_app/view/user/curtain_list_screen.dart';
-import 'package:seatup_app/vm/weather_notifier.dart';
+import 'package:seatup_app/vm/weather_provider.dart';
 
 class MainPageHome extends ConsumerWidget {
   const MainPageHome({super.key});
@@ -139,7 +139,7 @@ class MainPageHome extends ConsumerWidget {
                         _title('오늘의 날씨'),
                         const SizedBox(height: 20),
                         _mainWeatherCard(weather),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
                         // _minMaxTempCard(weather!),
                         // const SizedBox(height: 20),
                         _weatherInfoGrid(weather),
