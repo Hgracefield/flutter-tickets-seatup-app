@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
-import 'package:seatup_app/vm/curtain_dashboard_notifier.dart';
+import 'package:seatup_app/vm/admin_curtain_notifier.dart';
 import 'package:seatup_app/vm/curtain_manager_notifier.dart';
 import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/grade_notifier.dart';
