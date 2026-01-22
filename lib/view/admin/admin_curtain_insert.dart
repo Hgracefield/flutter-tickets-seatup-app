@@ -9,6 +9,8 @@ import 'package:seatup_app/vm/place_notifier.dart';
 import 'package:seatup_app/vm/title_notifier.dart';
 import 'package:seatup_app/vm/type_provider.dart';
 import 'package:seatup_app/util/message.dart';
+import 'package:seatup_app/util/btn_style.dart';
+import 'package:seatup_app/util/color.dart';
 
 /// ✅ 등록 버튼을 누르면 나오는 "등록 페이지"
 /// - type / grade / area : Dropdown
@@ -28,34 +30,16 @@ class AdminCurtainInsert extends ConsumerStatefulWidget {
 }
 
 class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
+
+  // === Property === 
+
   final _formKey = GlobalKey<FormState>();
 
-  // // ---------- Dropdown 기본값 ----------
-  // String typeValue = '뮤지컬';
-  // String gradeValue = 'VIP';
-  // String areaValue = 'A구역';
 
-  // // ---------- Dropdown 아이템 ----------
-  // final List<String> typeItems = const ['뮤지컬', '콘서트', '연극', '클래식'];
-  // final List<String> gradeItems = const ['VIP', 'R', 'S', 'A', 'B'];
-  // final List<String> areaItems = const [
-  //   'A구역',
-  //   'B구역',
-  //   'C구역',
-  //   'D구역',
-  //   'E구역',
-  //   'F구역',
-  // ];
-
-  // ---------- TextField ----------
   final showDateCtrl = TextEditingController();
   final showTimeCtrl = TextEditingController();
   final TextEditingController curtainDescCtrl = TextEditingController();
   final TextEditingController curtainPicCtrl = TextEditingController();
-
-  String typeValue = '뮤지컬';
-  String gradeValue = 'VIP';
-  String areaValue = 'A구역';
 
   Message message = Message(); 
 
@@ -64,36 +48,21 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   @override
   void initState() {
     super.initState();
-
     Future.microtask((){
-
     ref.read(curtainManagerNotifier.notifier).reset();
-
-    
-      // await initData();
     },);
   }
 
   @override
   void dispose() {
-    // locationCtrl.dispose();
     showDateCtrl.dispose();
     showTimeCtrl.dispose();
-    // castCtrl.dispose();
     curtainDescCtrl.dispose();
     curtainPicCtrl.dispose();
 
     super.dispose();
   }
 
-  // Future initData() async{
-    
-  //   ref.read(curtainManagerNotifier.notifier).reset();
-  //   isLoadingComplete = true;
-
-  // }
-
-  // (선택) 날짜/시간 선택 도우미: 텍스트필드 입력도 가능 + 아이콘 누르면 picker
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -166,13 +135,6 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
 
   @override
   Widget build(BuildContext context) {
-
-    // ref.watch(curtainManagerNotifier);
-    //  if (!isLoadingComplete) {
-    //   return const Scaffold(
-    //     body: Center(child: CircularProgressIndicator()),
-    //   );
-    // }
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: _buildAppBar(),
@@ -208,16 +170,8 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                   children: [
                                     Expanded(child: _buildTypeDropDown('type')),
                                     const SizedBox(width: 12),
-
                                     Expanded(child: _buildTtitleDropDown('title')),
-                                    // Expanded(
-                                    //   child: _dashTextField(
-                                    //     label: 'title',
-                                    //     controller: titleCtrl,
-                                    //     hint: '공연 제목',
-                                    //     requiredField: true,
-                                    //   ),
-                                    // ),
+                                  
                                   ],
                                 ),
           
@@ -226,24 +180,7 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                 // 2줄: location + place
                                 Row(
                                   children: [
-                                    // Expanded(
-                                    //   child: _dashTextField(
-                                    //     label: 'location',
-                                    //     controller: locationCtrl,
-                                    //     hint: '지역 (예: 서울)',
-                                    //     requiredField: true,
-                                    //   ),
-                                    // ),
                                     Expanded(child: _buildPlaceDropDown('place')),
-                                    // const SizedBox(width: 12),
-                                    // Expanded(
-                                    //   child: _dashTextField(
-                                    //     label: 'place',
-                                    //     controller: placeCtrl,
-                                    //     hint: '공연장 (예: 예술의 전당)',
-                                    //     requiredField: true,
-                                    //   ),
-                                    // ),
                                   ],
                                 ),
           
@@ -315,38 +252,16 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                         // 하단 버튼
                         Row(
                           children: [
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF2F57C9),
-                                side: const BorderSide(color: Color(0xFFCFD8FF)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text(
-                                '취소',
-                                style: TextStyle(fontWeight: FontWeight.w800),
-                              ),
+                            BtnStyle.primary(
+                              text: '취소',
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
                             ),
                             const Spacer(),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4D74D6),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 12,
-                                ),
-                              ),
-                              onPressed: _submit,
-                              child: const Text(
-                                '등록',
-                                style: TextStyle(fontWeight: FontWeight.w900),
-                              ),
+                            BtnStyle.primary(
+                              text: '등록',
+                              onPressed: () => _submit,
                             ),
                           ],
                         ),
@@ -366,7 +281,7 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   Widget _dashLabel(String text) => Text(
     text,
     style: const TextStyle(
-      fontSize: 12,
+      fontSize: 14,
       fontWeight: FontWeight.w800,
       color: Color(0xFF2F57C9),
     ),
@@ -459,51 +374,16 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
       elevation: 0,
       title: const Text(
         '제품 정보 등록',
-        style: TextStyle(color: Color(0xFF1E3A8A), fontWeight: FontWeight.w900),
+        style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textColor,
+              // color: Color(0xFF1E3A8A),
+            ),
       ),
       iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
     );
   }
-
-  // Widget _dashDropdown({
-  //   required String label,
-  //   required String value,
-  //   required List<String> items,
-  //   required ValueChanged<String> onChanged,
-  // }) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       _dashLabel(label),
-  //       const SizedBox(height: 6),
-  //       Container(
-  //         height: 48,
-  //         padding: const EdgeInsets.symmetric(horizontal: 12),
-  //         decoration: BoxDecoration(
-  //           color: const Color(0xFFF4F6FF),
-  //           borderRadius: BorderRadius.circular(10),
-  //           border: Border.all(color: const Color(0xFFE0E6FF)),
-  //         ),
-  //         child: DropdownButtonHideUnderline(
-  //           child: DropdownButton<String>(
-  //             value: value,
-  //             isExpanded: true,
-  //             icon: const Icon(
-  //               Icons.keyboard_arrow_down,
-  //               color: Color(0xFF2F57C9),
-  //             ),
-  //             items: items
-  //                 .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-  //                 .toList(),
-  //             onChanged: (v) {
-  //               if (v != null) onChanged(v);
-  //             },
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 
   Widget _buildTypeDropDown(String label) {
     final typeAsync = ref.watch(typeNotifierProvider);
@@ -517,18 +397,15 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
           data: (types) {
             if (types.isEmpty) return const SizedBox();
 
-            // 선택된 값(그대로 저장/사용)
             final selected = ref
                 .watch(curtainManagerNotifier)
                 .selectedTypeIndex;
-            // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
 
             final int? value =
                 (selected != null && types.any((g) => g.type_seq == selected))
                 ? selected
                 : null;
 
-            // 최초 기본값 세팅(원하면 제거 가능)
             if (value == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 ref
