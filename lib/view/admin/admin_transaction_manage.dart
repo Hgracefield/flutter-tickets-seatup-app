@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/util/color.dart';
+import 'package:seatup_app/util/global_data.dart';
 import 'package:seatup_app/util/side_menu.dart';
 import 'package:seatup_app/view/admin/admin_side_bar.dart';
 import 'package:seatup_app/vm/admin_post_notifier.dart';
@@ -17,7 +18,7 @@ class AdminTransactionManage extends ConsumerWidget {
     final postAsync = ref.watch(adminPostListProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.adminBackgroundColor,
       body: SafeArea(
         child: Row(
           children: [
@@ -28,68 +29,85 @@ class AdminTransactionManage extends ConsumerWidget {
                   contentsTitle(),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          _tableHeader(),
-                          const Divider(height: 1),
-                          Expanded(
-                            child: postAsync.when(
-                              loading: () =>
-                                  const Center(child: CircularProgressIndicator()),
-                              error: (e, _) => Center(child: Text('에러 발생: $e')),
-                              data: (posts) => ListView.separated(
-                                itemCount: posts.length,
-                                separatorBuilder: (_, __) => const Divider(height: 1),
-                                itemBuilder: (context, index) {
-                                  final r = posts[index];
-                                  debugPrint('ADMIN POST ROW => $r');
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.adminBorderColor),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            _tableHeader(),
+                            const Divider(height: 1),
+                            Expanded(
+                              child: postAsync.when(
+                                loading: () =>
+                                    const Center(child: CircularProgressIndicator()),
+                                error: (e, _) => Center(child: Text('에러 발생: $e')),
+                                data: (posts) => ListView.separated(
+                                  itemCount: posts.length,
+                                  separatorBuilder: (_, __) => const Divider(height: 1),
+                                  itemBuilder: (context, index) {
+                                    final r = posts[index];
+                                    debugPrint('ADMIN POST ROW => $r');
 
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                      horizontal: 16,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        _BodyCell(
-                                          r['post_create_date']?.toString() ?? '-',
-                                          flex: 2,
-                                        ),
-                                        _BodyCell(r['type_name'] ?? '-', flex: 2),
-                                        _BodyCell(r['title_contents'] ?? '-', flex: 2),
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                        horizontal: 16,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          _BodyCell(
+                                            r['post_create_date']?.toString() ?? '-',
+                                            flex: 2,
+                                          ),
+                                          _BodyCell(r['type_name'] ?? '-', flex: 2),
+                                          _BodyCell(r['title_contents'] ?? '-', flex: 2),
 
-                                        _BodyCell('${r['post_price']}원', flex: 2),
-                                        _BodyCell(r['user_name'] ?? '-', flex: 2),
+                                          _BodyCell('${r['post_price']}원', flex: 2),
+                                          _BodyCell(r['user_name'] ?? '-', flex: 2),
 
-                                        SizedBox(
-                                          width: 80,
-                                          child: OutlinedButton(
-                                            onPressed: () async {
-                                              await _updateStatus(ref, r['post_seq'], 1);
-                                            },
-                                            style: OutlinedButton.styleFrom(
-                                              backgroundColor: AppColors.warnColor,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                            child: const Text(
-                                              '판매완료',
-                                              style: TextStyle(fontSize: 13),
+                                          SizedBox(
+                                            width: 100,
+                                            child: OutlinedButton(
+                                              onPressed: () async {
+                                                await _updateStatus(
+                                                  ref,
+                                                  r['post_seq'],
+                                                  1,
+                                                );
+                                              },
+
+                                              style: OutlinedButton.styleFrom(
+                                                backgroundColor: AppColors.suyellow,
+                                                foregroundColor: AppColors.textColor,
+                                                side: const BorderSide(
+                                                  color: AppColors.suyellow,
+                                                ),
+                                                shadowColor: AppColors.textColor,
+
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadiusGeometry.circular(6),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                '판매중',
+                                                style: TextStyle(fontSize: 13),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -106,17 +124,22 @@ class AdminTransactionManage extends ConsumerWidget {
 /// ============================================ 제목 ============================================
 
 Widget contentsTitle() {
-  return Row(
-    children: [
-      Text(
-        '거래 글 리스트',
-        style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textColor,
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '거래 글 리스트',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: AppColors.adminTitleColor,
+          ),
         ),
-      ),
-    ],
+        SizedBox(height: 14),
+      ],
+    ),
   );
 }
 
@@ -124,7 +147,7 @@ Widget contentsTitle() {
 
 Widget _tableHeader() {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
     child: Row(
       children: const [
         _HeaderCell('등록일', flex: 2),
@@ -143,9 +166,7 @@ Widget _tableHeader() {
 class _HeaderCell extends StatelessWidget {
   final String text;
   final int flex;
-
   const _HeaderCell(this.text, {required this.flex});
-
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -153,7 +174,11 @@ class _HeaderCell extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+          color: Color(0xFF1E3A8A),
+        ),
       ),
     );
   }
@@ -161,7 +186,7 @@ class _HeaderCell extends StatelessWidget {
 
 Future<void> _updateStatus(WidgetRef ref, int postSeq, int status) async {
   await http.get(
-    Uri.parse('http://172.16.250.217:8000/post/updateStatus?seq=$postSeq&status=$status'),
+    Uri.parse('${GlobalData.url}/post/updateStatus?seq=$postSeq&status=$status'),
   );
   ref.invalidate(adminPostListProvider);
 }
