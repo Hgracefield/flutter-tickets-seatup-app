@@ -97,8 +97,8 @@ class _UserMypageState extends ConsumerState<UserMypage> {
 
                       MyPageMenuItemData(text: "관람 후기", onTap: () => 
                       _push(ReviewList())),
-                      MyPageMenuItemData(text: "거래 후기", onTap: () =>
-                      _push(TransactionReviewList())),
+                      // MyPageMenuItemData(text: "거래 후기", onTap: () =>
+                      // _push(TransactionReviewList())),
                     ],
                   ),
                 ),
