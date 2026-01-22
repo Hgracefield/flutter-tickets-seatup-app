@@ -19,7 +19,7 @@ class _ReviewListState extends ConsumerState<ReviewList> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("관람 후기 목록"),
+        title: Text("관람 후기"),
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
