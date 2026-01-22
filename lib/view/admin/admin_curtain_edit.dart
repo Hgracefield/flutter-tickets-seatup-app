@@ -2,7 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:seatup_app/model/curtain.dart';
+import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/vm/admin_edit_notifier.dart';
+import 'package:seatup_app/vm/area_notifier.dart';
+import 'package:seatup_app/vm/admin_curtain_notifier.dart';
+import 'package:seatup_app/vm/curtain_manager_notifier.dart';
+import 'package:seatup_app/vm/curtain_notifier.dart';
+import 'package:seatup_app/vm/grade_notifier.dart';
+import 'package:seatup_app/vm/place_notifier.dart';
+import 'package:seatup_app/vm/title_notifier.dart';
 import 'package:seatup_app/vm/type_provider.dart';
 
 // ✅ 선택된 type 값을 Riverpod으로 관리
@@ -20,16 +28,16 @@ class AdminCurtainEdit extends ConsumerStatefulWidget {
 class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
   final _formKey = GlobalKey<FormState>();
 
-  // ---------- Multi Select (복수) ----------
-  final List<String> gradeItems = const ['VIP', 'R', 'S', 'A'];
-  final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역'];
+  // // ---------- Multi Select (복수) ----------
+  // final List<String> gradeItems = const ['VIP', 'R', 'S', 'A'];
+  // final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역'];
 
-  List<String> selectedGrades = [];
-  List<String> selectedAreas = [];
+  // List<String> selectedGrades = [];
+  // List<String> selectedAreas = [];
 
   // ---------- TextField ----------
-  late final TextEditingController titleCtrl;
-  late final TextEditingController placeCtrl;
+  // late final TextEditingController titleCtrl;
+  // late final TextEditingController placeCtrl;
   late final TextEditingController curtainDateCtrl;
   late final TextEditingController curtainTimeCtrl;
 
@@ -37,38 +45,49 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
   late final TextEditingController curtainDescCtrl;
   late final TextEditingController curtainPicCtrl;
 
+  bool isLoadingComplete = false;
+
+  Message message = Message();
+
   @override
   void initState() {
     super.initState();
+    curtainDateCtrl = TextEditingController();
+    curtainTimeCtrl = TextEditingController();
+    curtainDescCtrl = TextEditingController();
+    curtainPicCtrl = TextEditingController();
 
-    final d = widget.initialData;
+    // build 중 수정 방지: microtask로 미룸
+    Future.microtask(() async {
+      ref.read(curtainManagerNotifier.notifier).reset();
+      await initData(widget.initialData.curtain_id!);
+      // if (!mounted) return;
+      // isLoadingComplete = true;
+    });
+  }
 
-    titleCtrl = TextEditingController(text: d.curtain_title.toString());
-    placeCtrl = TextEditingController(text: d.curtain_place.toString());
-    curtainDateCtrl = TextEditingController(text: d.curtain_date.toString());
-    curtainTimeCtrl = TextEditingController(text: d.curtain_time.toString());
 
-    curtainDescCtrl = TextEditingController(text: d.curtain_desc.toString());
-    curtainPicCtrl = TextEditingController(text: d.curtain_pic.toString());
+  Future<void> initData(int id) async {
+    // provider 수정/네트워크는 여기서 OK (initState에서 microtask로 호출하니까)
+    // ref.read(curtainManagerNotifier.notifier).reset();
 
-    // ✅ type 초기값은 provider에 넣어둠 (setState 필요없음)
-    ref.read(selectedTypeProvider.notifier).state = d.curtain_type?.toString();
+    final curtain =
+        await ref.read(curtainNotifierProvider.notifier).selectCurtain(id);
+    curtainDateCtrl.text = curtain.curtain_date;
+    curtainTimeCtrl.text = curtain.curtain_time;
+    curtainDescCtrl.text = curtain.curtain_desc;
+    curtainPicCtrl.text  = curtain.curtain_pic;
 
-    // ✅ grade/area 초기 체크
-    if (d.curtain_grade != null) {
-      final g = d.curtain_grade.toString();
-      if (gradeItems.contains(g)) selectedGrades = [g];
-    }
-    if (d.curtain_area != null) {
-      final a = d.curtain_area.toString();
-      if (areaItems.contains(a)) selectedAreas = [a];
-    }
+    final state = ref.read(curtainManagerNotifier.notifier);
+    state.setGrade(curtain.curtain_grade);
+    state.setArea(curtain.curtain_area);
+    state.setType(curtain.curtain_type_seq);
+    state.setTitle(curtain.curtain_title_seq);
+    state.setPlace(curtain.curtain_place_seq);
   }
 
   @override
   void dispose() {
-    titleCtrl.dispose();
-    placeCtrl.dispose();
     curtainDateCtrl.dispose();
     curtainTimeCtrl.dispose();
     curtainDescCtrl.dispose();
@@ -76,32 +95,51 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
     super.dispose();
   }
 
-  void _submitUpdate() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+  Future _submitUpdate() async{
+     if(curtainDateCtrl.text.trim().isEmpty ||
+    curtainTimeCtrl.text.trim().isEmpty ||
+    curtainPicCtrl.text.trim().isEmpty ||
+    curtainDescCtrl.text.trim().isEmpty
+     )
+     {
+      message.errorSnackBar(context, '빈 공란이 있어요');
+     }
+     else
+     {
+      final payload = <String, dynamic> {
+        'curtain_id': widget.initialData.curtain_id,
+        'curtain_date':curtainDateCtrl.text.trim(),
+        'curtain_time':curtainTimeCtrl.text.trim(),
+        'curtain_desc':curtainDescCtrl.text.trim(),
+        'curtain_pic':curtainPicCtrl.text.trim(),
+        'curtain_place':ref.watch(curtainManagerNotifier).selectedPlaceIndex,
+        'curtain_type':ref.watch(curtainManagerNotifier).selectedTypeIndex,
+        'curtain_title': ref.watch(curtainManagerNotifier).selectedTitleIndex,
+        'curtain_grade':ref.watch(curtainManagerNotifier).selectedGradeMask,
+        'curtain_area':ref.watch(curtainManagerNotifier).selectedAreaMask,
+      };
 
-    final typeValue = ref.read(selectedTypeProvider);
 
-    final payload = {
-      "type": typeValue ?? "",
-      "title": titleCtrl.text.trim(),
-      "place": placeCtrl.text.trim(),
-      "curtain_date": curtainDateCtrl.text.trim(),
-      "curtain_time": curtainTimeCtrl.text.trim(),
-      "curtain_desc": curtainDescCtrl.text.trim(),
-      "curtain_pic": curtainPicCtrl.text.trim(),
-      "grades": selectedGrades,
-      "areas": selectedAreas,
-    };
+      final result = await ref.read(curtainNotifierProvider.notifier).updateCurtain(payload);
 
-    // TODO: update API 호출
-    // print(payload);
+      if(!mounted) return;
+
+      if(result == 'OK')
+      {
+        Navigator.pop(context);
+
+        await ref.read(adminCurtainNotifer.notifier).refresh();
+        message.successSnackBar(context, '수정 성공 했어요.');
+      }
+      else
+      {
+        message.successSnackBar(context, '수정 실패 했어요.');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ types는 watch + when으로 처리
-    final typesAsync = ref.watch(typeNotifierProvider);
-    final selectedType = ref.watch(selectedTypeProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
@@ -166,114 +204,61 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                 // 1줄: type + title
                                 Row(
                                   children: [
-                                    Expanded(
-                                      flex: 1,
-                                      child: typesAsync.when(
-                                        loading: () => _loadingDropdown(label: 'type'),
-                                        error: (e, _) => _errorDropdown(label: 'type', message: '$e'),
-                                        data: (types) {
-                                          final typeItems = types.map((e) => e.type_name).toList();
-
-                                          if (typeItems.isEmpty) {
-                                            return _errorDropdown(label: 'type', message: 'type 목록이 비어있음');
-                                          }
-
-                                          // ✅ 선택값이 items에 없으면 첫번째로 보정 + provider에 반영
-                                          final safeValue = typeItems.contains(selectedType)
-                                              ? selectedType!
-                                              : typeItems.first;
-
-                                          if (selectedType != safeValue) {
-                                            // build 중 state 변경은 다음 프레임으로 미룸
-                                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                                              ref.read(selectedTypeProvider.notifier).state = safeValue;
-                                            });
-                                          }
-
-                                          return _dashDropdown(
-                                            label: 'type',
-                                            value: safeValue,
-                                            items: typeItems,
-                                            onChanged: (v) {
-                                              ref.read(selectedTypeProvider.notifier).state = v;
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
+                                    Expanded(child: _buildTypeDropDown('type')),
                                     const SizedBox(width: 12),
-                                    Expanded(
-                                      flex: 2,
-                                      child: _dashTextField(
-                                        label: 'title',
-                                        controller: titleCtrl,
-                                        hint: '공연 제목',
-                                        requiredField: true,
-                                      ),
-                                    ),
+
+                                    Expanded(child: _buildTtitleDropDown('title')),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
 
-                                Row(
+                              const SizedBox(height: 12),
+                              Row(
                                   children: [
-                                    Expanded(
-                                      child: _dashTextField(
-                                        label: 'place',
-                                        controller: placeCtrl,
-                                        hint: '공연장 (예: 예술의 전당)',
-                                        requiredField: true,
-                                      ),
-                                    ),
+                                    // Expanded(
+                                    //   child: _dashTextField(
+                                    //     label: 'location',
+                                    //     controller: locationCtrl,
+                                    //     hint: '지역 (예: 서울)',
+                                    //     requiredField: true,
+                                    //   ),
+                                    // ),
+                                    Expanded(child: _buildPlaceDropDown('place')),
+                                    // const SizedBox(width: 12),
+                                    // Expanded(
+                                    //   child: _dashTextField(
+                                    //     label: 'place',
+                                    //     controller: placeCtrl,
+                                    //     hint: '공연장 (예: 예술의 전당)',
+                                    //     requiredField: true,
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                 const SizedBox(height: 12),
 
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                 Row(
                                   children: [
-                                    Expanded(
-                                      child: _multiSelectBox(
-                                        label: 'grade (복수 선택)',
-                                        items: gradeItems,
-                                        selected: selectedGrades,
-                                        onToggle: (v) {
-                                          setState(() {
-                                            if (selectedGrades.contains(v)) {
-                                              selectedGrades.remove(v);
-                                            } else {
-                                              selectedGrades.add(v);
-                                            }
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _multiSelectBox(
-                                        label: 'area (복수 선택)',
-                                        items: areaItems,
-                                        selected: selectedAreas,
-                                        onToggle: (v) {
-                                          setState(() {
-                                            if (selectedAreas.contains(v)) {
-                                              selectedAreas.remove(v);
-                                            } else {
-                                              selectedAreas.add(v);
-                                            }
-                                          });
-                                        },
-                                      ),
-                                    ),
+                                    Expanded(child: _buildGradeCheckList('grade')),
+                                    SizedBox(width: 12,),
+                                    // Expanded(child: _buildGradeCheckList('grade')),
+                                    Expanded(child: _buildAreaCheckList('area'))
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-
+                                // Row(
+                                //   children: [
+                                //     // _dashLabel('area'),
+                                //     // Expanded(child: _buildAreaCheckList()),
+                                //   ],
+                                // ),
+                                const SizedBox(height: 12),
+          
+                                // 4줄: show_date + show_time (입력 가능 + picker 아이콘)
                                 Row(
                                   children: [
                                     Expanded(
                                       child: _dashPickerField(
-                                        label: 'curtain_date',
+                                        label: 'show_date',
                                         controller: curtainDateCtrl,
                                         hint: '예: 2026-02-11',
                                         icon: Icons.calendar_today_outlined,
@@ -293,19 +278,163 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-
+          
                                 _dashTextArea(
                                   label: 'curtain_desc',
                                   controller: curtainDescCtrl,
                                   hint: '설명 (여러 줄 입력 가능)',
                                 ),
                                 const SizedBox(height: 12),
-
+          
                                 _dashTextField(
                                   label: 'curtain_pic (image url)',
                                   controller: curtainPicCtrl,
                                   hint: 'https://...',
                                 ),
+
+
+                                // Row(
+                                //   children: [
+                                //     Expanded(
+                                //       flex: 1,
+                                //       child: typesAsync.when(
+                                //         loading: () => _loadingDropdown(label: 'type'),
+                                //         error: (e, _) => _errorDropdown(label: 'type', message: '$e'),
+                                //         data: (types) {
+                                //           final typeItems = types.map((e) => e.type_name).toList();
+
+                                //           if (typeItems.isEmpty) {
+                                //             return _errorDropdown(label: 'type', message: 'type 목록이 비어있음');
+                                //           }
+
+                                //           // ✅ 선택값이 items에 없으면 첫번째로 보정 + provider에 반영
+                                //           final safeValue = typeItems.contains(selectedType)
+                                //               ? selectedType!
+                                //               : typeItems.first;
+
+                                //           if (selectedType != safeValue) {
+                                //             // build 중 state 변경은 다음 프레임으로 미룸
+                                //             WidgetsBinding.instance.addPostFrameCallback((_) {
+                                //               ref.read(selectedTypeProvider.notifier).state = safeValue;
+                                //             });
+                                //           }
+
+                                //           return _dashDropdown(
+                                //             label: 'type',
+                                //             value: safeValue,
+                                //             items: typeItems,
+                                //             onChanged: (v) {
+                                //               ref.read(selectedTypeProvider.notifier).state = v;
+                                //             },
+                                //           );
+                                //         },
+                                //       ),
+                                //     ),
+                                //     const SizedBox(width: 12),
+                                //     Expanded(
+                                //       flex: 2,
+                                //       child: _dashTextField(
+                                //         label: 'title',
+                                //         controller: titleCtrl,
+                                //         hint: '공연 제목',
+                                //         requiredField: true,
+                                //       ),
+                                //     ),
+                                //   ],
+                                // ),
+                                // const SizedBox(height: 12),
+
+                                // Row(
+                                //   children: [
+                                //     Expanded(
+                                //       child: _dashTextField(
+                                //         label: 'place',
+                                //         controller: placeCtrl,
+                                //         hint: '공연장 (예: 예술의 전당)',
+                                //         requiredField: true,
+                                //       ),
+                                //     ),
+                                //   ],
+                                // ),
+                                // const SizedBox(height: 12),
+
+                                // Row(
+                                //   crossAxisAlignment: CrossAxisAlignment.start,
+                                //   children: [
+                                //     Expanded(
+                                //       child: _multiSelectBox(
+                                //         label: 'grade (복수 선택)',
+                                //         items: gradeItems,
+                                //         selected: selectedGrades,
+                                //         onToggle: (v) {
+                                //           setState(() {
+                                //             if (selectedGrades.contains(v)) {
+                                //               selectedGrades.remove(v);
+                                //             } else {
+                                //               selectedGrades.add(v);
+                                //             }
+                                //           });
+                                //         },
+                                //       ),
+                                //     ),
+                                //     const SizedBox(width: 12),
+                                //     Expanded(
+                                //       child: _multiSelectBox(
+                                //         label: 'area (복수 선택)',
+                                //         items: areaItems,
+                                //         selected: selectedAreas,
+                                //         onToggle: (v) {
+                                //           setState(() {
+                                //             if (selectedAreas.contains(v)) {
+                                //               selectedAreas.remove(v);
+                                //             } else {
+                                //               selectedAreas.add(v);
+                                //             }
+                                //           });
+                                //         },
+                                //       ),
+                                //     ),
+                                //   ],
+                                // ),
+                                // const SizedBox(height: 12),
+
+                                // Row(
+                                //   children: [
+                                //     Expanded(
+                                //       child: _dashPickerField(
+                                //         label: 'curtain_date',
+                                //         controller: curtainDateCtrl,
+                                //         hint: '예: 2026-02-11',
+                                //         icon: Icons.calendar_today_outlined,
+                                //         onTapIcon: _pickDate,
+                                //       ),
+                                //     ),
+                                //     const SizedBox(width: 12),
+                                //     Expanded(
+                                //       child: _dashPickerField(
+                                //         label: 'show_time',
+                                //         controller: curtainTimeCtrl,
+                                //         hint: '예: 14:00',
+                                //         icon: Icons.schedule_outlined,
+                                //         onTapIcon: _pickTime,
+                                //       ),
+                                //     ),
+                                //   ],
+                                // ),
+                                // const SizedBox(height: 12),
+
+                                // _dashTextArea(
+                                //   label: 'curtain_desc',
+                                //   controller: curtainDescCtrl,
+                                //   hint: '설명 (여러 줄 입력 가능)',
+                                // ),
+                                // const SizedBox(height: 12),
+
+                                // _dashTextField(
+                                //   label: 'curtain_pic (image url)',
+                                //   controller: curtainPicCtrl,
+                                //   hint: 'https://...',
+                                // ),
                               ],
                             ),
                           ),
@@ -511,44 +640,304 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
     );
   }
 
-  Widget _dashDropdown({
-    required String label,
-    required String value,
-    required List<String> items,
-    required ValueChanged<String> onChanged,
-  }) {
-    final safeValue = items.contains(value) ? value : items.first;
+  
+  Widget _buildTypeDropDown(String label) {
+    final typeAsync = ref.watch(typeNotifierProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _dashLabel(label),
         const SizedBox(height: 6),
-        Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF4F6FF),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE0E6FF)),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: safeValue,
-              isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2F57C9)),
-              items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-              onChanged: (v) {
-                if (v != null) onChanged(v);
-              },
-            ),
-          ),
+        typeAsync.when(
+          data: (types) {
+            if (types.isEmpty) return const SizedBox();
+
+            // 선택된 값(그대로 저장/사용)
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedTypeIndex;
+            // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+
+            final int? value =
+                (selected != null && types.any((g) => g.type_seq == selected))
+                ? selected
+                : null;
+
+            // 최초 기본값 세팅(원하면 제거 가능)
+            if (value == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref
+                    .read(curtainManagerNotifier.notifier)
+                    .setType(types.first.type_seq!);
+              });
+            }
+
+            return Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE0E6FF)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  value: value,
+                  hint: const Text('좌석 등급 선택'),
+                  items: types
+                      .map(
+                        (type) => DropdownMenuItem<int>(
+                          value: type.type_seq, // 여기만 id로 바꾸고 싶으면 g.id
+                          child: Text(type.type_name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref.read(curtainManagerNotifier.notifier).setType(v);
+                  },
+                ),
+              ),
+            );
+          },
+          error: (_, __) => const SizedBox(),
+          loading: () => const SizedBox(),
         ),
       ],
     );
   }
 
-  Widget _multiSelectBox({
+  Widget _buildTtitleDropDown(String label) {
+    final titleAsync = ref.watch(titleNotifierProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        titleAsync.when(
+          data: (titles) {
+            if (titles.isEmpty) return const SizedBox();
+
+            // 선택된 값(그대로 저장/사용)
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedTitleIndex;
+            // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+
+            final int? value =
+                (selected != null && titles.any((t) => t.title_seq == selected))
+                ? selected
+                : null;
+
+            // 최초 기본값 세팅(원하면 제거 가능)
+            if (value == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref
+                    .read(curtainManagerNotifier.notifier)
+                    .setType(titles.first.title_seq!);
+              });
+            }
+
+            return Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE0E6FF)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  value: value,
+                  hint: const Text('제목 선택'),
+                  items: titles
+                      .map(
+                        (title) => DropdownMenuItem<int>(
+                          value: title.title_seq, // 여기만 id로 바꾸고 싶으면 g.id
+                          child: Text(title.title_contents),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (t) {
+                    if (t == null) return;
+                    ref.read(curtainManagerNotifier.notifier).setTitle(t);
+                  },
+                ),
+              ),
+            );
+          },
+          error: (_, __) => const SizedBox(),
+          loading: () => const SizedBox(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlaceDropDown(String label) {
+    final placeAsync = ref.watch(placeNotifierProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        placeAsync.when(
+          data: (places) {
+            if (places.isEmpty) return const SizedBox();
+
+            // 선택된 값(그대로 저장/사용)
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedPlaceIndex;
+            // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
+
+            final int? value =
+                (selected != null && places.any((place) => place.place_seq == selected))
+                ? selected
+                : null;
+
+            // 최초 기본값 세팅(원하면 제거 가능)
+            if (value == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref
+                    .read(curtainManagerNotifier.notifier)
+                    .setPlace(places.first.place_seq!);
+              });
+            }
+
+            return Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE0E6FF)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  value: value,
+                  hint: const Text('좌석 등급 선택'),
+                  items: places
+                      .map(
+                        (place) => DropdownMenuItem<int>(
+                          value: place.place_seq, // 여기만 id로 바꾸고 싶으면 g.id
+                          child: Text(place.place_name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref.read(curtainManagerNotifier.notifier).setPlace(v);
+                  },
+                ),
+              ),
+            );
+          },
+          error: (_, __) => const SizedBox(),
+          loading: () => const SizedBox(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGradeCheckList(String label) {
+  final gradeAsync = ref.watch(gradeNotifierProvider);
+  final mask = ref.watch(curtainManagerNotifier).selectedGradeMask ?? 0;
+
+  return gradeAsync.when(
+    loading: () => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const SizedBox(height: 48),
+      ],
+    ),
+    error: (_, __) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const Text('불러오기 실패'),
+      ],
+    ),
+    data: (grades) {
+      final items = grades.map((g) => g.grade_name).toList();
+
+      final selected = grades
+          .where((g) => (mask & g.bit) != 0)
+          .map((g) => g.grade_name)
+          .toList();
+
+      return _multiSelectBox(
+        label: label,
+        items: items,
+        selected: selected,
+        onToggle: (name) {
+          final grade = grades.firstWhere((g) => g.grade_name == name);
+          final isChecked = (mask & grade.bit) != 0;
+
+          ref
+              .read(curtainManagerNotifier.notifier)
+              .toggleGrade(grade.bit, !isChecked);
+        },
+      );
+    },
+  );
+}
+
+  Widget _buildAreaCheckList(String label) {
+  final areaAsync = ref.watch(areaNotifierProvider);
+  final mask = ref.watch(curtainManagerNotifier).selectedAreaMask ?? 0;
+
+  return areaAsync.when(
+    loading: () => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const SizedBox(height: 48),
+      ],
+    ),
+    error: (_, __) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const Text('불러오기 실패'),
+      ],
+    ),
+    data: (areas) {
+      final items = areas.map((area) => area.area_number).toList();
+
+      final selected = areas
+          .where((a) => (mask & a.bit) != 0)
+          .map((a) => a.area_number)
+          .toList();
+
+      return _multiSelectBox(
+        label: label,
+        items: items,
+        selected: selected,
+        onToggle: (name) {
+          final area = areas.firstWhere((a) => a.area_number == name);
+          final isChecked = (mask & area.bit) != 0;
+
+          ref
+              .read(curtainManagerNotifier.notifier)
+              .toggleArea(area.bit, !isChecked);
+        },
+      );
+    },
+  );
+}
+
+Widget _multiSelectBox({
     required String label,
     required List<String> items,
     required List<String> selected,
@@ -559,6 +948,8 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
       children: [
         _dashLabel(label),
         const SizedBox(height: 6),
+
+        // 선택된 값 Chip 표시
         Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -587,6 +978,8 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
               ),
               const SizedBox(height: 8),
               const Divider(height: 1),
+
+              // 체크박스 리스트
               ...items.map((v) {
                 final checked = selected.contains(v);
                 return CheckboxListTile(
@@ -604,6 +997,8 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
       ],
     );
   }
+
+
 
   // ------------------ Date/Time pick ------------------
   Future<void> _pickDate() async {
