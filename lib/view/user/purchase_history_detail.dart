@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/model/post.dart';
 import 'package:seatup_app/view/user/main_page.dart';
 import 'package:seatup_app/vm/order_notifier.dart';
-import 'package:seatup_app/vm/post_notifier.dart';
 
 class PurchaseHistoryDetail extends ConsumerWidget {
-  final Post post;
-  const PurchaseHistoryDetail({super.key,required this.post});
+  final Map<String, dynamic> purchase;
+  const PurchaseHistoryDetail({super.key, required this.purchase});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orderPostNotifier = ref.watch(postSelectAllProvider(post.post_seq!));
+  Widget build(BuildContext context , WidgetRef ref) {
+    final bg = const Color(0xFFF6F7F9);
+    final totalPrice = purchase['post_quantity'] * purchase['post_price'];
+    final orderNo = ref.read(orderProviderAsync.notifier)
+                                .makeOrderNo(postSeq: purchase['post_seq'], postCreateDate: purchase['post_create_date']);
+    final String product = ref.read(orderProviderAsync.notifier)
+                        .ticketNumber(purchase['post_create_date'].toString(), purchase['post_seq'], purchase['purchase_post_id']);
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F9),
+      backgroundColor: bg,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.6,
@@ -23,7 +26,7 @@ class PurchaseHistoryDetail extends ConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "주문상세",
+          "주문서 상세",
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w800,
@@ -33,24 +36,22 @@ class PurchaseHistoryDetail extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainPage(),));
+               Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => MainPage()),
+              );
             },
             icon: const Icon(Icons.home_outlined, color: Colors.black),
           ),
         ],
       ),
-      body: orderPostNotifier.when(
-        data: (data) {
-          final total = data['post_quantity'] * data['post_price'];
-          final orderNo = ref.read(orderProviderAsync.notifier)
-                                .makeOrderNo(postSeq: data['post_seq'], postCreateDate: data['post_create_date']);
-          return ListView(
+      body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
         children: [
-          _StatusStrip(
-            left: "티켓주문완료",
-            right: "거래완료",
-          ),
+          // ✅ 상태 문구(핀전달완료) 제거한 안내 박스
+          // _InfoBanner(
+          //   text: "결제 완료 후 판매자가 PIN을 전달합니다.\n전달 완료 시 거래내역에서 확인할 수 있습니다.",
+          // ),
           const SizedBox(height: 10),
 
           _SectionCard(
@@ -58,8 +59,19 @@ class PurchaseHistoryDetail extends ConsumerWidget {
             child: Column(
               children: [
                 _KeyValueRow(label: "주문번호", value: orderNo),
-                const SizedBox(height: 10),
-                _OrderProductBlock(postData: data,),
+                const SizedBox(height: 8),
+                _KeyValueRow(label: "주문일시", value: purchase['purchase_date']),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: _ProductBlock(
+                    productNo: product,
+                    categoryLine: purchase['type_name'],
+                    title: purchase['title_contents'],
+                    qty: purchase['post_quantity'],
+                    unitPrice: purchase['post_price'],
+                  ),
+                ),
               ],
             ),
           ),
@@ -68,12 +80,10 @@ class PurchaseHistoryDetail extends ConsumerWidget {
           _SectionCard(
             title: "거래 정보",
             child: Column(
-              children: [
-                // _KeyValueRow(label: "거래 형태", value: order.tradeTitle),
-                // const SizedBox(height: 10),
-                _KeyValueRow(label: "판매자", value: data['user_name']),
-                const SizedBox(height: 10),
-                _KeyValueRow(label: "티켓보유 여부", value: "보유중"),
+              children: const [
+                // _KeyValueRow(label: "거래 방식", value: "tosspay 거래"),
+                // SizedBox(height: 10),
+                _KeyValueRow(label: "티켓 보유 여부", value: "보유중"),
               ],
             ),
           ),
@@ -84,8 +94,8 @@ class PurchaseHistoryDetail extends ConsumerWidget {
             child: Column(
               children: [
                 _KeyValueRow(label: "결제 수단", value: "tosspay"),
-                const SizedBox(height: 10),
-                _KeyValueRow(label: "결제 일자", value: data['post_create_date']),
+                SizedBox(height: 10),
+                _KeyValueRow(label: "결제자", value: purchase['user_name']),
               ],
             ),
           ),
@@ -95,42 +105,40 @@ class PurchaseHistoryDetail extends ConsumerWidget {
             title: "결제 금액",
             child: Column(
               children: [
-                _MoneyRow(label: "상품 금액", amount: data['post_price']),
-                const SizedBox(height: 10),
-                // _MoneyRow(label: "쿠폰 할인", amount: -order.amountCoupon),
+                _MoneyRow(label: "상품 금액", amount: purchase['post_price']),
                 // const SizedBox(height: 10),
-                // _MoneyRow(label: "배송비", amount: order.amountShipping),
-                // const Divider(height: 22),
-                _TotalMoneyRow(
-                  label: "총 결제 금액",
-                  amount: total,
-                ),
+                // _MoneyRow(label: "쿠폰 할인", amount: 0),
+                // const SizedBox(height: 10),
+                // _MoneyRow(label: "배송비", amount: 0),
+                const Divider(height: 22),
+                _TotalMoneyRow(label: "총 결제 금액", amount: totalPrice),
               ],
             ),
           ),
+
+          const SizedBox(height: 18),
+
+          // ✅ 하단 플로팅 느낌 버튼 (선택)
+          // _BottomActionButton(
+          //   text: "문의하기",
+          //   onTap: () {},
+          // ),
         ],
-      );
-        }, 
-        error: (error, stackTrace) => Text('에러 : $error'), 
-        loading: () => Center(child: CircularProgressIndicator(),),
-      )
-      
+      ),
     );
   }
 }
 
-// ======================= UI WIDGETS =======================
+// ---------------- UI ----------------
 
-class _StatusStrip extends StatelessWidget {
-  final String left;
-  final String right;
-
-  const _StatusStrip({required this.left, required this.right});
+class _InfoBanner extends StatelessWidget {
+  final String text;
+  const _InfoBanner({required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -144,15 +152,19 @@ class _StatusStrip extends StatelessWidget {
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Pill(text: left, bg: const Color(0xFFF2F3F5), fg: Colors.black87),
-          const Spacer(),
-          Text(
-            right,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
-              color: Colors.red,
+          const Icon(Icons.info_outline, size: 18, color: Colors.black54),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.35,
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -203,19 +215,23 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _OrderProductBlock extends ConsumerWidget {
-  final Map<String,dynamic> postData;
+class _ProductBlock extends StatelessWidget {
+  final String productNo;
+  final String categoryLine;
+  final String title;
+  final int qty;
+  final int unitPrice;
 
-  const _OrderProductBlock({required this.postData});
+  const _ProductBlock({
+    required this.productNo,
+    required this.categoryLine,
+    required this.title,
+    required this.qty,
+    required this.unitPrice,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-   final productNumber =
-    ref.read(orderProviderAsync.notifier).ticketNumber(
-      postData['post_create_date'],
-      postData['post_seq'],
-      postData['curtain_id'],
-    );
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -227,16 +243,16 @@ class _OrderProductBlock extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "상품번호  $productNumber",
+            "상품번호  $productNo",
             style: const TextStyle(
               fontSize: 12,
               color: Colors.grey,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            "${postData['type_name']}",
+            categoryLine,
             style: const TextStyle(
               fontSize: 12,
               color: Colors.black54,
@@ -246,7 +262,7 @@ class _OrderProductBlock extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            postData['title_contents'],
+            title,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w900,
@@ -254,32 +270,11 @@ class _OrderProductBlock extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "${postData['grade_name']} | ${postData['area_number']}",
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black87,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "${postData['post_quantity']}장",
+            "${_formatMoney(unitPrice)}원 × $qty장",
             style: const TextStyle(
               fontSize: 12,
               color: Colors.black45,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              "${_formatMoney(postData['post_price'])}원",
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-                color: Colors.red,
-              ),
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -334,9 +329,7 @@ class _MoneyRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMinus = amount < 0;
-    final text = "${isMinus ? '-' : ''}${_formatMoney(amount.abs())}원";
-
+    final text = "${_formatMoney(amount)}원";
     return Row(
       children: [
         Expanded(
@@ -395,28 +388,31 @@ class _TotalMoneyRow extends StatelessWidget {
   }
 }
 
-class _Pill extends StatelessWidget {
+class _BottomActionButton extends StatelessWidget {
   final String text;
-  final Color bg;
-  final Color fg;
+  final VoidCallback onTap;
 
-  const _Pill({required this.text, required this.bg, required this.fg});
+  const _BottomActionButton({required this.text, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE3E5EA)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
-          color: fg,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: 50,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 14,
+          ),
         ),
       ),
     );

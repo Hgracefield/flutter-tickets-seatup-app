@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/view/user/main_page.dart';
+import 'package:seatup_app/view/user/purchase_history_detail.dart';
 import 'package:seatup_app/vm/order_notifier.dart';
 import 'package:seatup_app/vm/purchase_notifier.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
@@ -86,7 +87,10 @@ class _HistoryList extends ConsumerWidget {
           itemCount: data.length,
           separatorBuilder: (_, __) => const SizedBox(height: 10),
           itemBuilder: (context, index) {
-            return _PurchaseCard(item: data);
+            return GestureDetector(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PurchaseHistoryDetail(purchase: data[index],),)),
+              child: _PurchaseCard(item: data[index])
+            );
           },
         );
       },

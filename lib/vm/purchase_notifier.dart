@@ -5,16 +5,16 @@ import 'package:seatup_app/model/purchase.dart';
 import 'package:seatup_app/util/global_data.dart';
 import 'package:http/http.dart' as http;
 
-class PurchaseNotifier extends AsyncNotifier<Map<String, dynamic>> {
+class PurchaseNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
   @override
-  Future<Map<String, dynamic>> build() async {
-    return {};
+  Future<List<Map<String, dynamic>>> build() async {
+    return [];
   }
 
-  Future<void> load(int seq) async {
+  Future<void> load(int userId) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      return await selectPurchaseList(seq);
+      return await selectPurchaseList(userId);
     });
   }
 
@@ -39,31 +39,39 @@ class PurchaseNotifier extends AsyncNotifier<Map<String, dynamic>> {
   }
 }
 
-
-
-
-
-  // 다시 해야함
-  Future<Map<String, dynamic>> selectPurchaseList(int seq) async {
+   Future<List<Map<String, dynamic>>> selectPurchaseList(int userId) async {
+    
     final res = await http.get(
-      Uri.parse("${GlobalData.url}/post/selectPostDetail/$seq"),
+      Uri.parse("${GlobalData.url}/purchase/selectPurchaseDetail/$userId"),
     );
 
+    print("STATUS => ${res.statusCode}");
+    print("BODY => ${utf8.decode(res.bodyBytes)}");
     if (res.statusCode != 200) {
-      throw Exception('상세 정보 로드 실패 (${res.statusCode})');
+      throw Exception('상세 정보 로드 실패: ${utf8.decode(res.bodyBytes)}');
     }
 
     final data = json.decode(utf8.decode(res.bodyBytes));
-    final List list = data['results'] as List;
-    if (list.isEmpty) throw Exception('데이터가 없습니다.');
-    return list.first as Map<String, dynamic>;
+    final results = data['results'];
+
+    // ✅ results가 List가 아닐 때도 안전 처리
+    if (results is List) {
+      return results.cast<Map<String, dynamic>>();
+    }
+    if (results is Map) {
+      return [results.cast<String, dynamic>()];
+    }
+    return [];
   }
 }
-final purchaseNotifierProvider = AsyncNotifierProvider<PurchaseNotifier,Map<String,dynamic>>(PurchaseNotifier.new);
+final purchaseNotifierProvider =
+    AsyncNotifierProvider<PurchaseNotifier, List<Map<String, dynamic>>>(
+        PurchaseNotifier.new);
 
 final purchaseDetailProvider =
-    FutureProvider.family <Map<String, dynamic>, int>(
-(ref, id) async{
-  return await ref.read(purchaseNotifierProvider.notifier).selectPurchaseList(id);
-},
-);
+    FutureProvider.family<List<Map<String, dynamic>>, int>((ref, id) async {
+  return await ref
+      .read(purchaseNotifierProvider.notifier)
+      .selectPurchaseList(id);
+});
+
