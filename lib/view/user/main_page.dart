@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:seatup_app/util/text_form.dart';
 import 'package:seatup_app/view/user/category.dart';
 import 'package:seatup_app/view/user/curtain_search.dart';
 import 'package:seatup_app/view/user/main_page_home.dart';
+import 'package:seatup_app/view/user/user_chat_list.dart';
 import 'package:seatup_app/view/user/user_mypage.dart';
 
 class MainPage extends StatefulWidget {
@@ -11,11 +13,10 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
+class _MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin {
   // property
   late TabController mainTabController;
-
-  final String appLogo = 'images/su_app_icon.png'; // 앱 로고
 
   @override
   void initState() {
@@ -38,10 +39,16 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
 
   AppBar mainAppBar(int index) {
     // 메인 화면에서 앱 바 일괄 적용
-    final titles = ['카테고리', '카테고리', 'SeatUp', '검색', 'MY티켓'];
+    final List<Widget> titles = [
+      TextForm.suAppText(text: '카테고리'),
+      TextForm.suAppText(text: '카테고리'),
+      Image.asset('images/su_app_icon.png', width: 65),
+      TextForm.suAppText(text: '검색'),
+      TextForm.suAppText(text: 'MY티켓'),
+    ];
 
     return AppBar(
-      title: Text(titles[index], style: TextStyle(fontWeight: FontWeight.w500)),
+      title: titles[index],
       centerTitle: true,
       backgroundColor: Colors.white,
       toolbarHeight: 70,
@@ -50,29 +57,10 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
       automaticallyImplyLeading: false,
       actions: [
         IconButton(
-          onPressed: () {
-            //
-          },
-          icon: Icon(Icons.notifications_outlined),
-        ),
-        IconButton(
-          onPressed: () async {
-            // final roomSnap = await ref
-            //     .read(chatNotifierProvider.notifier)
-            //     .openChat("100", "1");
-
-            // if (!mounted) return;
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) {
-            //       return UserChatList();
-            //       // return UserToUserChat(postId: "100", partnerId: roomSnap);
-                  
-            //     }
-            //   ),
-            // );
-          },
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => UserChatList()),
+          ),
           icon: Icon(Icons.chat_bubble_outline),
         ),
       ],

@@ -3,18 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/view/user/ticket_list_option.dart';
 
 import '../../vm/curtain_list_provider.dart';
-// 모델 경로를 프로젝트 구조에 맞게 확인해주세요.
-import '../../model/curtain_list.dart' as model; 
+import '../../vm/category_provider.dart'; // categoryFilterProvider 사용
+import '../../model/curtain_list.dart' as model;
 
-// 1. 클래스명을 CurtainListScreen으로 변경 (모델명 CurtainList와 중복 방지)
 class CurtainListScreen extends ConsumerStatefulWidget {
   const CurtainListScreen({super.key});
 
   @override
-  ConsumerState<CurtainListScreen> createState() => _CurtainListScreenState();
+  ConsumerState<CurtainListScreen> createState() =>
+      _CurtainListScreenState();
 }
 
-class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
+class _CurtainListScreenState
+    extends ConsumerState<CurtainListScreen> {
   bool _isSearching = false;
 
   late final TextEditingController _searchController;
@@ -34,6 +35,34 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
     super.dispose();
   }
 
+  // 선택된 카테고리를 텍스트로 변환 (AppBar 제목용)
+  String _categoryTitle(TicketCategory? category) {
+    switch (category) {
+      case TicketCategory.musical:
+        return "뮤지컬";
+      case TicketCategory.concert:
+        return "콘서트";
+      case TicketCategory.play:
+        return "연극";
+      case TicketCategory.classic:
+        return "클래식/무용";
+      case TicketCategory.expo:
+        return "전시/행사";
+      case TicketCategory.sports:
+        return "스포츠";
+      case TicketCategory.leisure:
+        return "레저/캠핑";
+      case TicketCategory.kids:
+        return "아동/가족";
+      case TicketCategory.topping:
+        return "topping";
+      case TicketCategory.benefit:
+        return "이달의혜택";
+      default:
+        return "공연";
+    }
+  }
+
   void _startSearchMode() {
     setState(() => _isSearching = true);
     Future.delayed(const Duration(milliseconds: 50), () {
@@ -41,13 +70,16 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
     });
   }
 
-  Future<void> _stopSearchMode() async {
+  Future<void> _stopSearchMode(int? typeSeq) async {
     setState(() => _isSearching = false);
     _searchController.clear();
+
+    // 검색 초기화 (typeSeq 기준 리스트로 복구)
+    // family provider를 안 쓰는 구조라 typeSeq는 provider 내부(categoryFilterProvider)에서 자동 적용됨
     await ref.read(curtainListProvider.notifier).clearSearch();
   }
 
-  Future<void> _doSearch() async {
+  Future<void> _doSearch(int? typeSeq) async {
     final keyword = _searchController.text.trim();
 
     if (keyword.isEmpty) {
@@ -57,13 +89,14 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
     }
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar({
+    required String titleText,
+    required int? typeSeq,
+  }) {
     return AppBar(
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new),
-        onPressed: () {
-          Navigator.pop(context);
-        },
+        onPressed: () => Navigator.pop(context),
       ),
       title: _isSearching
           ? TextField(
@@ -76,11 +109,12 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
               ),
               style: const TextStyle(fontSize: 16),
               textInputAction: TextInputAction.search,
-              onSubmitted: (_) async {
-                await _doSearch();
-              },
+              onSubmitted: (_) async => _doSearch(typeSeq),
             )
-          : const Text("뮤지컬", style: TextStyle(fontWeight: FontWeight.w700)),
+          : Text(
+              titleText,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
       centerTitle: true,
       actions: [
         if (!_isSearching)
@@ -92,16 +126,12 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
           IconButton(
             tooltip: "검색 실행",
             icon: const Icon(Icons.search),
-            onPressed: () async {
-              await _doSearch();
-            },
+            onPressed: () async => _doSearch(typeSeq),
           ),
           IconButton(
             tooltip: "검색 닫기",
             icon: const Icon(Icons.close),
-            onPressed: () async {
-              await _stopSearchMode();
-            },
+            onPressed: () async => _stopSearchMode(typeSeq),
           ),
         ],
       ],
@@ -110,10 +140,18 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // categoryFilterProvider에서 category + typeSeq 읽기
+    final filter = ref.watch(categoryFilterProvider);
+    final typeSeq = filter.typeSeq;
+    final titleText = _categoryTitle(filter.category);
+
+    // typeSeq에 맞는 provider를 watch (family provider)
+    // family provider 제거했기 때문에 curtainListProvider만 watch하면 됨
+    // 필터(typeSeq)는 curtainListProvider 내부에서 categoryFilterProvider를 watch해서 자동 반영됨
     final asyncList = ref.watch(curtainListProvider);
 
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(titleText: titleText, typeSeq: typeSeq),
       body: asyncList.when(
         data: (list) {
           if (list.isEmpty) {
@@ -122,13 +160,14 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
 
           return RefreshIndicator(
             onRefresh: () async {
+              // typeSeq 기반 새로고침
+              // family provider를 안 쓰는 구조라 typeSeq는 provider 내부에서 자동 적용됨
               await ref.read(curtainListProvider.notifier).refresh();
             },
             child: ListView.builder(
               padding: const EdgeInsets.only(top: 2),
               itemCount: list.length,
               itemBuilder: (_, index) {
-                // model.CurtainList는 model 파일에 정의된 클래스
                 final model.CurtainList item = list[index];
 
                 return _CurtainCard(
@@ -136,11 +175,10 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
                   onTap: () {
                     FocusScope.of(context).unfocus();
 
-                    // 2. 화면 이동 시 인스턴스 'item'을 전달
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => TicketListOption(item: item), 
+                        builder: (_) => TicketListOption(item: item),
                       ),
                     );
 
@@ -151,7 +189,8 @@ class _CurtainListScreenState extends ConsumerState<CurtainListScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () =>
+            const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("에러: $e")),
       ),
     );
@@ -171,8 +210,13 @@ class _CurtainCard extends StatelessWidget {
       child: Card(
         color: Colors.white,
         elevation: 0,
-        margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 0),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        margin: const EdgeInsets.symmetric(
+          horizontal: 3,
+          vertical: 0,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(4),
           child: Row(
@@ -207,7 +251,10 @@ class _CurtainCard extends StatelessWidget {
                         item.title_contents,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       if (item.place_name.isNotEmpty)

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 import pymysql
 import config
+from typing import Optional
 
 router = APIRouter()
 
@@ -24,12 +25,13 @@ def res_error(e):
 
 # 공연 리스트: 포스터 + 공연명 + title_seq
 @router.get("/simple-list")
-async def simple_list():
+async def simple_list(type_seq: Optional[int] = Query(default=None)):
     conn = connect()
     try:
         curs = conn.cursor()
+
         sql = """
-         SELECT
+        SELECT
           c.curtain_id         AS curtain_id,
           c.curtain_title_seq  AS title_seq,
           t.title_contents     AS title_contents,
@@ -38,9 +40,21 @@ async def simple_list():
         FROM curtain c
         JOIN title t ON c.curtain_title_seq = t.title_seq
         LEFT JOIN place p ON c.curtain_place_seq = p.place_seq
-        ORDER BY c.curtain_date DESC
         """
-        curs.execute(sql)
+
+        params = []
+
+        if type_seq is not None:
+            sql += " WHERE c.curtain_type_seq = %s "
+            params.append(type_seq)
+
+        sql += " ORDER BY c.curtain_date DESC "
+
+        if params:
+            curs.execute(sql, params)
+        else:
+            curs.execute(sql)
+
         rows = curs.fetchall()
         return res_list(rows)
 
@@ -50,14 +64,17 @@ async def simple_list():
     finally:
         conn.close()
 
-
 # 검색
 @router.get("/simple-search")
-async def simple_search(keyword: str):
+async def simple_search(
+    keyword: str,
+    type_seq: Optional[int] = Query(default=None),
+):
     conn = connect()
     try:
         curs = conn.cursor()
         like = f"%{keyword}%"
+
         sql = """
          SELECT
           c.curtain_id         AS curtain_id,
@@ -69,9 +86,18 @@ async def simple_search(keyword: str):
         JOIN title t ON c.curtain_title_seq = t.title_seq
         LEFT JOIN place p ON c.curtain_place_seq = p.place_seq
         WHERE t.title_contents LIKE %s
-        ORDER BY c.curtain_date DESC
         """
-        curs.execute(sql, (like,))
+
+        params = [like]
+
+        #  검색 + type_seq 필터 같이 적용
+        if type_seq is not None:
+            sql += " AND c.curtain_type_seq = %s "
+            params.append(type_seq)
+
+        sql += " ORDER BY c.curtain_date DESC "
+
+        curs.execute(sql, params)
         rows = curs.fetchall()
         return res_list(rows)
 

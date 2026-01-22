@@ -8,7 +8,7 @@ router = APIRouter()
 
 class PurchaseIn(BaseModel):
     purchase_user_id: int
-    purchase_curtain_id: int
+    purchase_post_id: int
     purchase_create_date: datetime  # Flutter에서 ISO 문자열로 보내면 자동 파싱됨
 
 def connect():
@@ -28,10 +28,10 @@ async def insert(p: PurchaseIn):
     curs = conn.cursor()
     try:
         sql = """
-        INSERT INTO purchase (purchase_user_id, purchase_curtain_id, purchase_date, purchase_create_date)
+        INSERT INTO purchase (purchase_user_id, purchase_post_id, purchase_date, purchase_create_date)
         VALUES (%s, %s, NOW(), %s)
         """
-        curs.execute(sql, (p.purchase_user_id, p.purchase_curtain_id, p.purchase_create_date))
+        curs.execute(sql, (p.purchase_user_id, p.purchase_post_id, p.purchase_create_date))
         conn.commit()
         return {"result": "OK"}
     except Exception as ex:
