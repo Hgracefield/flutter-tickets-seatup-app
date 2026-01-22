@@ -21,41 +21,41 @@ class FaqList extends ConsumerWidget {
           children: [
             AdminSideBar(selectedMenu: SideMenu.board, onMenuSelected: (menu) {}),
             Expanded(
-              child: Column(
-                children: [
-                  contentsTitle(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      insertBtn(context),
-                      SizedBox(width: 8),
-                      editBtn(context, ref),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 7),
-                    child: boardListHeader(),
-                  ),
-              
-                  Expanded(
-                    child: faqsAsync.when(
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Center(child: Text('불러오기 실패: $e')),
-                      data: (faqs) {
-                        return ListView(
-                          primary: false,
-                          // controller: ScrollController(),
-                          children: faqs
-                              .map(
-                                (faq) => buildItemWidget(context, ref, faq),
-                              )
-                              .toList(),
-                        );
-                      },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                child: Column(
+                  children: [
+                    contentsTitle(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        insertBtn(context),
+                        SizedBox(width: 8),
+                        editBtn(context, ref),
+                      ],
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      child: boardListHeader(),
+                    ),
+
+                    Expanded(
+                      child: faqsAsync.when(
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (e, _) => Center(child: Text('불러오기 실패: $e')),
+                        data: (faqs) {
+                          return ListView(
+                            primary: false,
+                            // controller: ScrollController(),
+                            children: faqs
+                                .map((faq) => buildItemWidget(context, ref, faq))
+                                .toList(),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -67,21 +67,18 @@ class FaqList extends ConsumerWidget {
   //============================= widgets===================================================
   // 관리자 contents title
   Widget contentsTitle() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 18, 24, 18),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Text(
-            '게시판',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textColor,
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(
+          '게시판',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: AppColors.adminTitleColor,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -95,23 +92,13 @@ class FaqList extends ConsumerWidget {
       child: ElevatedButton.icon(
         onPressed: canEdit
             ? () {
-                Navigator.pushNamed(
-                  context,
-                  '/faq_update',
-                  arguments: selectedDocId,
-                );
+                Navigator.pushNamed(context, '/faq_update', arguments: selectedDocId);
               }
             : null,
         style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.circular(4),
-          ),
-          backgroundColor: canEdit
-              ? AppColors.sublack
-              : const Color(0xFFE5E7EB),
-          foregroundColor: canEdit
-              ? Colors.white
-              : const Color(0xFF9CA3AF),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(4)),
+          backgroundColor: canEdit ? AppColors.sublack : const Color(0xFFE5E7EB),
+          foregroundColor: canEdit ? Colors.white : const Color(0xFF9CA3AF),
         ),
 
         icon: const Icon(Icons.mode_edit),
@@ -146,10 +133,7 @@ class FaqList extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
                     'FAQ',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -159,10 +143,7 @@ class FaqList extends ConsumerWidget {
                 child: Text(
                   '등록일',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],
@@ -207,9 +188,7 @@ class FaqList extends ConsumerWidget {
           Navigator.pushNamed(context, '/faq_insert');
         },
         style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           backgroundColor: const Color(0xFFF8DE7D), // seatupYellow
           foregroundColor: const Color(0xFF39393F), // seatupDark
           elevation: 0,
@@ -221,11 +200,7 @@ class FaqList extends ConsumerWidget {
   }
 
   // 글 리스트 (documentsnapshot => faq 로 변경)
-  Widget buildItemWidget(
-    BuildContext context,
-    WidgetRef ref,
-    Faq faq,
-  ) {
+  Widget buildItemWidget(BuildContext context, WidgetRef ref, Faq faq) {
     final selectedDocId = ref.watch(faqselectedProvider);
     final expandedDocId = ref.watch(faqExpandedProvider);
     final isExpanded = expandedDocId == faq.id;
@@ -240,16 +215,12 @@ class FaqList extends ConsumerWidget {
         border: Border(bottom: BorderSide(color: Colors.black)),
       ),
       child: Theme(
-        data: Theme.of(
-          context,
-        ).copyWith(dividerColor: Colors.transparent),
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           key: PageStorageKey(faq.id),
           initiallyExpanded: isExpanded,
           onExpansionChanged: (expanded) {
-            ref.read(faqExpandedProvider.notifier).state = expanded
-                ? faq.id
-                : null;
+            ref.read(faqExpandedProvider.notifier).state = expanded ? faq.id : null;
           },
           title: Row(
             children: [
@@ -258,11 +229,13 @@ class FaqList extends ConsumerWidget {
                 child: Checkbox(
                   value: selectedDocId == faq.id,
                   onChanged: (checked) {
-                    ref.read(faqselectedProvider.notifier).state =
-                        checked == true ? faq.id : null;
+                    ref.read(faqselectedProvider.notifier).state = checked == true
+                        ? faq.id
+                        : null;
 
-                    ref.read(faqExpandedProvider.notifier).state =
-                        checked == true ? faq.id : null;
+                    ref.read(faqExpandedProvider.notifier).state = checked == true
+                        ? faq.id
+                        : null;
                   },
                 ),
               ),
@@ -274,10 +247,7 @@ class FaqList extends ConsumerWidget {
                     children: [
                       Text(
                         'Q. ',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                       Text(
                         faq.title,
@@ -308,10 +278,7 @@ class FaqList extends ConsumerWidget {
 
               IconButton(
                 tooltip: '삭제',
-                icon: const Icon(
-                  Icons.delete_forever,
-                  color: Colors.redAccent,
-                ),
+                icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
                 onPressed: () async {
                   // (선택) 삭제 확인 다이얼로그
                   final ok = await showDialog<bool>(
@@ -321,13 +288,11 @@ class FaqList extends ConsumerWidget {
                       content: Text('삭제하면 되돌릴 수 없어요.'),
                       actions: [
                         TextButton(
-                          onPressed: () =>
-                              Navigator.pop(context, false),
+                          onPressed: () => Navigator.pop(context, false),
                           child: Text('취소'),
                         ),
                         TextButton(
-                          onPressed: () =>
-                              Navigator.pop(context, true),
+                          onPressed: () => Navigator.pop(context, true),
                           child: Text('삭제'),
                         ),
                       ],
@@ -337,23 +302,19 @@ class FaqList extends ConsumerWidget {
                   if (ok != true) return;
 
                   try {
-                    await ref
-                        .read(faqActionProvider.notifier)
-                        .deleteFaq(faq.id);
+                    await ref.read(faqActionProvider.notifier).deleteFaq(faq.id);
                     // 삭제한 항목이 선택/확장 상태였으면 정리
                     if (ref.read(faqselectedProvider) == faq.id) {
-                      ref.read(faqselectedProvider.notifier).state =
-                          null;
+                      ref.read(faqselectedProvider.notifier).state = null;
                     }
 
                     if (ref.read(faqExpandedProvider) == faq.id) {
-                      ref.read(faqExpandedProvider.notifier).state =
-                          null;
+                      ref.read(faqExpandedProvider.notifier).state = null;
                     }
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('삭제 실패 : $e')),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('삭제 실패 : $e')));
                   }
                 },
               ),
@@ -378,10 +339,7 @@ class FaqList extends ConsumerWidget {
                       children: [
                         Text(
                           'A.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                         ),
                         Text(
                           faq.contents,

@@ -1,71 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/view/user/main_page.dart';
+import 'package:seatup_app/vm/order_notifier.dart';
+import 'package:seatup_app/vm/purchase_notifier.dart';
+import 'package:seatup_app/vm/storage_provider.dart';
 
-class PurchaseHistory extends StatefulWidget {
+class PurchaseHistory extends ConsumerWidget {
   const PurchaseHistory({super.key});
 
   @override
-  State<PurchaseHistory> createState() => _PurchaseHistoryState();
-}
-
-class _PurchaseHistoryState extends State<PurchaseHistory>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
-
-  final List<PurchaseItem> _items = [
-    PurchaseItem(
-      orderNo: "MI202308102318593CAF",
-      orderDate: "2023.08.10",
-      category: "스포츠",
-      subCategory: "야구 - 대전 이글스파크",
-      title: "금요일 113구역 M열",
-      tag: "PIN",
-      unitPrice: 25000,
-      qty: 2,
-      status: PurchaseStatus.done,
-    ),
-    PurchaseItem(
-      orderNo: "MI20230810124915166E",
-      orderDate: "2023.08.10",
-      category: "스포츠",
-      subCategory: "야구 - 고척돔 야구장",
-      title: "110구역 H열",
-      tag: "PIN",
-      unitPrice: 16000,
-      qty: 2,
-      status: PurchaseStatus.done,
-    ),
-    PurchaseItem(
-      orderNo: "MI20230727234105731F",
-      orderDate: "2023.07.27",
-      category: "스포츠",
-      subCategory: "야구 - 인천SSG랜더스필드 [SSG]",
-      title: "토요일@29구역 H열",
-      tag: "PIN",
-      unitPrice: 28500,
-      qty: 2,
-      status: PurchaseStatus.progress,
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  List<PurchaseItem> _filteredItems(PurchaseStatus status) {
-    return _items.where((e) => e.status == status).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bg = const Color(0xFFF6F7F9);
+
+    // ✅ 지금은 샘플 데이터 그대로 사용
+    // final List<PurchaseItem> items = [
+    //   PurchaseItem(
+    //     orderNo: "MI202308102318593CAF",
+    //     orderDate: "2023.08.10",
+    //     category: "스포츠",
+    //     subCategory: "야구 - 대전 이글스파크",
+    //     title: "금요일 113구역 M열",
+    //     tag: "PIN",
+    //     unitPrice: 25000,
+    //     qty: 2,
+    //     status: PurchaseStatus.done,
+    //   ),
+    //   PurchaseItem(
+    //     orderNo: "MI20230810124915166E",
+    //     orderDate: "2023.08.10",
+    //     category: "스포츠",
+    //     subCategory: "야구 - 고척돔 야구장",
+    //     title: "110구역 H열",
+    //     tag: "PIN",
+    //     unitPrice: 16000,
+    //     qty: 2,
+    //     status: PurchaseStatus.done,
+    //   ),
+    // ];
 
     return Scaffold(
       backgroundColor: bg,
@@ -83,115 +54,60 @@ class _PurchaseHistoryState extends State<PurchaseHistory>
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => MainPage()),
+              );
+            },
             icon: const Icon(Icons.home_outlined, color: Colors.black),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Colors.black,
-              indicatorWeight: 2,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-              tabs: const [
-                Tab(text: "거래 진행"),
-                Tab(text: "거래 완료"),
-                Tab(text: "거래 취소"),
-              ],
-            ),
-          ),
-        ),
       ),
-      body: Column(
-        children: [
-          // 기간/필터 영역
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    "2023.02.01 ~ 2026.01.13",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {},
-                  borderRadius: BorderRadius.circular(10),
-                  child: const Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Icon(Icons.tune, size: 20, color: Colors.black87),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
 
-          // 리스트
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _HistoryList(items: _filteredItems(PurchaseStatus.progress)),
-                _HistoryList(items: _filteredItems(PurchaseStatus.done)),
-                _HistoryList(items: _filteredItems(PurchaseStatus.cancel)),
-              ],
-            ),
-          ),
-        ],
-      ),
+      // 탭/날짜 영역 제거하고 리스트만
+      body: _HistoryList(),
     );
   }
 }
 
-class _HistoryList extends StatelessWidget {
-  final List<PurchaseItem> items;
+class _HistoryList extends ConsumerWidget {
 
-  const _HistoryList({required this.items});
+  const _HistoryList();
 
   @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return const Center(
-        child: Text(
-          "내역이 없습니다",
-          style: TextStyle(color: Colors.grey),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-      itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
-      itemBuilder: (context, index) {
-        return _PurchaseCard(item: items[index]);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userStorage = ref.watch(storageProvider).read('user_id');
+    final purchaseAsync = ref.watch(purchaseDetailProvider(userStorage));
+   return purchaseAsync.when(
+      data: (data) {
+       return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          itemCount: data.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            return _PurchaseCard(item: data);
+          },
+        );
       },
+      error: (error, stackTrace) => Text('error : $error'),
+      loading: () => Center(child: Text('구매이력이 없습니다.')),
     );
   }
 }
 
-class _PurchaseCard extends StatelessWidget {
-  final PurchaseItem item;
+class _PurchaseCard extends ConsumerWidget {
+  final Map<String,dynamic> item;
 
   const _PurchaseCard({required this.item});
 
   @override
-  Widget build(BuildContext context) {
-    final priceText = "${_formatMoney(item.totalPrice)}원";
-    final statusLabel = item.status.label;
-    final statusColor = item.status.color;
+  Widget build(BuildContext context , WidgetRef ref) {
+    final totalPrice = item['post_quantity'] * item['post_price'];
+    final orderNo = ref.read(orderProviderAsync.notifier)
+                                .makeOrderNo(postSeq: item['post_seq'], postCreateDate: item['post_create_date']);
+
+    final priceText = "${_formatMoney(totalPrice)}원";
 
     return Container(
       decoration: BoxDecoration(
@@ -216,7 +132,7 @@ class _PurchaseCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    "주문번호 ${item.orderNo}",
+                    "주문번호 $orderNo",
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
@@ -226,7 +142,7 @@ class _PurchaseCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "주문일 ${item.orderDate}",
+                  "주문일 ${item['post_create_date']}",
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
@@ -239,7 +155,7 @@ class _PurchaseCard extends StatelessWidget {
 
             // 카테고리 라인
             Text(
-              "${item.category}  >  ${item.subCategory}",
+              "${item['type_name']}",
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.black54,
@@ -255,7 +171,7 @@ class _PurchaseCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    item.title,
+                    item['title_contents'],
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
@@ -276,13 +192,13 @@ class _PurchaseCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // PIN 뱃지
+            // PIN 뱃지 + 수량
             Row(
               children: [
-                _TagChip(text: item.tag),
+                // _TagChip(text: item.tag),
                 const SizedBox(width: 8),
                 Text(
-                  "${_formatMoney(item.unitPrice)}원 × ${item.qty}장",
+                  "${_formatMoney(item['post_price'])}원 × ${item['post_quantity']}장",
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.black54,
@@ -293,23 +209,20 @@ class _PurchaseCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // 하단 버튼/상태
+            // 하단 상태/버튼
             Row(
               children: [
                 Text(
-                  statusLabel,
+                  "거래완료",
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    color: statusColor,
+                    color: Colors.black,
                   ),
                 ),
-                const Spacer(),
-                if (item.status == PurchaseStatus.done)
-                  _OutlineMiniButton(
-                    text: "재판매",
-                    onTap: () {},
-                  ),
+                // const Spacer(),
+                // if (item.status == PurchaseStatus.done)
+                //   _OutlineMiniButton(text: "재판매", onTap: () {}),
               ],
             ),
           ],
@@ -410,30 +323,4 @@ extension PurchaseStatusUI on PurchaseStatus {
         return Colors.redAccent;
     }
   }
-}
-
-class PurchaseItem {
-  final String orderNo;
-  final String orderDate;
-  final String category;
-  final String subCategory;
-  final String title;
-  final String tag;
-  final int unitPrice;
-  final int qty;
-  final PurchaseStatus status;
-
-  PurchaseItem({
-    required this.orderNo,
-    required this.orderDate,
-    required this.category,
-    required this.subCategory,
-    required this.title,
-    required this.tag,
-    required this.unitPrice,
-    required this.qty,
-    required this.status,
-  });
-
-  int get totalPrice => unitPrice * qty;
 }

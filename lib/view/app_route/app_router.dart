@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seatup_app/model/curtain.dart';
+import 'package:seatup_app/model/post.dart';
 import 'package:seatup_app/view/user/curtain_list_screen.dart';
 import 'package:seatup_app/view/user/purchase_history_detail.dart';
 import 'package:seatup_app/view/user/user_faq.dart';
@@ -74,7 +75,8 @@ class AppRouter {
       case AppRoute.PurchaseHistory:
         return MaterialPageRoute(builder: (_) => const PurchaseHistory());
       case AppRoute.purchaseHistoryDetail:
-        return MaterialPageRoute(builder: (_) => const PurchaseHistoryDetail());
+        final post = settings.arguments as Post;
+        return MaterialPageRoute(builder: (_) =>  PurchaseHistoryDetail(post: post)); // const 제거
       case AppRoute.mapView:
         return MaterialPageRoute(builder: (_) => const MapView());
       // case AppRoute.payment:
@@ -91,10 +93,10 @@ class AppRouter {
       // return MaterialPageRoute(builder: (_) => const UserToUserChat());
       case AppRoute.sellerToAdminChat:
         return MaterialPageRoute(builder: (_) => const SellerToAdminChat());
-      case AppRoute.transactionReviewWrite:
-        return MaterialPageRoute(builder: (_) => const TransactionReviewWrite());
-      case AppRoute.transactionReviewList:
-        return MaterialPageRoute(builder: (_) => const TransactionReviewList());
+      // case AppRoute.transactionReviewWrite:
+      //   return MaterialPageRoute(builder: (_) => const TransactionReviewWrite());
+      // case AppRoute.transactionReviewList:
+      //   return MaterialPageRoute(builder: (_) => const TransactionReviewList());
 
       case AppRoute.shoppingCart:
         return MaterialPageRoute(builder: (_) => const ShoppingCart());

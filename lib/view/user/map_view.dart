@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:seatup_app/vm/route_vm.dart';
 
 class MapView extends ConsumerStatefulWidget {
@@ -12,6 +12,8 @@ class MapView extends ConsumerStatefulWidget {
   ConsumerState<MapView> createState() => _MapViewState();
 }
 
+enum RouteMode { car, walk }
+
 class _MapViewState extends ConsumerState<MapView> {
   KakaoMapController? _controller;
 
@@ -20,9 +22,18 @@ class _MapViewState extends ConsumerState<MapView> {
 
   int? _lastPlaceSeq;
 
+  //  커스텀 마커 아이콘 (assets 로딩용)
+  MarkerIcon? _startIcon;
+  MarkerIcon? _endIcon;
+
+  RouteMode _mode = RouteMode.car;
+
   @override
   void initState() {
     super.initState();
+
+    //  마커 아이콘 로드
+    _loadMarkerIcons();
 
     //  1) route state 변화 감지 -> 화면 맞추기
     _routeSub = ref.listenManual<RouteState>(routeNotifierProvider, (
@@ -58,9 +69,12 @@ class _MapViewState extends ConsumerState<MapView> {
         return;
       }
 
-      ref
-          .read(routeNotifierProvider.notifier)
-          .loadRoute(userId: userId as int, placeSeq: next);
+      // 차량 모드일 때만 앱 내부 폴리라인 길찾기 실행
+      if (_mode == RouteMode.car) {
+        ref
+            .read(routeNotifierProvider.notifier)
+            .loadRoute(userId: userId as int, placeSeq: next);
+      }
     });
 
     //  화면 진입 시 이미 placeSeq가 들어있다면 바로 실행
@@ -73,10 +87,72 @@ class _MapViewState extends ConsumerState<MapView> {
 
       _lastPlaceSeq = placeSeq;
 
-      ref
-          .read(routeNotifierProvider.notifier)
-          .loadRoute(userId: userId as int, placeSeq: placeSeq);
+      // 차량 모드일 때만 앱 내부 폴리라인 길찾기 실행
+      if (_mode == RouteMode.car) {
+        ref
+            .read(routeNotifierProvider.notifier)
+            .loadRoute(userId: userId as int, placeSeq: placeSeq);
+      }
     });
+  }
+
+  // assets 마커 로딩 함수
+  Future<void> _loadMarkerIcons() async {
+    try {
+      final start = await MarkerIcon.fromAsset('images/start.png');
+      final end = await MarkerIcon.fromAsset('images/end.png');
+
+      if (!mounted) return;
+      setState(() {
+        _startIcon = start;
+        _endIcon = end;
+      });
+    } catch (_) {
+      // 로딩 실패해도 기본 마커로 표시되게 그냥 무시
+    }
+  }
+
+  String _formatDistance(int meter) {
+    if (meter <= 0) return '-';
+    if (meter >= 1000)
+      return '${(meter / 1000).toStringAsFixed(1)}km';
+    return '${meter}m';
+  }
+
+  String _formatDuration(int sec) {
+    if (sec <= 0) return '-';
+    final totalMin = (sec / 60).round();
+    final h = totalMin ~/ 60;
+    final m = totalMin % 60;
+    if (h > 0) return '${h}시간 ${m}분';
+    return '${m}분';
+  }
+
+  Future<void> _openKakaoDirections({
+    required RouteMode mode,
+    required LatLng start,
+    required LatLng end,
+  }) async {
+    final startName = Uri.encodeComponent('출발');
+    final endName = Uri.encodeComponent('도착');
+
+    final modeStr = (mode == RouteMode.walk) ? 'walk' : 'car';
+
+    final url = Uri.parse(
+      'https://map.kakao.com/link/by/$modeStr/'
+      '$startName,${start.latitude},${start.longitude}/'
+      '$endName,${end.latitude},${end.longitude}',
+    );
+
+    final ok = await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('카카오맵을 열 수 없습니다.')),
+      );
+    }
   }
 
   @override
@@ -101,12 +177,11 @@ class _MapViewState extends ConsumerState<MapView> {
           latLng: state.origin!,
           width: 42,
           height: 42,
-          markerImageSrc: 'images/start.png',
+          icon: _startIcon, //!
         ),
       );
     }
 
-    // 도착 마커 (images 폴더로 경로 변경)
     if (state.destination != null) {
       markers.add(
         Marker(
@@ -114,18 +189,20 @@ class _MapViewState extends ConsumerState<MapView> {
           latLng: state.destination!,
           width: 42,
           height: 42,
-          markerImageSrc: 'images/end.png',
+          icon: _endIcon, //!
         ),
       );
     }
 
     final polylines = <Polyline>[];
-    if (state.routePoints.length >= 2) {
+    if (_mode == RouteMode.car && state.routePoints.length >= 2) {
       polylines.add(
         Polyline(
           polylineId: 'route',
           points: state.routePoints,
-          strokeWidth: 6,
+          strokeWidth: 3,
+          strokeColor: Colors.red,
+          strokeOpacity: 1.0,
         ),
       );
     }
@@ -164,8 +241,7 @@ class _MapViewState extends ConsumerState<MapView> {
                       ]);
                     }
                   },
-                  center:
-                      state.origin ??  LatLng(37.5665, 126.9780),
+                  center: state.origin ?? LatLng(37.5665, 126.9780),
                   markers: markers,
                   polylines: polylines,
                 ),
@@ -196,6 +272,59 @@ class _MapViewState extends ConsumerState<MapView> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      ChoiceChip(
+                        label: const Text('차량'),
+                        selected: _mode == RouteMode.car,
+                        onSelected: (v) {
+                          if (!v) return;
+                          setState(() => _mode = RouteMode.car);
+
+                          final placeSeqNow = ref.read(
+                            selectedPlaceSeqProvider,
+                          );
+                          final userId = GetStorage().read('user_id');
+                          if (placeSeqNow == null || userId == null)
+                            return;
+
+                          ref
+                              .read(routeNotifierProvider.notifier)
+                              .loadRoute(
+                                userId: userId as int,
+                                placeSeq: placeSeqNow,
+                              );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('도보'),
+                        selected: _mode == RouteMode.walk,
+                        onSelected: (v) async {
+                          if (!v) return;
+                          setState(() => _mode = RouteMode.walk);
+
+                          if (state.origin != null &&
+                              state.destination != null) {
+                            await _openKakaoDirections(
+                              mode: RouteMode.walk,
+                              start: state.origin!,
+                              end: state.destination!,
+                            );
+                          }
+                        },
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${_formatDistance(state.distanceMeter)} · ${_formatDuration(state.durationSec)}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     '출발: ${state.userAddress ?? "-"}',
                     maxLines: 1,
