@@ -1,8 +1,11 @@
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/curtain_review.dart';
 import 'package:seatup_app/model/weather.dart';
 import 'package:seatup_app/view/user/curtain_list_screen.dart';
+import 'package:seatup_app/view/user/review_write.dart';
+import 'package:seatup_app/vm/curtain_reviews_notifier.dart';
 import 'package:seatup_app/vm/weather_provider.dart';
 
 class MainPageHome extends ConsumerWidget {
@@ -12,6 +15,7 @@ class MainPageHome extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final weatherAsync = ref.watch(weatherProvider); // 날씨 데이터 저장
     // final selectedCategory = ref.watch(selectedCategoryProvider); // 선택한 카테고리
+    final reviewAsync = ref.watch(reviewListProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -23,7 +27,7 @@ class MainPageHome extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 20),
                 child: SizedBox(
                   width: MediaQuery.widthOf(context) - 20,
-                  height: 350,
+                  height: 550,
                   child: Swiper(
                     itemCount: 3,
                     itemBuilder: (BuildContext context, int index) {
@@ -33,9 +37,9 @@ class MainPageHome extends ConsumerWidget {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: Image.asset(
-                          "images/musical${index + 1}.jpg",
+                          "images/main_swiper_image0${index + 1}.gif",
                           fit: BoxFit.cover,
-                          alignment: AlignmentGeometry.topCenter,
+                          // alignment: AlignmentGeometry.topCenter,
                         ),
                       );
                     },
@@ -128,7 +132,50 @@ class MainPageHome extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
-                child: _title('베스트 관람후기'),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: _title('베스트 관람후기'), // 화면 정중앙
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: -10,
+                      child: IconButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReviewWrite(),
+                          ),
+                        ),
+                        icon: Icon(Icons.add),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              reviewAsync.when(
+                data: (reviewList) {
+                  return reviewList.isEmpty
+                      ? Center(child: Text("작성된 리뷰가 없습니다."))
+                      : ListView.builder(
+                          shrinkWrap: true, // 내용만큼 높이 차지
+                          physics:
+                              const NeverScrollableScrollPhysics(), // 자체 스크롤 기능 비활성화
+                          itemCount: reviewList.length > 5
+                              ? 5
+                              : reviewList.length,
+                          itemBuilder: (context, index) {
+                            CurtainReview review = reviewList[index];
+                            return ListTile(
+                              title: Text(review.title),
+                              subtitle: Text(review.content),
+                            );
+                          },
+                        );
+                },
+                error: (error, stackTrace) =>
+                    Center(child: Text('오류 : $error')),
+                loading: () => Center(child: CircularProgressIndicator()),
               ),
               weatherAsync.when(
                 data: (weather) {
