@@ -2,11 +2,11 @@ from fastapi import Form, APIRouter
 import pymysql
 import config
 from pydantic import BaseModel
+from typing import Optional # 1. Optional 임포트 추가
 
-# 1. 라우터 설정 (이 정의가 반드시 코드 상단에 있어야 합니다)
 router = APIRouter()
 
-# 2. 데이터 모델 설정
+# 2. 데이터 모델 설정 (422 에러 방지를 위해 Optional 적용)
 class Post(BaseModel):
     post_user_id: int
     post_curtain_id: int
@@ -15,9 +15,10 @@ class Post(BaseModel):
     post_quantity: int
     post_price: int
     post_desc: str
-    post_create_date: str
+    # 아래 필드들은 입력을 안 받아도 에러가 나지 않도록 처리합니다.
+    post_seq: Optional[int] = None
+    post_create_date: Optional[str] = None
 
-# 3. DB 연결 함수
 def connect():
     return pymysql.connect(
         host=config.DB_HOST,
@@ -29,7 +30,7 @@ def connect():
         autocommit=True
     )
 
-# 4. 구매 조건 상세 필터링 검색
+# 3. 구매 조건 상세 필터링 검색
 @router.get("/filter")
 async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str):
     conn = connect()
@@ -37,16 +38,9 @@ async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str
     try:
         sql = """
         SELECT 
-            p.post_seq, 
-            p.post_user_id, 
-            u.user_name, 
-            p.post_curtain_id,
-            p.post_create_date, 
-            p.post_quantity, 
-            p.post_price, 
-            p.post_grade, 
-            p.post_area, 
-            p.post_desc
+            p.post_seq, p.post_user_id, u.user_name, p.post_curtain_id,
+            p.post_create_date, p.post_quantity, p.post_price, 
+            p.post_grade, p.post_area, p.post_desc
         FROM post AS p
         JOIN user AS u ON p.post_user_id = u.user_id
         JOIN curtain AS c ON p.post_curtain_id = c.curtain_id
@@ -77,7 +71,7 @@ async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str
     finally:
         conn.close()
 
-# 5. 티켓 판매 상태 업데이트
+# 4. 티켓 판매 상태 업데이트
 @router.get("/updateStatus")
 async def update_status(seq: int, status: int):
     conn = connect()
@@ -92,16 +86,17 @@ async def update_status(seq: int, status: int):
     finally:
         conn.close()
 
-# 6. 전체 목록 조회
+# 5. 전체 목록 조회
 @router.get("/allSelect")
 async def allSelect():
     conn = connect()
     curs = conn.cursor()
     try:
         sql = """
-        select p.post_seq, p.post_user_id, u.user_name, p.post_curtain_id, 
-               p.post_create_date, p.post_quantity, p.post_price, 
-               p.post_grade, p.post_area, p.post_desc
+        select 
+            p.post_seq, p.post_user_id, u.user_name, p.post_curtain_id, 
+            p.post_create_date, p.post_quantity, p.post_price, 
+            p.post_grade, p.post_area, p.post_desc
         from post as p
         join user as u on p.post_user_id = u.user_id
         """
@@ -118,6 +113,7 @@ async def allSelect():
     finally:
         conn.close()
 
+# 6. 관리자용 전체 조회
 @router.get("/allSelectAdmin")
 async def allSelectAdmin():
     conn = connect()
@@ -125,16 +121,9 @@ async def allSelectAdmin():
     try:
         sql = """
         select 
-          p.post_seq,
-          u.user_name,
-          t.type_name,
-          ti.title_contents,
-          p.post_create_date,
-          p.post_quantity,
-          p.post_price,
-          p.post_grade,
-          p.post_area,
-          p.post_desc
+          p.post_seq, u.user_name, t.type_name, ti.title_contents,
+          p.post_create_date, p.post_quantity, p.post_price,
+          p.post_grade, p.post_area, p.post_desc
         from post p
         join user u on p.post_user_id = u.user_id
         join curtain c on p.post_curtain_id = c.curtain_id
@@ -143,29 +132,20 @@ async def allSelectAdmin():
         """
         curs.execute(sql)
         rows = curs.fetchall()
-
         result = [{
-            'post_seq': row[0],
-            'user_name': row[1],
-            'type_name': row[2],
-            'title_contents': row[3],
-            'post_create_date': str(row[4]),
-            'post_quantity': row[5],
-            'post_price': row[6],
-            'post_grade': row[7],
-            'post_area': row[8],
-            'post_desc': row[9],
+            'post_seq': row[0], 'user_name': row[1], 'type_name': row[2],
+            'title_contents': row[3], 'post_create_date': str(row[4]),
+            'post_quantity': row[5], 'post_price': row[6],
+            'post_grade': row[7], 'post_area': row[8], 'post_desc': row[9],
         } for row in rows]
-
         return {'results': result}
-
     except Exception as ex:
         print("Error :", ex)
         return {'results': 'Error'}
     finally:
         conn.close()
 
-# 7. 판매 티켓 등록
+# 7. 판매 티켓 등록 (422 에러 완벽 해결)
 @router.post("/insert")
 async def insert(post : Post):
     conn = connect()
@@ -186,9 +166,9 @@ async def insert(post : Post):
     finally:
         conn.close()
 
-# 8. 개별 상세 조회 (상세 페이지용)
+# 8. 개별 상세 조회 (기존 selectPost)
 @router.get("/selectPost/{seq}")
-async def selectPost(seq:int):
+async def get_select_post(seq:int): # 함수명 중복 수정
     conn = connect()
     curs = conn.cursor()
     try:
@@ -225,11 +205,9 @@ async def selectPost(seq:int):
     finally:
         conn.close()
 
-
-
-        # 5. ticketdetail에 사용
+# 9. 티켓 상세 정보 전용 (함수명 중복 수정)
 @router.get("/selectPostDetail/{seq}")
-async def selectPost(seq:int):
+async def get_post_detail_advanced(seq:int): 
     conn = connect()
     curs = conn.cursor()
     try:
@@ -265,4 +243,3 @@ async def selectPost(seq:int):
         return {'result':'Error'} 
     finally:
         conn.close()
-
