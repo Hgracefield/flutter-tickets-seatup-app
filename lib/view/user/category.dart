@@ -11,13 +11,65 @@ class Category extends ConsumerStatefulWidget {
 }
 
 class _CategoryState extends ConsumerState<Category> {
+  // DB type 테이블의 type_seq 매핑
+  // 네 DB 기준: 연극=1, 뮤지컬=2, 콘서트=5, 무용=7, 전시=8
+  int? _toTypeSeq(TicketCategory category) {
+    switch (category) {
+      case TicketCategory.play:
+        return 1;
+      case TicketCategory.musical:
+        return 2;
+      case TicketCategory.concert:
+        return 5;
+      case TicketCategory.classic:
+        return 7;
+      case TicketCategory.expo:
+        return 8;
+
+      // DB에 타입이 없거나 아직 준비중이면 null
+      case TicketCategory.sports:
+      case TicketCategory.leisure:
+      case TicketCategory.kids:
+      case TicketCategory.topping:
+      case TicketCategory.benefit:
+        return null;
+    }
+  }
+
+  // 카테고리 선택 + typeSeq 저장 + 화면 이동/스낵바 처리
+  void _selectCategoryAndMove({
+    required TicketCategory category,
+    required bool goListPage,
+    String? snackMessage,
+  }) {
+    // 1) category + typeSeq 같이 저장
+    ref
+        .read(categoryFilterProvider.notifier)
+        .select(category: category, typeSeq: _toTypeSeq(category));
+
+    // 2) 이동 또는 안내문
+    if (goListPage) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CurtainListScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackMessage ?? "준비중입니다.")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final selected = ref.watch(selectedCategoryProvider);
+    // 선택된 카테고리 읽기 (UI 표시용)
+    final selected = ref.watch(categoryFilterProvider).category;
+
+    // 필요하면 typeSeq도 이렇게 읽을 수 있음 (필터 API에 사용)
+    // final typeSeq = ref.watch(categoryFilterProvider).typeSeq;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
         children: [
@@ -34,146 +86,124 @@ class _CategoryState extends ConsumerState<Category> {
                 title: "뮤지컬",
                 isSelected: selected == TicketCategory.musical,
                 onTap: () {
-                  //  Riverpod 상태 저장
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.musical;
-
-                  //  CurtainList 페이지로 이동
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CurtainListScreen(),
-                    ),
+                  // 뮤지컬만 리스트 페이지 이동
+                  _selectCategoryAndMove(
+                    category: TicketCategory.musical,
+                    goListPage: true,
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.music_note_outlined,
                 title: "콘서트",
                 isSelected: selected == TicketCategory.concert,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.concert;
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("콘서트는 준비중입니다 🙂")),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.concert,
+                    goListPage: false,
+                    snackMessage: "콘서트는 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.speaker_group_outlined,
                 title: "연극",
                 isSelected: selected == TicketCategory.play,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.play;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("연극은 준비중입니다 🙂")),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.play,
+                    goListPage: false,
+                    snackMessage: "연극은 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.chair_alt_outlined,
                 title: "클래식/무용",
                 isSelected: selected == TicketCategory.classic,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.classic;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("클래식/무용은 준비중입니다 🙂"),
-                    ),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.classic,
+                    goListPage: false,
+                    snackMessage: "클래식/무용은 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.sports_baseball_outlined,
                 title: "스포츠",
                 isSelected: selected == TicketCategory.sports,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.sports;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("스포츠는 준비중입니다 🙂")),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.sports,
+                    goListPage: false,
+                    snackMessage: "스포츠는 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.park_outlined,
                 title: "레저/캠핑",
                 isSelected: selected == TicketCategory.leisure,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.leisure;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("레저/캠핑은 준비중입니다 🙂")),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.leisure,
+                    goListPage: false,
+                    snackMessage: "레저/캠핑은 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.museum_outlined,
                 title: "전시/행사",
                 isSelected: selected == TicketCategory.expo,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.expo;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("전시/행사는 준비중입니다 🙂")),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.expo,
+                    goListPage: false,
+                    snackMessage: "전시/행사는 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.child_care_outlined,
                 title: "아동/가족",
                 isSelected: selected == TicketCategory.kids,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.kids;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("아동/가족은 준비중입니다 🙂")),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.kids,
+                    goListPage: false,
+                    snackMessage: "아동/가족은 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.blur_on_outlined,
                 title: "topping",
                 isSelected: selected == TicketCategory.topping,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.topping;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("topping은 준비중입니다 🙂"),
-                    ),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.topping,
+                    goListPage: false,
+                    snackMessage: "topping은 준비중입니다.",
                   );
                 },
               ),
-
               _CategoryTile(
                 icon: Icons.card_giftcard_outlined,
                 title: "이달의혜택",
                 isSelected: selected == TicketCategory.benefit,
                 onTap: () {
-                  ref.read(selectedCategoryProvider.notifier).state =
-                      TicketCategory.benefit;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("이달의혜택은 준비중입니다 🙂")),
+                  _selectCategoryAndMove(
+                    category: TicketCategory.benefit,
+                    goListPage: false,
+                    snackMessage: "이달의혜택은 준비중입니다.",
                   );
                 },
               ),
             ],
           ),
-
           const SizedBox(height: 18),
-
           _MenuLine(title: "이벤트", onTap: () {}),
           _MenuLine(title: "MD shop", onTap: () {}),
         ],
