@@ -4,6 +4,8 @@ import 'package:seatup_app/model/user.dart';
 import 'package:seatup_app/util/global_data.dart';
 import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/vm/address_notifier.dart';
+import 'package:seatup_app/vm/bank_notifier.dart';
+import 'package:seatup_app/vm/bank_select_notifier.dart';
 import 'package:seatup_app/vm/gps_notifier.dart';
 import 'package:seatup_app/vm/user_notifier.dart';
 
@@ -26,7 +28,6 @@ class _SignUpState extends ConsumerState<SignUp> {
   late TextEditingController nameController;
   late TextEditingController phoneController;
   late TextEditingController addressController;
-  late TextEditingController bankController;
   late TextEditingController accountController;
 
   late bool agreeTOS;
@@ -52,6 +53,8 @@ class _SignUpState extends ConsumerState<SignUp> {
   String insertUrl = "${GlobalData.url}/customer/insert";
   List<User> userList = [];
 
+  String bankValue = '';
+
   bool isGoogleSignUp = false;
 
   @override
@@ -63,7 +66,6 @@ class _SignUpState extends ConsumerState<SignUp> {
     nameController = TextEditingController();
     phoneController = TextEditingController();
     addressController = TextEditingController();
-    bankController = TextEditingController();
     accountController = TextEditingController();
     agreeTOS = false;
     agreePP = false;
@@ -79,7 +81,6 @@ class _SignUpState extends ConsumerState<SignUp> {
       nameController.text = widget.name;
       phoneController.text = widget.phone;
       emailChecked = true;
-      print('sdsdsss');
     }
 
     lat = 0.0;
@@ -201,12 +202,8 @@ class _SignUpState extends ConsumerState<SignUp> {
                   ?SizedBox()
                   :
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
-
-
-
-
 
                   _buildLabel('비밀번호'),
                   Padding(
@@ -308,15 +305,7 @@ class _SignUpState extends ConsumerState<SignUp> {
                   _buildLabel('은행'),
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 24),
-                    child: TextFormField(
-                      controller: bankController,
-                      keyboardType: TextInputType.phone,
-                      decoration: _buildInputDecoration('XX은행'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return '은행명을 입력해주세요';
-                        return null;
-                      },
-                    ),
+                    child: _buildBankDropDown()
                   ),
                   _buildLabel('계좌번호'),
                   Padding(
@@ -433,6 +422,70 @@ class _SignUpState extends ConsumerState<SignUp> {
     );
   }
 
+  Widget _buildBankDropDown() {
+    final bankAsync = ref.watch(bankNotifier);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 6),
+        bankAsync.when(
+          data: (banks) {
+            if (banks.isEmpty) return const SizedBox();
+
+            // 선택된 값(그대로 저장/사용)
+               final selected = ref
+                .watch(bankSelectNotifier).bank;
+
+               final String? value =
+                (selected != null && banks.any((b) => b.bank_name == selected))
+                ? selected
+                : null;
+
+
+            // 최초 기본값 세팅(원하면 제거 가능)
+            if (value == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(bankSelectNotifier.notifier).setBank(banks.first.bank_name);
+              });
+            }
+
+            return Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE0E6FF)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: value,
+                  hint: const Text('좌석 등급 선택'),
+                  items: banks
+                      .map(
+                        (bank) => DropdownMenuItem<String>(
+                          value: bank.bank_name, // 여기만 id로 바꾸고 싶으면 g.id
+                          child: Text(bank.bank_name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref.read(bankSelectNotifier.notifier).setBank(v);
+                    bankValue = v;
+                  },
+                ),
+              ),
+            );
+          },
+          error: (_, __) => const SizedBox(),
+          loading: () => const SizedBox(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCheckboxRow(
     bool value,
     Function(bool?) onChanged,
@@ -481,7 +534,7 @@ class _SignUpState extends ConsumerState<SignUp> {
           user_address: addressController.text.trim(),
           user_signup_date: "",
           user_account: accountController.text.trim(),
-          user_bank_name: bankController.text.trim(),
+          user_bank_name: bankValue,
           user_withdraw_date: "",
         );
         String result = await userNotifier.insertUser(user);
