@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
 import 'package:seatup_app/vm/curtain_manager_notifier.dart';
+import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/grade_notifier.dart';
 import 'package:seatup_app/vm/place_notifier.dart';
+import 'package:seatup_app/vm/title_notifier.dart';
 import 'package:seatup_app/vm/type_provider.dart';
+import 'package:seatup_app/util/message.dart';
 
 /// ✅ 등록 버튼을 누르면 나오는 "등록 페이지"
 /// - type / grade / area : Dropdown
