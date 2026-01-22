@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/util/btn_style.dart';
-import 'package:seatup_app/util/color.dart';
+import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
 import 'package:seatup_app/vm/curtain_manager_notifier.dart';
+import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/grade_notifier.dart';
 import 'package:seatup_app/vm/place_notifier.dart';
+import 'package:seatup_app/vm/title_notifier.dart';
 import 'package:seatup_app/vm/type_provider.dart';
+import 'package:seatup_app/util/message.dart';
 
 /// ✅ 등록 버튼을 누르면 나오는 "등록 페이지"
 /// - type / grade / area : Dropdown
@@ -169,9 +171,9 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                     ),
                                   ],
                                 ),
-
+          
                                 const SizedBox(height: 12),
-
+          
                                 // 2줄: location + place
                                 Row(
                                   children: [
@@ -195,16 +197,16 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                     // ),
                                   ],
                                 ),
-
+          
                                 const SizedBox(height: 12),
-
+          
                                 // // 3줄: grade + area
                                 Row(
                                   children: [
                                     Expanded(child: _buildGradeCheckList('grade')),
-                                    SizedBox(width: 12),
+                                    SizedBox(width: 12,),
                                     // Expanded(child: _buildGradeCheckList('grade')),
-                                    Expanded(child: _buildAreaCheckList('area')),
+                                    Expanded(child: _buildAreaCheckList('area'))
                                   ],
                                 ),
                                 const SizedBox(height: 12),
@@ -215,7 +217,7 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                 //   ],
                                 // ),
                                 const SizedBox(height: 12),
-
+          
                                 // 4줄: show_date + show_time (입력 가능 + picker 아이콘)
                                 Row(
                                   children: [
@@ -241,14 +243,14 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-
+          
                                 _dashTextArea(
                                   label: 'curtain_desc',
                                   controller: curtainDescCtrl,
                                   hint: '설명 (여러 줄 입력 가능)',
                                 ),
                                 const SizedBox(height: 12),
-
+          
                                 _dashTextField(
                                   label: 'curtain_pic (image url)',
                                   controller: curtainPicCtrl,
@@ -258,31 +260,45 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                             ),
                           ),
                         ),
-
+          
                         const SizedBox(height: 12),
-
+          
                         // 하단 버튼
                         Row(
                           children: [
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.sublack,
-                                side: const BorderSide(color: AppColors.sublack),
+                                foregroundColor: const Color(0xFF2F57C9),
+                                side: const BorderSide(color: Color(0xFFCFD8FF)),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                               onPressed: () => Navigator.pop(context),
                               child: const Text(
                                 '취소',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.w800),
                               ),
                             ),
                             const Spacer(),
-                            BtnStyle.primary(text: '등록', onPressed: _submit),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4D74D6),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 12,
+                                ),
+                              ),
+                              onPressed: _submit,
+                              child: const Text(
+                                '등록',
+                                style: TextStyle(fontWeight: FontWeight.w900),
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -301,8 +317,8 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   Widget _dashLabel(String text) => Text(
     text,
     style: const TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w700,
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
       color: Color(0xFF2F57C9),
     ),
   );
@@ -325,7 +341,10 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
             hintText: hint,
             filled: true,
             fillColor: const Color(0xFFF4F6FF),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFFE0E6FF)),
@@ -363,7 +382,10 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
             hintText: hint,
             filled: true,
             fillColor: const Color(0xFFF4F6FF),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             suffixIcon: IconButton(
               onPressed: onTapIcon,
               icon: Icon(icon, size: 18, color: const Color(0xFF2F57C9)),
@@ -447,7 +469,9 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
             if (types.isEmpty) return const SizedBox();
 
             // 선택된 값(그대로 저장/사용)
-            final selected = ref.watch(curtainManagerNotifier).selectedTypeIndex;
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedTypeIndex;
             // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
 
             final int? value =
@@ -458,7 +482,9 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
             // 최초 기본값 세팅(원하면 제거 가능)
             if (value == null) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                ref.read(curtainManagerNotifier.notifier).setType(types.first.type_seq!);
+                ref
+                    .read(curtainManagerNotifier.notifier)
+                    .setType(types.first.type_seq!);
               });
             }
 
@@ -511,7 +537,9 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
             if (places.isEmpty) return const SizedBox();
 
             // 선택된 값(그대로 저장/사용)
-            final selected = ref.watch(curtainManagerNotifier).selectedPlaceIndex;
+            final selected = ref
+                .watch(curtainManagerNotifier)
+                .selectedPlaceIndex;
             // selectGradeIndex 타입이 int? 라고 가정 (gradeId 또는 gradeBit)
 
             final int? value =
@@ -565,86 +593,98 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
   }
 
   Widget _buildGradeCheckList(String label) {
-    final gradeAsync = ref.watch(gradeNotifierProvider);
-    final mask = ref.watch(curtainManagerNotifier).selectedGradeMask ?? 0;
+  final gradeAsync = ref.watch(gradeNotifierProvider);
+  final mask = ref.watch(curtainManagerNotifier).selectedGradeMask ?? 0;
 
-    return gradeAsync.when(
-      loading: () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _dashLabel(label),
-          const SizedBox(height: 6),
-          const SizedBox(height: 48),
-        ],
-      ),
-      error: (_, __) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_dashLabel(label), const SizedBox(height: 6), const Text('불러오기 실패')],
-      ),
-      data: (grades) {
-        final items = grades.map((g) => g.grade_name).toList();
+  return gradeAsync.when(
+    loading: () => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const SizedBox(height: 48),
+      ],
+    ),
+    error: (_, __) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const Text('불러오기 실패'),
+      ],
+    ),
+    data: (grades) {
+      final items = grades.map((g) => g.grade_name).toList();
 
-        final selected = grades
-            .where((g) => (mask & g.bit) != 0)
-            .map((g) => g.grade_name)
-            .toList();
+      final selected = grades
+          .where((g) => (mask & g.bit) != 0)
+          .map((g) => g.grade_name)
+          .toList();
 
-        return _multiSelectBox(
-          label: label,
-          items: items,
-          selected: selected,
-          onToggle: (name) {
-            final grade = grades.firstWhere((g) => g.grade_name == name);
-            final isChecked = (mask & grade.bit) != 0;
+      return _multiSelectBox(
+        label: label,
+        items: items,
+        selected: selected,
+        onToggle: (name) {
+          final grade = grades.firstWhere((g) => g.grade_name == name);
+          final isChecked = (mask & grade.bit) != 0;
 
-            ref.read(curtainManagerNotifier.notifier).toggleGrade(grade.bit, !isChecked);
-          },
-        );
-      },
-    );
-  }
+          ref
+              .read(curtainManagerNotifier.notifier)
+              .toggleGrade(grade.bit, !isChecked);
+        },
+      );
+    },
+  );
+}
 
-  Widget _buildAreaCheckList(String label) {
-    final areaAsync = ref.watch(areaNotifierProvider);
-    final mask = ref.watch(curtainManagerNotifier).selectedAreaMask ?? 0;
+Widget _buildAreaCheckList(String label) {
+  final areaAsync = ref.watch(areaNotifierProvider);
+  final mask = ref.watch(curtainManagerNotifier).selectedAreaMask ?? 0;
 
-    return areaAsync.when(
-      loading: () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _dashLabel(label),
-          const SizedBox(height: 6),
-          const SizedBox(height: 48),
-        ],
-      ),
-      error: (_, __) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_dashLabel(label), const SizedBox(height: 6), const Text('불러오기 실패')],
-      ),
-      data: (areas) {
-        final items = areas.map((area) => area.area_number).toList();
+  return areaAsync.when(
+    loading: () => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const SizedBox(height: 48),
+      ],
+    ),
+    error: (_, __) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _dashLabel(label),
+        const SizedBox(height: 6),
+        const Text('불러오기 실패'),
+      ],
+    ),
+    data: (areas) {
+      final items = areas.map((area) => area.area_number).toList();
 
-        final selected = areas
-            .where((a) => (mask & a.bit) != 0)
-            .map((a) => a.area_number)
-            .toList();
+      final selected = areas
+          .where((a) => (mask & a.bit) != 0)
+          .map((a) => a.area_number)
+          .toList();
 
-        return _multiSelectBox(
-          label: label,
-          items: items,
-          selected: selected,
-          onToggle: (name) {
-            final area = areas.firstWhere((a) => a.area_number == name);
-            final isChecked = (mask & area.bit) != 0;
+      return _multiSelectBox(
+        label: label,
+        items: items,
+        selected: selected,
+        onToggle: (name) {
+          final area = areas.firstWhere((a) => a.area_number == name);
+          final isChecked = (mask & area.bit) != 0;
 
-            ref.read(curtainManagerNotifier.notifier).toggleArea(area.bit, !isChecked);
-          },
-        );
-      },
-    );
-  }
+          ref
+              .read(curtainManagerNotifier.notifier)
+              .toggleArea(area.bit, !isChecked);
+        },
+      );
+    },
+  );
+}
 
-  Widget _multiSelectBox({
+Widget _multiSelectBox({
     required String label,
     required List<String> items,
     required List<String> selected,
@@ -672,27 +712,16 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                 spacing: 8,
                 runSpacing: 8,
                 children: selected.isEmpty
-                    ? [
-                        const Text(
-                          '선택 없음',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                        ),
-                      ]
+                    ? [const Text('선택 없음', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)))]
                     : selected
-                          .map(
-                            (v) => Chip(
-                              label: Text(
-                                v,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              deleteIcon: const Icon(Icons.close, size: 16),
-                              onDeleted: () => onToggle(v),
-                            ),
-                          )
-                          .toList(),
+                        .map(
+                          (v) => Chip(
+                            label: Text(v, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () => onToggle(v),
+                          ),
+                        )
+                        .toList(),
               ),
               const SizedBox(height: 8),
               const Divider(height: 1),
@@ -704,10 +733,7 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
                   dense: true,
                   value: checked,
                   onChanged: (_) => onToggle(v),
-                  title: Text(
-                    v,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                  ),
+                  title: Text(v, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
                 );
@@ -718,6 +744,7 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
       ],
     );
   }
+
 
   // Widget _buildAreaCheckList(String label) {
   //   final areaAsync = ref.watch(areaNotifierProvider);
@@ -763,7 +790,11 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
       ),
       child: Row(
         children: const [
-          Icon(Icons.confirmation_number_outlined, size: 20, color: Color(0xFF2F57C9)),
+          Icon(
+            Icons.confirmation_number_outlined,
+            size: 20,
+            color: Color(0xFF2F57C9),
+          ),
           SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -802,14 +833,20 @@ class _AdminCurtainInsertState extends ConsumerState<AdminCurtainInsert> {
               hintText: hint,
               filled: true,
               fillColor: const Color(0xFFF4F6FF),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: const BorderSide(color: Color(0xFFE0E6FF)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.sublack, width: 2),
+                borderSide: const BorderSide(
+                  color: Color(0xFF4D74D6),
+                  width: 2,
+                ),
               ),
             ),
           ),

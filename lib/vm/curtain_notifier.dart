@@ -64,6 +64,30 @@ class CurtainNotifier extends AsyncNotifier<List<Curtain>> {
     return results;
   }  
 
+  Future<String> insertCurtain(Map<String, dynamic> curtain) async {
+   final url = Uri.parse("${GlobalData.url}/curtain/insert");
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      // headers: {'Content-Type': 'x-www-form-urlencoded'},
+      body: json.encode(curtain),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+        '요청 실패 ${response.statusCode}: ${utf8.decode(response.bodyBytes)}',
+      );
+    }
+    final data = json.decode(utf8.decode(response.bodyBytes));
+    await refreshCurtain();
+    return data['result'];
+  }  
+
+  Future<void> refreshCurtain() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async => fetchCurtain());
+  }
+  
+
 } // CurtainNotifier
 
 final curtainNotifierProvider =
