@@ -48,6 +48,7 @@ class _SellerToAdminChatState
       ).showSnackBar(SnackBar(content: Text("메시지 전송 실패: $e")));
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +75,15 @@ class _SellerToAdminChatState
         }
       });
     }
+
+    String _formatDateTime(dynamic raw) {
+      if (raw == null) return "";
+
+      final s = raw.toString();
+      if (s.length >= 19) return s.substring(0, 19);
+      return s;
+    }
+    
 
     final roomAsync = ref.watch(chatRoomProvider(userId));
 
@@ -124,6 +134,7 @@ class _SellerToAdminChatState
                 final reversed = dialogs.reversed.toList();
 
                 return ListView.builder(
+                  reverse: true,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
@@ -133,7 +144,9 @@ class _SellerToAdminChatState
                     final raw = reversed[index];
                     if (raw is! Map) return const SizedBox();
                     final d = Map<String, dynamic>.from(raw);
-                    return _ChatBubble(messageMap: d);
+
+                    final timeText = _formatDateTime(d["date"]);
+                    return _ChatBubble(messageMap: d, timeText: timeText);
                   },
                 );
               },
@@ -210,7 +223,10 @@ class _SellerToAdminChatState
 
 class _ChatBubble extends StatelessWidget {
   final Map<String, dynamic> messageMap;
-  const _ChatBubble({required this.messageMap});
+  final String timeText;
+  const _ChatBubble({
+   required this.messageMap,
+   required this.timeText});
 
   @override
   Widget build(BuildContext context) {
@@ -242,14 +258,28 @@ class _ChatBubble extends StatelessWidget {
                 bottomRight: Radius.circular(isMe ? 2 : 16),
               ),
             ),
-            child: Text(
-              msg,
-              style: TextStyle(
-                color: isMe ? Colors.white : Colors.black,
-                fontSize: 14,
-                height: 1.35,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                Text(
+                  msg,
+                  style: TextStyle(
+                    color: isMe ? Colors.white : Colors.black,
+                    fontSize: 14,
+                    height: 1.35,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  timeText,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isMe ? Colors.white70 : Colors.black45
+                  ),
+                )
+              ],
             ),
           ),
         ],

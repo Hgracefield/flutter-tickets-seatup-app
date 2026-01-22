@@ -17,20 +17,7 @@ class _CategoryState extends ConsumerState<Category> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        title: const Text(
-          "카테고리",
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
         children: [
