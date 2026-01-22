@@ -7,7 +7,14 @@ import 'package:seatup_app/vm/user_notifier.dart';
 class TransactionReviewWrite extends ConsumerStatefulWidget {
   final int postSeq;
   final int sellerId;
-  const TransactionReviewWrite({super.key, required this.postSeq, required this.sellerId});
+  final int reviewerId; // [추가] 구매자 ID를 직접 받음
+
+  const TransactionReviewWrite({
+    super.key, 
+    required this.postSeq, 
+    required this.sellerId,
+    required this.reviewerId, // 필수 인자로 추가
+  });
 
   @override
   ConsumerState<TransactionReviewWrite> createState() => _TransactionReviewWriteState();
@@ -28,8 +35,7 @@ class _TransactionReviewWriteState extends ConsumerState<TransactionReviewWrite>
 
   @override
   Widget build(BuildContext context) {
-    final myId = ref.watch(userNotifierProvider).value?.user_id ?? 0;
-
+    // 이제 build 안에서 프로바이더를 통해 myId를 찾을 필요가 없습니다. (전달받은 값 사용)
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("거래 후기 작성"), backgroundColor: Colors.white, elevation: 0, foregroundColor: Colors.black),
@@ -71,7 +77,7 @@ class _TransactionReviewWriteState extends ConsumerState<TransactionReviewWrite>
               onPressed: _selectedTags.isEmpty ? null : () async {
                 final review = TransactionReview(
                   post_seq: widget.postSeq,
-                  reviewer_id: myId,
+                  reviewer_id: widget.reviewerId, // [수정] 전달받은 ID 사용
                   reviewee_id: widget.sellerId,
                   tags: _selectedTags,
                   content: _contentController.text,

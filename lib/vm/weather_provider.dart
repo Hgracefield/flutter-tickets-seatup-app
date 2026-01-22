@@ -9,16 +9,18 @@ final weatherProvider = FutureProvider<WeatherModel>((ref) async {
   const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
   final now = DateTime.now();
+  final baseDateTime = getBaseDateTime(now);
+
   final baseDate =
-      '${now.year}'
-      '${now.month.toString().padLeft(2, '0')}'
-      '${now.day.toString().padLeft(2, '0')}';
+      '${baseDateTime.year}'
+      '${baseDateTime.month.toString().padLeft(2, '0')}'
+      '${baseDateTime.day.toString().padLeft(2, '0')}';
 
   final uri = Uri.parse(
     '$url/getVilageFcst' // URL -> 단기예보조회
     '?serviceKey=$weatherServiceKey' // 인증키
     '&pageNo=1' // 페이지 번호
-    '&numOfRows=10' // 한 페이지 결과 수
+    '&numOfRows=100' // 한 페이지 결과 수
     '&dataType=JSON' // 요청자료형식(XML/JSON)
     '&base_date=$baseDate' // 오늘 발표된 예보 (00~02시 제외)
     '&base_time=${baseTime(now)}' // 최신 발표 시각
@@ -36,7 +38,7 @@ final weatherProvider = FutureProvider<WeatherModel>((ref) async {
   return WeatherModel.fromJson(data);
 });
 
-// 현재 시각 기준 최신값
+// 현재 시각 기준 최신 예보 데이터 받아옴
 String baseTime(DateTime now) {
   final hour = now.hour;
   final minute = now.minute;
@@ -51,4 +53,12 @@ String baseTime(DateTime now) {
   if (hour < 20 || (hour == 20 && minute < 10)) return '1700';
   if (hour < 23 || (hour == 23 && minute < 10)) return '2000';
   return '2300';
+}
+
+// 오전 2시 10분 전에는 전날의 오후 11시 예보 데이터 받아 옴
+DateTime getBaseDateTime(DateTime now) {
+  if (now.hour < 2 || (now.hour == 2 && now.minute < 10)) {
+    return now.subtract(const Duration(days: 1));
+  }
+  return now;
 }

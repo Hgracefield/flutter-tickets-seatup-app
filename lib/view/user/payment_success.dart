@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:seatup_app/model/post.dart';
-import 'transaction_review_write.dart'; // 후기 작성 화면 임포트
+import 'transaction_review_write.dart'; 
 
 class PaymentSuccessPage extends StatelessWidget {
   final Post post;
@@ -19,15 +19,10 @@ class PaymentSuccessPage extends StatelessWidget {
         child: Column(
           children: [
             const Spacer(),
-            // 체크 아이콘 애니메이션 느낌
-            const Center(
-              child: Icon(Icons.check_circle, size: 90, color: Color(0xFF4CAF50)),
-            ),
+            const Center(child: Icon(Icons.check_circle, size: 90, color: Color(0xFF4CAF50))),
             const SizedBox(height: 24),
             const Text("결제가 성공적으로\n완료되었습니다!", textAlign: TextAlign.center, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
-            
-            // 주문 요약 카드
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 25),
               padding: const EdgeInsets.all(20),
@@ -43,8 +38,6 @@ class PaymentSuccessPage extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            
-            // 당근마켓 스타일 하단 버튼 섹션
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -53,23 +46,18 @@ class PaymentSuccessPage extends StatelessWidget {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // 후기 작성 화면으로 이동
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => TransactionReviewWrite(
                             postSeq: post.post_seq!,
                             sellerId: post.post_user_id,
+                            reviewerId: buyerId, // [수정] 이 정보를 넘겨줘야 0으로 안나옵니다.
                           ),
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accentColor, foregroundColor: Colors.black,
-                      minimumSize: const Size(double.infinity, 60),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: accentColor, foregroundColor: Colors.black, minimumSize: const Size(double.infinity, 60), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
                     child: const Text("거래 후기 남기기", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                   const SizedBox(height: 12),

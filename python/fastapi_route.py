@@ -13,7 +13,7 @@ from titleDB import router as title_router
 from typeDB import router as type_router
 # from wishlistDB import router as wishlist_router
 from curtain_list import router as curtain_list_router
-# from bankDB import router as bank_router
+from bankDB import router as bank_router
 import config
 
 app = FastAPI()
@@ -30,6 +30,7 @@ app.include_router(purchase_router, prefix='/purchase', tags=['purchase'])
 app.include_router(staff_router, prefix='/staff', tags=['staff'])
 app.include_router(title_router, prefix='/title', tags=['title'])
 app.include_router(type_router, prefix='/type', tags=['type'])
+app.include_router(bank_router, prefix='/bank', tags=['bank'])
 # app.include_router(wishlist_router, prefix='/wishlist', tags=['wishlist'])
 
 
