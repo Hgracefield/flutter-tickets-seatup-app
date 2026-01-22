@@ -37,8 +37,8 @@ class _MainPageState extends State<MainPage>
     super.dispose();
   }
 
+  // 메인 페이지에서 앱 바 일괄 적용
   AppBar mainAppBar(int index) {
-    // 메인 화면에서 앱 바 일괄 적용
     final List<Widget> titles = [
       TextForm.suAppText(text: '카테고리'),
       TextForm.suAppText(text: '카테고리'),

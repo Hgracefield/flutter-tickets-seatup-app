@@ -5,6 +5,7 @@ import 'package:seatup_app/constants/api_keys.dart';
 import 'package:seatup_app/model/weather.dart';
 import 'package:http/http.dart' as http;
 
+// 기상청 API
 final weatherProvider = FutureProvider<WeatherModel>((ref) async {
   const url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0';
 
@@ -22,7 +23,7 @@ final weatherProvider = FutureProvider<WeatherModel>((ref) async {
     '&pageNo=1' // 페이지 번호
     '&numOfRows=100' // 한 페이지 결과 수
     '&dataType=JSON' // 요청자료형식(XML/JSON)
-    '&base_date=$baseDate' // 오늘 발표된 예보 (00~02시 제외)
+    '&base_date=$baseDate' // 오늘 발표된 예보
     '&base_time=${baseTime(now)}' // 최신 발표 시각
     '&nx=61' // 예보지점의 X 좌표값 -> 강남구
     '&ny=126', // 예보지점의 Y 좌표값 -> 강남구
@@ -55,7 +56,7 @@ String baseTime(DateTime now) {
   return '2300';
 }
 
-// 오전 2시 10분 전에는 전날의 오후 11시 예보 데이터 받아 옴
+// 오전 2시 10분 전에는 전날 오후 11시 예보 데이터 받아 옴
 DateTime getBaseDateTime(DateTime now) {
   if (now.hour < 2 || (now.hour == 2 && now.minute < 10)) {
     return now.subtract(const Duration(days: 1));

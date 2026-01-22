@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain_review.dart';
+import 'package:seatup_app/util/color.dart';
+import 'package:seatup_app/util/text_form.dart';
 import 'package:seatup_app/vm/curtain_reviews_notifier.dart';
 
 class ReviewList extends ConsumerStatefulWidget {
@@ -19,12 +21,12 @@ class _ReviewListState extends ConsumerState<ReviewList> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("관람 후기"),
+        title: TextForm.suAppText(text: "관람 후기"),
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Expanded(
@@ -49,7 +51,10 @@ class _ReviewListState extends ConsumerState<ReviewList> {
                                     Colors.blue,
                                   );
                                 },
-                                icon: Icon(Icons.delete),
+                                icon: Icon(
+                                  Icons.delete,
+                                  color: AppColors.warnColor,
+                                ),
                               ),
                             );
                           },
