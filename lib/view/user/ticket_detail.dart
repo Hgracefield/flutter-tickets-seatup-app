@@ -146,8 +146,8 @@ class TicketDetail extends ConsumerWidget {
                   onPressed: (agreeCheck.agreeNotice && agreeCheck.agreeRefund)
                       ? () async {
                           final post = await ref.read(
-                            postDetailProvider(postSeq).future,
-                          );
+                            postNotifierProvider.notifier,
+                          ).selectPost(postSeq);
                           Navigator.push(
                             context,
                             MaterialPageRoute(

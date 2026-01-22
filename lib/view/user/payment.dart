@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/purchase.dart';
 import 'package:seatup_app/view/user/purchase_history_detail.dart';
+import 'package:seatup_app/vm/purchase_notifier.dart';
+import 'package:seatup_app/vm/storage_provider.dart';
 import 'package:tosspayments_widget_sdk_flutter/model/payment_info.dart';
 import 'package:tosspayments_widget_sdk_flutter/model/payment_widget_options.dart';
 import 'package:tosspayments_widget_sdk_flutter/payment_widget.dart';
@@ -44,6 +47,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               padding: const EdgeInsets.all(20.0),
               child: ElevatedButton(
                 onPressed: () async {
+                  final userID = ref.watch(storageProvider).read('user_id');
                   final paymentResult = await _paymentWidget.requestPayment(
                     paymentInfo: PaymentInfo(
                       orderId: 'ORDER_${widget.post.post_seq}_${DateTime.now().millisecondsSinceEpoch}', 
@@ -53,8 +57,15 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
                   if (paymentResult.success != null) {
                     // [핵심] 결제 성공 시 DB 상태를 1(판매완료)로 변경
-                    final result = await ref.read(postNotifierProvider.notifier)
-                        .updatePostStatus(widget.post.post_seq!, 1);
+                      final result = await ref.read(postNotifierProvider.notifier)
+                          .updatePostStatus(widget.post.post_seq!, 1);
+                    final purchase =  Purchase(
+                        purchase_user_id: userID, 
+                        purchase_curtain_id: widget.post.post_curtain_id, 
+                        purchase_create_date: widget.post.post_create_date!);
+
+                      await ref.read(purchaseNotifierProvider.notifier)
+                                                    .insertPurchase(purchase);
 
                     if (result == "OK" && mounted) {
                       // Navigator.pop(context); // 결제창 닫기

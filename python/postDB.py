@@ -229,7 +229,7 @@ async def selectPost(seq:int):
 
         # 5. ticketdetail에 사용
 @router.get("/selectPostDetail/{seq}")
-async def selectPost(seq:int):
+async def selectPostDetail(seq:int):
     conn = connect()
     curs = conn.cursor()
     try:

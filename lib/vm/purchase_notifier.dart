@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/purchase.dart';
 import 'package:seatup_app/util/global_data.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,6 +18,32 @@ class PurchaseNotifier extends AsyncNotifier<Map<String, dynamic>> {
     });
   }
 
+  // insert
+  Future<void> insertPurchase(Purchase p) async {
+  final url = Uri.parse("${GlobalData.url}/purchase/insert");
+
+  final body = jsonEncode(p.toInsertJson());
+  print('INSERT BODY => $body');
+
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(p.toInsertJson()), // insert 전용
+  );
+
+  if (response.statusCode != 200 && response.statusCode != 201) {
+    throw Exception(
+      '구매 등록 실패 (${response.statusCode}) : '
+      '${utf8.decode(response.bodyBytes)}',
+    );
+  }
+}
+
+
+
+
+
+  // 다시 해야함
   Future<Map<String, dynamic>> selectPurchaseList(int seq) async {
     final res = await http.get(
       Uri.parse("${GlobalData.url}/post/selectPostDetail/$seq"),
