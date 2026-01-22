@@ -246,3 +246,4 @@ async def selectPostDetail(seq:int):
         return {'results':'Error'} 
     finally:
         conn.close()
+

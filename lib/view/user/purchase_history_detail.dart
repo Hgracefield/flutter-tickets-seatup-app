@@ -1,35 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seatup_app/model/post.dart';
+import 'package:seatup_app/view/user/main_page.dart';
+import 'package:seatup_app/vm/order_notifier.dart';
+import 'package:seatup_app/vm/post_notifier.dart';
 
-class PurchaseHistoryDetail extends StatelessWidget {
-  const PurchaseHistoryDetail({super.key});
+class PurchaseHistoryDetail extends ConsumerWidget {
+  final Post post;
+  const PurchaseHistoryDetail({super.key,required this.post});
 
   @override
-  Widget build(BuildContext context) {
-    // ====== 샘플 데이터(나중에 API 데이터로 교체) ======
-    final order = OrderDetail(
-      statusLeft: "PIN전달완료",
-      statusRight: "거래완료",
-      orderNo: "CM2025032614035435485",
-      productNo: "3611439561040",
-      categoryLine: "스포츠  >  야구 - 대전 이글스파크",
-      title: "vs 한화  2:0  LG 승",
-      seatInfo: "3루 2층(9.5m)   1열  10열",
-      qtyLabel: "3장   e티켓(실물X)   |   특수조건없음",
-      price: 80000,
-
-      tradeTitle: "PIN전달(e-ticket) 거래",
-      sellerNick: "수영",
-      deliveryType: "티켓보유 여부",
-      deliveryValue: "보유중",
-
-      payMethod: "신용카드(GALAXIA) / 기타카드",
-      paidAt: "2025.03.26 14:03",
-
-      amountProduct: 80000,
-      amountCoupon: 0,
-      amountShipping: 0,
-    );
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderPostNotifier = ref.watch(postSelectAllProvider(post.post_seq!));
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
       appBar: AppBar(
@@ -50,22 +32,24 @@ class PurchaseHistoryDetail extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainPage(),));
+            },
             icon: const Icon(Icons.home_outlined, color: Colors.black),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Colors.black,
-        child: const Icon(Icons.chat_bubble_outline),
-      ),
-      body: ListView(
+      body: orderPostNotifier.when(
+        data: (data) {
+          final total = data['post_quantity'] * data['post_price'];
+          final orderNo = ref.read(orderProviderAsync.notifier)
+                                .makeOrderNo(postSeq: data['post_seq'], postCreateDate: data['post_create_date']);
+          return ListView(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
         children: [
           _StatusStrip(
-            left: order.statusLeft,
-            right: order.statusRight,
+            left: "티켓주문완료",
+            right: "거래완료",
           ),
           const SizedBox(height: 10),
 
@@ -73,9 +57,9 @@ class PurchaseHistoryDetail extends StatelessWidget {
             title: "주문 상품 정보",
             child: Column(
               children: [
-                _KeyValueRow(label: "주문번호", value: order.orderNo),
+                _KeyValueRow(label: "주문번호", value: orderNo),
                 const SizedBox(height: 10),
-                _OrderProductBlock(order: order),
+                _OrderProductBlock(postData: data,),
               ],
             ),
           ),
@@ -85,11 +69,11 @@ class PurchaseHistoryDetail extends StatelessWidget {
             title: "거래 정보",
             child: Column(
               children: [
-                _KeyValueRow(label: "거래 형태", value: order.tradeTitle),
+                // _KeyValueRow(label: "거래 형태", value: order.tradeTitle),
+                // const SizedBox(height: 10),
+                _KeyValueRow(label: "판매자", value: data['user_name']),
                 const SizedBox(height: 10),
-                _KeyValueRow(label: "판매자", value: order.sellerNick),
-                const SizedBox(height: 10),
-                _KeyValueRow(label: order.deliveryType, value: order.deliveryValue),
+                _KeyValueRow(label: "티켓보유 여부", value: "보유중"),
               ],
             ),
           ),
@@ -99,9 +83,9 @@ class PurchaseHistoryDetail extends StatelessWidget {
             title: "결제 수단",
             child: Column(
               children: [
-                _KeyValueRow(label: "결제 수단", value: order.payMethod),
+                _KeyValueRow(label: "결제 수단", value: "tosspay"),
                 const SizedBox(height: 10),
-                _KeyValueRow(label: "결제 일자", value: order.paidAt),
+                _KeyValueRow(label: "결제 일자", value: data['post_create_date']),
               ],
             ),
           ),
@@ -111,21 +95,26 @@ class PurchaseHistoryDetail extends StatelessWidget {
             title: "결제 금액",
             child: Column(
               children: [
-                _MoneyRow(label: "상품 금액", amount: order.amountProduct),
+                _MoneyRow(label: "상품 금액", amount: data['post_price']),
                 const SizedBox(height: 10),
-                _MoneyRow(label: "쿠폰 할인", amount: -order.amountCoupon),
-                const SizedBox(height: 10),
-                _MoneyRow(label: "배송비", amount: order.amountShipping),
-                const Divider(height: 22),
+                // _MoneyRow(label: "쿠폰 할인", amount: -order.amountCoupon),
+                // const SizedBox(height: 10),
+                // _MoneyRow(label: "배송비", amount: order.amountShipping),
+                // const Divider(height: 22),
                 _TotalMoneyRow(
                   label: "총 결제 금액",
-                  amount: order.totalAmount,
+                  amount: total,
                 ),
               ],
             ),
           ),
         ],
-      ),
+      );
+        }, 
+        error: (error, stackTrace) => Text('에러 : $error'), 
+        loading: () => Center(child: CircularProgressIndicator(),),
+      )
+      
     );
   }
 }
@@ -214,13 +203,19 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _OrderProductBlock extends StatelessWidget {
-  final OrderDetail order;
+class _OrderProductBlock extends ConsumerWidget {
+  final Map<String,dynamic> postData;
 
-  const _OrderProductBlock({required this.order});
+  const _OrderProductBlock({required this.postData});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+   final productNumber =
+    ref.read(orderProviderAsync.notifier).ticketNumber(
+      postData['post_create_date'],
+      postData['post_seq'],
+      postData['curtain_id'],
+    );
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -232,7 +227,7 @@ class _OrderProductBlock extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "상품번호  ${order.productNo}",
+            "상품번호  $productNumber",
             style: const TextStyle(
               fontSize: 12,
               color: Colors.grey,
@@ -241,7 +236,7 @@ class _OrderProductBlock extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            order.categoryLine,
+            "${postData['type_name']}",
             style: const TextStyle(
               fontSize: 12,
               color: Colors.black54,
@@ -251,7 +246,7 @@ class _OrderProductBlock extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            order.title,
+            postData['title_contents'],
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w900,
@@ -259,7 +254,7 @@ class _OrderProductBlock extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            order.seatInfo,
+            "${postData['grade_name']} | ${postData['area_number']}",
             style: const TextStyle(
               fontSize: 12,
               color: Colors.black87,
@@ -268,7 +263,7 @@ class _OrderProductBlock extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            order.qtyLabel,
+            "${postData['post_quantity']}장",
             style: const TextStyle(
               fontSize: 12,
               color: Colors.black45,
@@ -279,7 +274,7 @@ class _OrderProductBlock extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              "${_formatMoney(order.price)}원",
+              "${_formatMoney(postData['post_price'])}원",
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
@@ -426,56 +421,6 @@ class _Pill extends StatelessWidget {
       ),
     );
   }
-}
-
-// ======================= MODEL =======================
-
-class OrderDetail {
-  final String statusLeft;
-  final String statusRight;
-
-  final String orderNo;
-  final String productNo;
-  final String categoryLine;
-  final String title;
-  final String seatInfo;
-  final String qtyLabel;
-  final int price;
-
-  final String tradeTitle;
-  final String sellerNick;
-  final String deliveryType;
-  final String deliveryValue;
-
-  final String payMethod;
-  final String paidAt;
-
-  final int amountProduct;
-  final int amountCoupon;
-  final int amountShipping;
-
-  OrderDetail({
-    required this.statusLeft,
-    required this.statusRight,
-    required this.orderNo,
-    required this.productNo,
-    required this.categoryLine,
-    required this.title,
-    required this.seatInfo,
-    required this.qtyLabel,
-    required this.price,
-    required this.tradeTitle,
-    required this.sellerNick,
-    required this.deliveryType,
-    required this.deliveryValue,
-    required this.payMethod,
-    required this.paidAt,
-    required this.amountProduct,
-    required this.amountCoupon,
-    required this.amountShipping,
-  });
-
-  int get totalAmount => amountProduct - amountCoupon + amountShipping;
 }
 
 String _formatMoney(int v) {

@@ -7,6 +7,7 @@ import 'package:seatup_app/view/user/map_view.dart';
 import 'package:seatup_app/view/user/payment.dart';
 import 'package:seatup_app/view/user/user_to_user_chat.dart';
 import 'package:seatup_app/vm/agree_check.dart';
+import 'package:seatup_app/vm/order_notifier.dart';
 import 'package:seatup_app/vm/post_notifier.dart';
 import 'package:seatup_app/vm/route_vm.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
@@ -159,8 +160,8 @@ class TicketDetail extends ConsumerWidget {
                   onPressed: (agreeCheck.agreeNotice && agreeCheck.agreeRefund)
                       ? () async {
                           final post = await ref.read(
-                            postDetailProvider(postSeq).future,
-                          );
+                            postNotifierProvider.notifier,
+                          ).selectPost(postSeq);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -197,7 +198,7 @@ class TicketDetail extends ConsumerWidget {
 
   Widget _productInfoCard(Map<String, dynamic> postAsync, WidgetRef ref) {
     final ticketNumber = ref
-        .read(postNotifierProvider.notifier)
+        .read(orderProviderAsync.notifier)
         .ticketNumber(
           postAsync['post_create_date'],
           postAsync['post_seq'],

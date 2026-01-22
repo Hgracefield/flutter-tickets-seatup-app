@@ -30,13 +30,13 @@ class Post {
       post_seq: int.tryParse(json['post_seq']?.toString() ?? ""),
       post_user_id: int.tryParse(json['post_user_id']?.toString() ?? "0") ?? 0,
       user_name: json['user_name'],
-      post_curtain_id: int.tryParse(json['post_curtain_id']?.toString() ?? "0") ?? 0,
-      curtain_title: json['title_contents'] ?? json['curtain_title'],
+      post_curtain_id: int.tryParse(json['curtain_id']?.toString() ?? "0") ?? 0,
+      curtain_title: (json['title_contents'] ?? json['curtain_title'] ?? '').toString(),
       post_create_date: json['post_create_date']?.toString() ?? "",
       post_quantity: int.tryParse(json['post_quantity']?.toString() ?? "0") ?? 0,
       post_price: int.tryParse(json['post_price']?.toString() ?? "0") ?? 0,
-      post_area: int.tryParse(json['post_area']?.toString() ?? "0") ?? 0,
-      post_grade: int.tryParse(json['post_grade']?.toString() ?? "0") ?? 0,
+      post_area: int.tryParse(json['curtain_area']?.toString() ?? "0") ?? 0,
+      post_grade: int.tryParse(json['curtain_grade']?.toString() ?? "0") ?? 0,
       post_desc: json['post_desc']?.toString() ?? "",
     );
   }
