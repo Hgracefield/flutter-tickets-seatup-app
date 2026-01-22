@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain.dart';
+import 'package:seatup_app/model/curtain_list.dart';
+import 'package:seatup_app/util/textfield_form.dart';
+import 'package:seatup_app/view/user/ticket_list_option.dart';
 import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/keyword_notifier.dart';
 
@@ -13,7 +16,6 @@ class CurtainSearch extends ConsumerStatefulWidget {
 
 class _CurtainSearchState extends ConsumerState<CurtainSearch> {
   // === Property ===
-
   late TextEditingController searchController;
   late List<Curtain> curtainList;
   @override
@@ -33,15 +35,23 @@ class _CurtainSearchState extends ConsumerState<CurtainSearch> {
   Widget build(BuildContext context) {
     final keywordAsync = ref.watch(keywordHandlerNotifilerProvider);
     return Scaffold(
+      backgroundColor: Colors.white,
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
-              _buildTextField(searchController, '공연을 검색해보세요'),
+              TextfieldForm.suTextField(
+                controller: searchController,
+                hintText: '공연을 검색해보세요',
+                keyboardType: TextInputType.text,
+                onSubmitted: (value) async{
+                  search();
+                },prefixIcon: Icons.search),
+              // _buildTextField(searchController, '공연을 검색해보세요'),
               keywordAsync.when(
                 data: (data) {
                   return data.isEmpty
@@ -55,7 +65,7 @@ class _CurtainSearchState extends ConsumerState<CurtainSearch> {
                               return GestureDetector(
                                 onTap: () {
                                   searchController.text = data[index];
-                                  search();
+                                  search(); 
                                 },
                                 child: Card(
                                   child: Container(
@@ -84,7 +94,28 @@ class _CurtainSearchState extends ConsumerState<CurtainSearch> {
                 : ListView.builder(
                   itemCount: curtainList.length,
                   itemBuilder: (context, index) {
-                    return Card(child: Text(curtainList[index].curtain_title));
+                    return _buildCurtainCard(curtainList[index], () {
+                      FocusScope.of(context).unfocus();
+                    print('sdsdsdsdsd');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        CurtainList item = CurtainList(
+                          curtain_id: curtainList[index].curtain_id!, 
+                          title_seq: curtainList[index].curtain_id!, 
+                          title_contents: curtainList[index].curtain_title, 
+                          curtain_pic: curtainList[index].curtain_pic, 
+                          place_name: curtainList[index].curtain_place); 
+                        
+                        return TicketListOption(item: item);
+                      },));
+
+                        // builder: (_) => TicketListOption(item: curtainList[index]),
+                      // ),
+                    // );
+
+                    // debugPrint("클릭한 curtain_id = ${item.curtain_id}");
+                    },);
                   },),
               ),
             ],
@@ -96,44 +127,122 @@ class _CurtainSearchState extends ConsumerState<CurtainSearch> {
 
   // === Widgets ===
 
-  Widget _buildTextField(TextEditingController controller, String msg) {
-    return TextField(
-      controller: searchController,
-      keyboardType: TextInputType.emailAddress,
-      onSubmitted: (value) async {
-        // 검색
-        search();
-      },
-      decoration: InputDecoration(
-        hintText: msg,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 16,
-        ),
-        filled: true,
-        prefixIcon: Icon(Icons.search, color: Colors.grey),
-        fillColor: const Color(0xFFF8F8F8),
+  // Widget _buildTextField(TextEditingController controller, String msg) {
+  //   return TextField(
+  //     controller: searchController,
+  //     keyboardType: TextInputType.emailAddress,
+  //     onSubmitted: (value) async {
+  //       // 검색
+  //       search();
+  //     },
+  //     decoration: InputDecoration(
+  //       hintText: msg,
+  //       hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+  //       contentPadding: const EdgeInsets.symmetric(
+  //         horizontal: 20,
+  //         vertical: 16,
+  //       ),
+  //       filled: true,
+  //       prefixIcon: Icon(Icons.search, color: Colors.grey),
+  //       fillColor: const Color(0xFFF8F8F8),
 
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+  //       enabledBorder: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(12),
+  //         borderSide: BorderSide.none,
+  //       ),
+  //       focusedBorder: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(12),
+  //         borderSide: const BorderSide(color: Colors.black, width: 1),
+  //       ),
+  //       errorBorder: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(12),
+  //         borderSide: const BorderSide(color: Colors.red, width: 1),
+  //       ),
+  //       focusedErrorBorder: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(12),
+  //         borderSide: const BorderSide(color: Colors.red, width: 1),
+  //       ),
+  //     ),
+  //   );
+  // } // _buildTextField
+
+
+
+  Widget _buildCurtainCard(Curtain item, VoidCallback onTap)
+  {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+          color: Colors.white,
+          elevation: 0,
+          margin: const EdgeInsets.symmetric(
+            horizontal: 3,
+            vertical: 0,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.network(
+                    item.curtain_pic,
+                    width: 90,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) {
+                      return Container(
+                        width: 90,
+                        height: 120,
+                        alignment: Alignment.center,
+                        color: Colors.grey.shade300,
+                        child: const Icon(Icons.image_not_supported),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.curtain_title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        if (item.curtain_place.isNotEmpty)
+                          Text(
+                            item.curtain_place,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.black, width: 1),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
-      ),
     );
-  } // _buildTextField
+  }
 
   // === Functions ===
 
