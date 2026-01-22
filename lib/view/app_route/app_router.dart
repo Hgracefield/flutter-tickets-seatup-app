@@ -93,10 +93,10 @@ class AppRouter {
       // return MaterialPageRoute(builder: (_) => const UserToUserChat());
       case AppRoute.sellerToAdminChat:
         return MaterialPageRoute(builder: (_) => const SellerToAdminChat());
-      case AppRoute.transactionReviewWrite:
-        return MaterialPageRoute(builder: (_) => const TransactionReviewWrite());
-      case AppRoute.transactionReviewList:
-        return MaterialPageRoute(builder: (_) => const TransactionReviewList());
+      // case AppRoute.transactionReviewWrite:
+      //   return MaterialPageRoute(builder: (_) => const TransactionReviewWrite());
+      // case AppRoute.transactionReviewList:
+      //   return MaterialPageRoute(builder: (_) => const TransactionReviewList());
 
       case AppRoute.shoppingCart:
         return MaterialPageRoute(builder: (_) => const ShoppingCart());

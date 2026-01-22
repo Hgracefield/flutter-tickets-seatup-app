@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/post.dart';
 import 'package:seatup_app/util/message.dart';
 import 'package:seatup_app/view/user/main_page.dart';
+import 'package:seatup_app/view/user/map_view.dart';
 import 'package:seatup_app/view/user/payment.dart';
 import 'package:seatup_app/view/user/user_to_user_chat.dart';
 import 'package:seatup_app/vm/agree_check.dart';
 import 'package:seatup_app/vm/order_notifier.dart';
 import 'package:seatup_app/vm/post_notifier.dart';
+import 'package:seatup_app/vm/route_vm.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
 import 'package:seatup_app/vm/user_chat_notifier.dart';
 
@@ -38,11 +40,23 @@ class TicketDetail extends ConsumerWidget {
         backgroundColor: Colors.white,
         elevation: 0.6,
         actions: [
-          IconButton(
+         IconButton(
             onPressed: () {
-              // 여기에 지도
+              final post = postAsync.asData?.value;
+              if (post == null) return;
+
+              final placeSeq = post['place_seq'];
+              if (placeSeq == null) return;
+
+              ref.read(selectedPlaceSeqProvider.notifier).state =
+                  placeSeq;
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MapView()),
+              );
             },
-            icon: Icon(Icons.map),
+            icon: const Icon(Icons.map),
           ),
         ],
       ),

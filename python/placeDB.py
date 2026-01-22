@@ -103,7 +103,7 @@ async def insert(place : Place):
     finally:
         conn.close()
 @router.post("/update")
-async def insert(place : Place):
+async def update(place : Place):
     # Connection으로 부터 Cursor 생성
     conn = connect()
     curs = conn.cursor()
