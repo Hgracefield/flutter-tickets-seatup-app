@@ -12,6 +12,7 @@ import 'package:seatup_app/view/admin/admin_side_bar.dart';
 import 'package:seatup_app/view/admin/admin_transaction_manage.dart';
 import 'package:seatup_app/view/admin/admin_transaction_review_manage.dart';
 import 'package:seatup_app/view/admin/faq_list.dart';
+import 'package:seatup_app/vm/admin_curtain_notifier.dart';
 import 'package:seatup_app/vm/curtain_notifier.dart';
 import 'package:seatup_app/vm/staff_notifier.dart';
 
@@ -50,7 +51,7 @@ class AdminDashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardAsync = ref.watch(staffNotifierProvider);
+    // final dashboardAsync = ref.watch(staffNotifierProvider);
     return Scaffold(
       backgroundColor: AppColors.adminBackgroundColor,
       body: SafeArea(
@@ -59,11 +60,7 @@ class AdminDashboard extends ConsumerWidget {
             AdminSideBar(selectedMenu: SideMenu.dashboard, onMenuSelected: (menu) {}),
             // _sideBar(context, ref, dashboardAsync),
             Expanded(
-              child: dashboardAsync.when(
-                data: (dash) => _buildBodyByIndex(context, dash.selectedMenuIndex, ref),
-                error: (error, stackTrace) => Center(child: Text('에러: $error')),
-                loading: () => const Center(child: CircularProgressIndicator()),
-              ),
+               child: _productInfoTab(context, ref)
             ),
           ],
         ),
@@ -113,7 +110,7 @@ class AdminDashboard extends ConsumerWidget {
 
   // ---------------- 탭0: 제품 정보 ----------------
   Widget _productInfoTab(BuildContext context, WidgetRef ref) {
-    final curtainAsync = ref.watch(curtainAllProvider);
+    final curtainAsync = ref.watch(adminCurtainNotifer);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
       child: Column(

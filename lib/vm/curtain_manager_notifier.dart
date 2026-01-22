@@ -8,6 +8,9 @@ class CurtainManagerNotifier extends  Notifier <CurtainManagerState>{
   void setType(int id) => state = state.copyWith(typeIndex: id);
   void setTitle(int id) => state = state.copyWith(titleIndex: id);
   void setPlace(int id) => state = state.copyWith(placeIndex: id);
+  void setGrade(int id) => state = state.copyWith(gradeMask: id);
+  void setArea(int id) => state = state.copyWith(areaMask: id);
+
 
   void toggleGrade(int bit, bool checked)
   {
@@ -23,6 +26,11 @@ class CurtainManagerNotifier extends  Notifier <CurtainManagerState>{
     ? (state.selectedAreaMask! | bit)
     : (state.selectedAreaMask! & ~bit);
     state = state.copyWith(areaMask: next);
+  }
+
+  void reset()
+  {
+    state = CurtainManagerState();
   }
 }
 
