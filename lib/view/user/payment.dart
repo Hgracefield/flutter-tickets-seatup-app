@@ -63,7 +63,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                     // 2. 구매 내역 생성 및 저장
                     final purchase = Purchase(
                         purchase_user_id: widget.buyerId, // 위젯에서 받은 ID 사용
-                        purchase_curtain_id: widget.post.post_seq!, 
+                        purchase_post_id: widget.post.post_seq!, 
                         purchase_create_date: DateTime.now().toIso8601String());
 
                     await ref.read(purchaseNotifierProvider.notifier).insertPurchase(purchase);    
