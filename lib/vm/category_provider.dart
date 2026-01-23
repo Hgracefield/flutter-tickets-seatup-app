@@ -34,7 +34,7 @@ class CategoryFilterState {
 
 class CategoryFilterNotifier extends Notifier<CategoryFilterState> {
   @override
-  CategoryFilterState build() => const CategoryFilterState();
+  CategoryFilterState build() => const CategoryFilterState(category:TicketCategory.musical, typeSeq: 2);
 
   void select({
     required TicketCategory category,
