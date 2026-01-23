@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/util/message.dart';
+import 'package:seatup_app/util/textfield_form.dart';
 import 'package:seatup_app/vm/admin_edit_notifier.dart';
 import 'package:seatup_app/vm/area_notifier.dart';
 import 'package:seatup_app/vm/admin_curtain_notifier.dart';
@@ -12,6 +13,8 @@ import 'package:seatup_app/vm/grade_notifier.dart';
 import 'package:seatup_app/vm/place_notifier.dart';
 import 'package:seatup_app/vm/title_notifier.dart';
 import 'package:seatup_app/vm/type_provider.dart';
+import 'package:seatup_app/util/color.dart';
+import 'package:seatup_app/util/btn_style.dart';
 
 // ✅ 선택된 type 값을 Riverpod으로 관리
 final selectedTypeProvider = StateProvider.autoDispose<String?>((ref) => null);
@@ -28,16 +31,7 @@ class AdminCurtainEdit extends ConsumerStatefulWidget {
 class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
   final _formKey = GlobalKey<FormState>();
 
-  // // ---------- Multi Select (복수) ----------
-  // final List<String> gradeItems = const ['VIP', 'R', 'S', 'A'];
-  // final List<String> areaItems = const ['A구역', 'B구역', 'C구역', 'D구역'];
-
-  // List<String> selectedGrades = [];
-  // List<String> selectedAreas = [];
-
-  // ---------- TextField ----------
-  // late final TextEditingController titleCtrl;
-  // late final TextEditingController placeCtrl;
+  // === Property ===
   late final TextEditingController curtainDateCtrl;
   late final TextEditingController curtainTimeCtrl;
 
@@ -140,7 +134,6 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
       appBar: AppBar(
@@ -148,7 +141,12 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
         elevation: 0,
         title: const Text(
           '제품 정보 수정',
-          style: TextStyle(color: Color(0xFF1E3A8A), fontWeight: FontWeight.w900),
+          style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textColor,
+              // color: Color(0xFF1E3A8A),
+            ),
         ),
         iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
       ),
@@ -165,7 +163,7 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                   border: Border.all(color: const Color(0xFFCFD8FF)),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -180,23 +178,22 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.edit_note_outlined, size: 20, color: Color(0xFF2F57C9)),
+                              Icon(Icons.edit_note_outlined, size: 16, color: Color(0xFF2F57C9)),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
                                   '기존 정보를 수정한 후 저장하세요.',
                                   style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1F2937),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textColor,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 14),
-
+                        SizedBox(height: 16),
                         Expanded(
                           child: SingleChildScrollView(
                             child: Column(
@@ -205,54 +202,28 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                 Row(
                                   children: [
                                     Expanded(child: _buildTypeDropDown('type')),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: 14),
 
                                     Expanded(child: _buildTtitleDropDown('title')),
                                   ],
                                 ),
 
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 16),
                               Row(
                                   children: [
-                                    // Expanded(
-                                    //   child: _dashTextField(
-                                    //     label: 'location',
-                                    //     controller: locationCtrl,
-                                    //     hint: '지역 (예: 서울)',
-                                    //     requiredField: true,
-                                    //   ),
-                                    // ),
                                     Expanded(child: _buildPlaceDropDown('place')),
-                                    // const SizedBox(width: 12),
-                                    // Expanded(
-                                    //   child: _dashTextField(
-                                    //     label: 'place',
-                                    //     controller: placeCtrl,
-                                    //     hint: '공연장 (예: 예술의 전당)',
-                                    //     requiredField: true,
-                                    //   ),
-                                    // ),
                                   ],
                                 ),
-                                 const SizedBox(height: 12),
+                                 const SizedBox(height: 16),
 
                                  Row(
                                   children: [
                                     Expanded(child: _buildGradeCheckList('grade')),
-                                    SizedBox(width: 12,),
-                                    // Expanded(child: _buildGradeCheckList('grade')),
+                                    SizedBox(width: 14,),
                                     Expanded(child: _buildAreaCheckList('area'))
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                // Row(
-                                //   children: [
-                                //     // _dashLabel('area'),
-                                //     // Expanded(child: _buildAreaCheckList()),
-                                //   ],
-                                // ),
-                                const SizedBox(height: 12),
-          
+                                const SizedBox(height: 16),
                                 // 4줄: show_date + show_time (입력 가능 + picker 아이콘)
                                 Row(
                                   children: [
@@ -265,7 +236,7 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                         onTapIcon: _pickDate,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: 14),
                                     Expanded(
                                       child: _dashPickerField(
                                         label: 'show_time',
@@ -277,191 +248,38 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                SizedBox(height: 16),
           
                                 _dashTextArea(
                                   label: 'curtain_desc',
                                   controller: curtainDescCtrl,
                                   hint: '설명 (여러 줄 입력 가능)',
                                 ),
-                                const SizedBox(height: 12),
+                                SizedBox(height: 14),
           
                                 _dashTextField(
                                   label: 'curtain_pic (image url)',
                                   controller: curtainPicCtrl,
                                   hint: 'https://...',
                                 ),
-
-
-                                // Row(
-                                //   children: [
-                                //     Expanded(
-                                //       flex: 1,
-                                //       child: typesAsync.when(
-                                //         loading: () => _loadingDropdown(label: 'type'),
-                                //         error: (e, _) => _errorDropdown(label: 'type', message: '$e'),
-                                //         data: (types) {
-                                //           final typeItems = types.map((e) => e.type_name).toList();
-
-                                //           if (typeItems.isEmpty) {
-                                //             return _errorDropdown(label: 'type', message: 'type 목록이 비어있음');
-                                //           }
-
-                                //           // ✅ 선택값이 items에 없으면 첫번째로 보정 + provider에 반영
-                                //           final safeValue = typeItems.contains(selectedType)
-                                //               ? selectedType!
-                                //               : typeItems.first;
-
-                                //           if (selectedType != safeValue) {
-                                //             // build 중 state 변경은 다음 프레임으로 미룸
-                                //             WidgetsBinding.instance.addPostFrameCallback((_) {
-                                //               ref.read(selectedTypeProvider.notifier).state = safeValue;
-                                //             });
-                                //           }
-
-                                //           return _dashDropdown(
-                                //             label: 'type',
-                                //             value: safeValue,
-                                //             items: typeItems,
-                                //             onChanged: (v) {
-                                //               ref.read(selectedTypeProvider.notifier).state = v;
-                                //             },
-                                //           );
-                                //         },
-                                //       ),
-                                //     ),
-                                //     const SizedBox(width: 12),
-                                //     Expanded(
-                                //       flex: 2,
-                                //       child: _dashTextField(
-                                //         label: 'title',
-                                //         controller: titleCtrl,
-                                //         hint: '공연 제목',
-                                //         requiredField: true,
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
-                                // const SizedBox(height: 12),
-
-                                // Row(
-                                //   children: [
-                                //     Expanded(
-                                //       child: _dashTextField(
-                                //         label: 'place',
-                                //         controller: placeCtrl,
-                                //         hint: '공연장 (예: 예술의 전당)',
-                                //         requiredField: true,
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
-                                // const SizedBox(height: 12),
-
-                                // Row(
-                                //   crossAxisAlignment: CrossAxisAlignment.start,
-                                //   children: [
-                                //     Expanded(
-                                //       child: _multiSelectBox(
-                                //         label: 'grade (복수 선택)',
-                                //         items: gradeItems,
-                                //         selected: selectedGrades,
-                                //         onToggle: (v) {
-                                //           setState(() {
-                                //             if (selectedGrades.contains(v)) {
-                                //               selectedGrades.remove(v);
-                                //             } else {
-                                //               selectedGrades.add(v);
-                                //             }
-                                //           });
-                                //         },
-                                //       ),
-                                //     ),
-                                //     const SizedBox(width: 12),
-                                //     Expanded(
-                                //       child: _multiSelectBox(
-                                //         label: 'area (복수 선택)',
-                                //         items: areaItems,
-                                //         selected: selectedAreas,
-                                //         onToggle: (v) {
-                                //           setState(() {
-                                //             if (selectedAreas.contains(v)) {
-                                //               selectedAreas.remove(v);
-                                //             } else {
-                                //               selectedAreas.add(v);
-                                //             }
-                                //           });
-                                //         },
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
-                                // const SizedBox(height: 12),
-
-                                // Row(
-                                //   children: [
-                                //     Expanded(
-                                //       child: _dashPickerField(
-                                //         label: 'curtain_date',
-                                //         controller: curtainDateCtrl,
-                                //         hint: '예: 2026-02-11',
-                                //         icon: Icons.calendar_today_outlined,
-                                //         onTapIcon: _pickDate,
-                                //       ),
-                                //     ),
-                                //     const SizedBox(width: 12),
-                                //     Expanded(
-                                //       child: _dashPickerField(
-                                //         label: 'show_time',
-                                //         controller: curtainTimeCtrl,
-                                //         hint: '예: 14:00',
-                                //         icon: Icons.schedule_outlined,
-                                //         onTapIcon: _pickTime,
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
-                                // const SizedBox(height: 12),
-
-                                // _dashTextArea(
-                                //   label: 'curtain_desc',
-                                //   controller: curtainDescCtrl,
-                                //   hint: '설명 (여러 줄 입력 가능)',
-                                // ),
-                                // const SizedBox(height: 12),
-
-                                // _dashTextField(
-                                //   label: 'curtain_pic (image url)',
-                                //   controller: curtainPicCtrl,
-                                //   hint: 'https://...',
-                                // ),
                               ],
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         Row(
                           children: [
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF2F57C9),
-                                side: const BorderSide(color: Color(0xFFCFD8FF)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('취소', style: TextStyle(fontWeight: FontWeight.w800)),
+                            BtnStyle.primary(
+                              text: '취소',
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
                             ),
                             const Spacer(),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4D74D6),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                              ),
-                              onPressed: _submitUpdate,
-                              child: const Text('저장', style: TextStyle(fontWeight: FontWeight.w900)),
+                            BtnStyle.primary(
+                              text: '등록',
+                              onPressed: () => _submitUpdate,
                             ),
                           ],
                         ),
@@ -483,56 +301,11 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w800,
-          color: Color(0xFF2F57C9),
+          color: AppColors.textColor,
         ),
       );
 
-  Widget _loadingDropdown({required String label}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _dashLabel(label),
-        const SizedBox(height: 6),
-        Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF4F6FF),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE0E6FF)),
-          ),
-          child: const Center(
-            child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _errorDropdown({required String label, required String message}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _dashLabel(label),
-        const SizedBox(height: 6),
-        Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF1F2),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFFCA5A5)),
-          ),
-          alignment: Alignment.centerLeft,
-          child: Text(
-            message,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFFB91C1C)),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
+ 
   Widget _dashTextField({
     required String label,
     required TextEditingController controller,
@@ -544,6 +317,11 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
       children: [
         _dashLabel(label),
         const SizedBox(height: 6),
+        // TextfieldForm.suTextField(
+        //   controller: controller,
+        //   hintText: hint,
+        //   keyboardType: TextInputType.text,
+        //   )
         TextFormField(
           controller: controller,
           decoration: InputDecoration(

@@ -4,17 +4,10 @@ import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/util/btn_style.dart';
 import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/util/side_menu.dart';
-import 'package:seatup_app/view/admin/admin_chat_list.dart';
 import 'package:seatup_app/view/admin/admin_curtain_edit.dart';
 import 'package:seatup_app/view/admin/admin_curtain_insert.dart';
-import 'package:seatup_app/view/admin/admin_review_manage.dart';
 import 'package:seatup_app/view/admin/admin_side_bar.dart';
-import 'package:seatup_app/view/admin/admin_transaction_manage.dart';
-import 'package:seatup_app/view/admin/admin_transaction_review_manage.dart';
-import 'package:seatup_app/view/admin/faq_list.dart';
 import 'package:seatup_app/vm/admin_curtain_notifier.dart';
-import 'package:seatup_app/vm/curtain_notifier.dart';
-import 'package:seatup_app/vm/staff_notifier.dart';
 
 const double _colTypeWidth = 40;
 const double _colTitleWidth = 200;
@@ -69,44 +62,44 @@ class AdminDashboard extends ConsumerWidget {
   }
 
   // 선택된 index만 build (안 보이는 탭은 아예 build 안 함)
-  Widget _buildBodyByIndex(BuildContext context, int selectedMenuIndex, WidgetRef ref) {
-    switch (selectedMenuIndex) {
-      case 0:
-        return _productInfoTab(context, ref);
-      case 1:
-        return FaqList();
-      case 2:
-        return AdminTransactionManage();
-      case 3:
-        return AdminReviewManage();
-      case 4:
-        return AdminTransactionReviewManage();
-      case 5:
-        return AdminChatList();
-      default:
-        return _placeholderTab('알 수 없는 메뉴');
-    }
-  }
+  // Widget _buildBodyByIndex(BuildContext context, int selectedMenuIndex, WidgetRef ref) {
+  //   switch (selectedMenuIndex) {
+  //     case 0:
+  //       return _productInfoTab(context, ref);
+  //     case 1:
+  //       return FaqList();
+  //     case 2:
+  //       return AdminTransactionManage();
+  //     case 3:
+  //       return AdminReviewManage();
+  //     case 4:
+  //       return AdminTransactionReviewManage();
+  //     case 5:
+  //       return AdminChatList();
+  //     default:
+  //       return _placeholderTab('알 수 없는 메뉴');
+  //   }
+  // }
 
   // ---------------- 탭 화면(임시) ----------------
-  Widget _placeholderTab(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFCFD8FF)),
-        ),
-        child: Center(
-          child: Text(
-            '$title (준비중)',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _placeholderTab(String title) {
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
+  //     child: Container(
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.circular(10),
+  //         border: Border.all(color: const Color(0xFFCFD8FF)),
+  //       ),
+  //       child: Center(
+  //         child: Text(
+  //           '$title (준비중)',
+  //           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // ---------------- 탭0: 제품 정보 ----------------
   Widget _productInfoTab(BuildContext context, WidgetRef ref) {
