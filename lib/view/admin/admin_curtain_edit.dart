@@ -279,7 +279,7 @@ class _AdminCurtainEditConsumerState extends ConsumerState<AdminCurtainEdit> {
                             const Spacer(),
                             BtnStyle.primary(
                               text: '등록',
-                              onPressed: () => _submitUpdate,
+                              onPressed: _submitUpdate,
                             ),
                           ],
                         ),
