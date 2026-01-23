@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seatup_app/model/curtain_review.dart';
 import 'package:seatup_app/model/weather.dart';
+import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/view/user/curtain_list_screen.dart';
 import 'package:seatup_app/view/user/review_write.dart';
+import 'package:seatup_app/vm/category_provider.dart';
+import 'package:seatup_app/vm/curtain_list_provider.dart';
 import 'package:seatup_app/vm/curtain_reviews_notifier.dart';
 import 'package:seatup_app/vm/weather_provider.dart';
 
@@ -13,175 +16,326 @@ class MainPageHome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final reviewAsync = ref.watch(reviewListProvider); // 후기 목록
     final weatherAsync = ref.watch(weatherProvider); // 날씨 데이터 저장
-    // final selectedCategory = ref.watch(selectedCategoryProvider); // 선택한 카테고리
-    final reviewAsync = ref.watch(reviewListProvider);
+
+    final categoryfilter = ref.watch(categoryFilterProvider); // 카테고리 필터
+    final curtainAsync = ref.watch(curtainListProvider); // 공연 목록
+    final categoryTitle = [
+      (category: TicketCategory.musical, label: '뮤지컬'),
+      (category: TicketCategory.concert, label: '콘서트'),
+      (category: TicketCategory.play, label: '연극'),
+      (category: TicketCategory.classic, label: '클래식/무용'),
+      (category: TicketCategory.sports, label: '스포츠'),
+      (category: TicketCategory.leisure, label: '레저/캠핑'),
+      (category: TicketCategory.expo, label: '전시/행사'),
+      (category: TicketCategory.kids, label: '아동/가족'),
+      (category: TicketCategory.topping, label: 'topping'),
+      (category: TicketCategory.benefit, label: '이달의혜택'),
+    ];
+
+    // DB type 테이블의 type_seq 매핑
+    // 연극=1, 뮤지컬=2, 콘서트=5, 무용=7, 전시=8
+    int? _toTypeSeq(TicketCategory category) {
+      switch (category) {
+        case TicketCategory.play:
+          return 1;
+        case TicketCategory.musical:
+          return 2;
+        case TicketCategory.concert:
+          return 5;
+        case TicketCategory.classic:
+          return 7;
+        case TicketCategory.expo:
+          return 8;
+
+        // DB에 타입이 없거나 아직 준비중이면 null
+        case TicketCategory.sports:
+        case TicketCategory.leisure:
+        case TicketCategory.kids:
+        case TicketCategory.topping:
+        case TicketCategory.benefit:
+          return null;
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: SizedBox(
-                  width: MediaQuery.widthOf(context) - 20,
-                  height: 550,
-                  child: Swiper(
-                    itemCount: 3,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          // padding: const EdgeInsetsGeometry.all(0),
+          child: Center(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 550,
+                    child: Swiper(
+                      itemCount: 3,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusGeometry.circular(20),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Image.asset(
+                            "images/main_swiper_image0${index + 1}.gif",
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      },
+                      pagination: SwiperPagination(
+                        builder: DotSwiperPaginationBuilder(
+                          color: Colors.white38,
+                          activeColor: Colors.white,
                         ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Image.asset(
-                          "images/main_swiper_image0${index + 1}.gif",
-                          fit: BoxFit.cover,
-                          // alignment: AlignmentGeometry.topCenter,
-                        ),
-                      );
-                    },
-                    pagination: SwiperPagination(
-                      builder: DotSwiperPaginationBuilder(
-                        color: Colors.white38,
-                        activeColor: Colors.white,
                       ),
                     ),
                   ),
                 ),
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.fromLTRB(20, 0, 10, 20),
-                child: Row(
-                  children: [
-                    CategoryButton(
-                      icon: Icons.theater_comedy_outlined,
-                      label: '뮤지컬',
-                      page: CurtainListScreen(),
-                    ),
-                    CategoryButton(
-                      icon: Icons.music_note_outlined,
-                      label: '콘서트',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.speaker_group_outlined,
-                      label: '연극',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.chair_alt_outlined,
-                      label: '클래식/무용',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.sports_baseball_outlined,
-                      label: '스포츠',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.park_outlined,
-                      label: '레저/캠핑',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.museum_outlined,
-                      label: '전시/행사',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.child_care_outlined,
-                      label: '아동/가족',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.blur_on_outlined,
-                      label: 'topping',
-                      comingSoon: true,
-                    ),
-                    CategoryButton(
-                      icon: Icons.card_giftcard_outlined,
-                      label: '이달의혜택',
-                      comingSoon: true,
-                    ),
-                  ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    children: [
+                      CategoryButton(
+                        icon: Icons.theater_comedy_outlined,
+                        label: '뮤지컬',
+                        page: CurtainListScreen(),
+                      ),
+                      CategoryButton(
+                        icon: Icons.music_note_outlined,
+                        label: '콘서트',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.speaker_group_outlined,
+                        label: '연극',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.chair_alt_outlined,
+                        label: '클래식/무용',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.sports_baseball_outlined,
+                        label: '스포츠',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.park_outlined,
+                        label: '레저/캠핑',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.museum_outlined,
+                        label: '전시/행사',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.child_care_outlined,
+                        label: '아동/가족',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.blur_on_outlined,
+                        label: 'topping',
+                        comingSoon: true,
+                      ),
+                      CategoryButton(
+                        icon: Icons.card_giftcard_outlined,
+                        label: '이달의혜택',
+                        comingSoon: true,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _title('장르별 랭킹'),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // _categoryTab('뮤지컬', 0),
-                    // _categoryTab('콘서트', 1),
-                    // _categoryTab('연극', 3),
-                    // _categoryTab('클래식/무용', 4),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Image.asset('images/main_banner1.jpg'),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: _title('베스트 관람후기'), // 화면 정중앙
-                    ),
-                    Positioned(
-                      right: 0,
-                      bottom: -10,
-                      child: IconButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ReviewWrite(),
+                _title('장르별 랭킹'),
+          
+                // --- 가로 카테고리 탭 ---
+                SizedBox(
+                  height: 80,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: categoryTitle.map((item) {
+                      final category = item.category;
+                      final isSelected = categoryfilter.category == category;
+                      return GestureDetector(
+                        onTap: () {
+                          ref
+                              .read(categoryFilterProvider.notifier)
+                              .select(
+                                category: category,
+                                typeSeq: _toTypeSeq(category),
+                              );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 14,
+                          ),
+                          width: 100,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            // border: Border.all(
+                            //   color: isSelected
+                            //       ? AppColors.suyellow
+                            //       : AppColors.sublack,
+                            // ),
+                            color: isSelected
+                                ? AppColors.suyellow
+                                : AppColors.sublack,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            item.label,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? AppColors.textColor
+                                  : Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        icon: Icon(Icons.add),
-                      ),
-                    ),
-                  ],
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
-              reviewAsync.when(
-                data: (reviewList) {
-                  return reviewList.isEmpty
-                      ? Center(child: Text("작성된 리뷰가 없습니다."))
-                      : ListView.builder(
-                          shrinkWrap: true, // 내용만큼 높이 차지
-                          physics:
-                              const NeverScrollableScrollPhysics(), // 자체 스크롤 기능 비활성화
-                          itemCount: reviewList.length > 5
-                              ? 5
-                              : reviewList.length,
-                          itemBuilder: (context, index) {
-                            CurtainReview review = reviewList[index];
-                            return ListTile(
-                              title: Text(review.title),
-                              subtitle: Text(review.content),
-                            );
-                          },
+          
+                // --- 필터된 공연 목록 ---
+                SizedBox(
+                  height: 340,
+                  child: curtainAsync.when(
+                    data: (list) => ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: list.length > 9 ? 9 : list.length,
+                      itemBuilder: (context, index) {
+                        final item = list[index];
+          
+                        return Container(
+                          width: 160,
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Stack(
+                                  children: [
+                                    // 공연 이미지
+                                    Image.network(
+                                      item.curtain_pic,
+                                      width: double.infinity,
+                                      height: 250,
+                                      fit: BoxFit.cover,
+                                      alignment: AlignmentGeometry.topCenter,
+                                    ),
+          
+                                    // 순위 표시용 숫자 뱃지
+                                    Positioned(
+                                      top: 8,
+                                      left: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Color.fromRGBO(0, 0, 0, 0.7),
+                                          border: Border.all(
+                                            color: Colors.white30,
+                                          ),
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              _titleEllipsis(
+                                item.title_contents,
+                                16,
+                                FontWeight.w700,
+                              ),
+                              _titleEllipsis(
+                                item.place_name,
+                                14,
+                                FontWeight.w400,
+                              ),
+                            ],
+                          ),
                         );
-                },
-                error: (error, stackTrace) =>
-                    Center(child: Text('오류 : $error')),
-                loading: () => Center(child: CircularProgressIndicator()),
-              ),
-              weatherAsync.when(
-                data: (weather) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    child: Column(
+                      },
+                    ),
+                    error: (error, _) => Text(error.toString()),
+                    loading: () => const CircularProgressIndicator(),
+                  ),
+                ),
+          
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Image.asset('images/main_banner1.jpg'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Stack(
+                    children: [
+                      Center(child: _title('베스트 관람후기')),
+                      Positioned(
+                        right: 0,
+                        bottom: -10,
+                        child: IconButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReviewWrite(),
+                            ),
+                          ),
+                          icon: Icon(Icons.add),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                reviewAsync.when(
+                  data: (reviewList) {
+                    return reviewList.isEmpty
+                        ? Center(child: Text("작성된 리뷰가 없습니다."))
+                        : ListView.builder(
+                            shrinkWrap: true, // 내용만큼 높이 차지
+                            physics:
+                                const NeverScrollableScrollPhysics(), // 자체 스크롤 기능 비활성화
+                            itemCount: reviewList.length > 5
+                                ? 5
+                                : reviewList.length,
+                            itemBuilder: (context, index) {
+                              CurtainReview review = reviewList[index];
+                              return ListTile(
+                                title: Text(review.title),
+                                subtitle: Text(review.content),
+                              );
+                            },
+                          );
+                  },
+                  error: (error, stackTrace) =>
+                      Center(child: Text('오류 : $error')),
+                  loading: () => Center(child: CircularProgressIndicator()),
+                ),
+                weatherAsync.when(
+                  data: (weather) {
+                    return Column(
                       children: [
                         _title('오늘의 날씨'),
                         const SizedBox(height: 20),
@@ -191,13 +345,13 @@ class MainPageHome extends ConsumerWidget {
                         // const SizedBox(height: 20),
                         _weatherInfoGrid(weather),
                       ],
-                    ),
-                  );
-                },
-                error: (error, _) => const Text('날씨 정보를 불러오지 못했어요'),
-                loading: () => const Center(child: CircularProgressIndicator()),
-              ),
-            ],
+                    );
+                  },
+                  error: (error, _) => const Text('날씨 정보를 불러오지 못했어요'),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -213,44 +367,17 @@ class MainPageHome extends ConsumerWidget {
     );
   }
 
-  // 카테고리 탭
-  // Widget _categoryTab(String title, int index) {
-  //   return Expanded(
-  //     child: GestureDetector(
-  //       onTap: () {
-  //         setState(() {
-  //           selectedCategory = index;
-  //         });
-  //       },
-  //       child: Container(
-  //         margin: const EdgeInsets.symmetric(horizontal: 4),
-  //         padding: const EdgeInsets.symmetric(vertical: 10),
-  //         alignment: Alignment.center,
-  //         decoration: BoxDecoration(
-  //           border: Border.all(
-  //             color: selectedCategory == index
-  //                 ? Colors.grey.shade900
-  //                 : Colors.grey.shade300,
-  //             width: 2,
-  //           ),
-  //           color: selectedCategory == index
-  //               ? Colors.grey.shade900
-  //               : Colors.white,
-  //           borderRadius: BorderRadius.circular(50),
-  //         ),
-  //         child: Text(
-  //           title,
-  //           style: TextStyle(
-  //             color: selectedCategory == index
-  //                 ? Colors.white
-  //                 : Colors.grey.shade900,
-  //             fontWeight: FontWeight.bold,
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // } // categoryButton
+  // 타이틀 위젯 (말줄임 효과)
+  Widget _titleEllipsis(String title, double fontSize, FontWeight fontWeight) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
 
   // 메인 날씨 카드 (기온 + 하늘)
   Widget _mainWeatherCard(WeatherModel weather) {
@@ -436,7 +563,7 @@ class CategoryButton extends StatelessWidget {
           if (comingSoon) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('준비중입니다 🙂'),
+                content: Text('준비중입니다.'),
                 duration: Duration(seconds: 2),
               ),
             );
@@ -446,12 +573,12 @@ class CategoryButton extends StatelessWidget {
         },
         child: Column(
           children: [
-            Icon(icon, size: 40, color: Colors.black87),
+            Icon(icon, size: 35, color: AppColors.sublack),
             const SizedBox(height: 4),
             Text(
               label,
               style: const TextStyle(
-                color: Colors.black87,
+                color: AppColors.textColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
