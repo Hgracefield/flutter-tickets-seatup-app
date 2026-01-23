@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seatup_app/model/curtain.dart';
 import 'package:seatup_app/model/post.dart';
+import 'package:seatup_app/model/purchase.dart';
 import 'package:seatup_app/view/user/curtain_list_screen.dart';
 import 'package:seatup_app/view/user/purchase_history_detail.dart';
 import 'package:seatup_app/view/user/user_faq.dart';
@@ -75,8 +76,8 @@ class AppRouter {
       case AppRoute.PurchaseHistory:
         return MaterialPageRoute(builder: (_) => const PurchaseHistory());
       case AppRoute.purchaseHistoryDetail:
-        final post = settings.arguments as Post;
-        return MaterialPageRoute(builder: (_) =>  PurchaseHistoryDetail(post: post)); // const 제거
+        final purchase1 = settings.arguments as Map<String,dynamic>;
+        return MaterialPageRoute(builder: (_) =>  PurchaseHistoryDetail(purchase: purchase1,)); // const 제거
       case AppRoute.mapView:
         return MaterialPageRoute(builder: (_) => const MapView());
       // case AppRoute.payment:

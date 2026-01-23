@@ -33,6 +33,7 @@ async def get_sales_history(user_id: int):
     conn = connect()
     curs = conn.cursor()
     try:
+        # 1. 쿼리 안정성을 위해 JOIN 대신 LEFT JOIN 권장 (구매 정보가 혹시 없어도 판매글은 뜨도록)
         sql = """
         SELECT 
             p.post_seq, 
@@ -44,7 +45,7 @@ async def get_sales_history(user_id: int):
         FROM post AS p
         JOIN curtain AS c ON p.post_curtain_id = c.curtain_id
         JOIN title AS t ON c.curtain_title_seq = t.title_seq
-        JOIN purchase AS pu ON p.post_seq = pu.purchase_curtain_id
+        LEFT JOIN purchase AS pu ON p.post_seq = pu.purchase_curtain_id
         WHERE p.post_user_id = %s AND p.post_status = 1
         ORDER BY p.post_create_date DESC
         """
@@ -56,12 +57,13 @@ async def get_sales_history(user_id: int):
             'price': row[2],
             'quantity': row[3],
             'date': str(row[4]),
-            'buyer_id': row[5]
+            'buyer_id': row[5] if row[5] else 0 # 구매자가 없으면 0으로 리턴
         } for row in rows]
         return {'results': result}
     except Exception as ex:
         print("Error in salesHistory:", ex)
-        return {'results': 'Error'}
+        # [중요] 에러 시 문자열 'Error' 대신 빈 리스트 [] 를 리턴해야 플러터 에러가 사라집니다.
+        return {'results': []} 
     finally:
         conn.close()
 
@@ -101,7 +103,7 @@ async def filter_posts(curtain: int, date: str, time: str, grade: int, area: str
         return {'results': result}
     except Exception as ex:
         print("Error in filter_posts:", ex)
-        return {'results': 'Error'}
+        return {'results': []} # 문자열 대신 빈 리스트 리턴
     finally:
         conn.close()
 
@@ -141,7 +143,7 @@ async def allSelect():
         return {'results': result}
     except Exception as ex:
         print("Error :", ex)
-        return {'results':'Error'}
+        return {'results': []}
     finally:
         conn.close()
 
@@ -172,7 +174,7 @@ async def allSelectAdmin():
         return {'results': result}
     except Exception as ex:
         print("Error :", ex)
-        return {'results': 'Error'}
+        return {'results': []}
     finally:
         conn.close()
 
@@ -230,7 +232,7 @@ async def get_select_post(seq:int):
         return {'results' : result}
     except Exception as ex:
         print("Error in selectPost:", ex)
-        return {'results':'Error'} 
+        return {'results': []} 
     finally:
         conn.close()
 
@@ -245,7 +247,7 @@ async def get_post_detail_advanced(seq:int):
             g.grade_name, a.area_value, a.area_number, post.post_desc,
             c.curtain_id, c.curtain_date, c.curtain_desc, c.curtain_mov, 
             c.curtain_pic, p.place_name, type.type_name, t.title_contents, 
-            c.curtain_grade, c.curtain_area, post.post_price, c.curtain_time, post.post_user_id
+            c.curtain_grade, c.curtain_area, post.post_price, c.curtain_time, post.post_user_id ,c.curtain_place_seq
         from post
             join curtain as c on c.curtain_id = post.post_curtain_id
             join title as t on c.curtain_title_seq = t.title_seq
@@ -264,10 +266,10 @@ async def get_post_detail_advanced(seq:int):
                    'curtain_date' : str(row[9]), 'curtain_desc' : row[10], 'curtain_mov' : row[11],
                    'curtain_pic' : row[12], 'place_name' : row[13], 'type_name' : row[14],
                    'title_contents' : row[15], 'curtain_grade' : row[16], 
-                   'curtain_area' : row[17],'post_price' : row[18] , 'curtain_time' : str(row[19]), 'post_user_id' : row[20]} for row in rows]
+                   'curtain_area' : row[17],'post_price' : row[18] , 'curtain_time' : str(row[19]), 'post_user_id' : row[20],'place_seq' : row[21],} for row in rows]
         return {'results' : result}
     except Exception as ex:
         print("Error :", ex)
-        return {'result':'Error'} 
+        return {'results': []} 
     finally:
         conn.close()

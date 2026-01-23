@@ -43,37 +43,61 @@ async def insert(p: PurchaseIn):
         conn.close()
 
 
-@router.get("/selectPurchaseDetail/{seq}")
-async def selectPost(id:int):
+@router.get("/selectPurchaseDetail/{userId}")
+async def select_purchase_detail(userId:int):
     conn = connect()
     curs = conn.cursor()
     try:
         sql = """
-        Select
-            post.post_seq, u.user_name, post.post_create_date, post.post_quantity,
-            g.grade_name, a.area_value, a.area_number, post.post_desc,
-            c.curtain_id, c.curtain_date, c.curtain_desc, c.curtain_mov, 
-            c.curtain_pic, p.place_name, type.type_name, t.title_contents, 
-            c.curtain_grade, c.curtain_area, post.post_price, c.curtain_time, post.post_user_id
-        from post
-            join curtain as c on c.curtain_id = post.post_curtain_id
-            join title as t on c.curtain_title_seq = t.title_seq
-            join place as p on c.curtain_place_seq = p.place_seq
-            join type on c.curtain_type_seq = type.type_seq
-            join user as u on u.user_id = post.post_user_id
-            join grade as g on g.grade_seq = post.post_grade
-            join area as a on a.area_seq = post.post_area
-        where post.post_status = 1 and post.post_user_id = %s;
-        """
-        curs.execute(sql, (id,))
+            SELECT
+                pc.purchase_seq,
+                pc.purchase_user_id,
+                pc.purchase_post_id,
+                pc.purchase_date,
+                u.user_name,
+                u.user_bank_name,
+                c.curtain_date,
+                c.curtain_time,
+                p.place_name,
+                p.place_address,
+                tp.type_name,
+                t.title_contents,
+                post.post_quantity,
+                post.post_price,
+                g.grade_name,
+                a.area_number,
+                post.post_desc,
+                post.post_seq,
+                post.post_create_date
+            FROM purchase pc
+            JOIN user u
+                ON pc.purchase_user_id = u.user_id
+            JOIN post
+                ON post.post_seq = pc.purchase_post_id
+            JOIN curtain c
+                ON c.curtain_id = post.post_curtain_id
+            JOIN place p
+                ON c.curtain_place_seq = p.place_seq
+            JOIN type tp
+                ON c.curtain_type_seq = tp.type_seq
+            JOIN title t
+                ON c.curtain_title_seq = t.title_seq
+            JOIN grade g
+                ON g.grade_seq = post.post_grade
+            JOIN area a
+                ON a.area_seq = post.post_area
+            WHERE pc.purchase_user_id = %s;
+            """
+        curs.execute(sql, (userId,))
         rows = curs.fetchall()
-        result = [{'post_seq' : row[0], 'user_name' : row[1], 'post_create_date' : str(row[2]), 
-                   'post_quantity' : row[3], 'grade_name' : row[4], 'area_value' : row[5], 
-                   'area_number' : row[6], 'post_desc' : row[7], 'curtain_id' : row[8],
-                   'curtain_date' : str(row[9]), 'curtain_desc' : row[10], 'curtain_mov' : row[11],
-                   'curtain_pic' : row[12], 'place_name' : row[13], 'type_name' : row[14],
-                   'title_contents' : row[15], 'curtain_grade' : row[16], 
-                   'curtain_area' : row[17],'post_price' : row[18] , 'curtain_time' : str(row[19]), 'post_user_id' : row[20]} for row in rows]
+        result = [{'purchase_seq' : row[0], 'purchase_user_id' : row[1], 'purchase_post_id' : row[2], 
+                   'purchase_date' : row[3], 'user_name' : row[4], 'user_bank_name' : row[5], 
+                   'curtain_date' : row[6], 'curtain_time' : str(row[7]), 'place_name' : row[8],
+                   'place_address' : row[9], 'type_name' : row[10], 'title_contents' : row[11],
+                   'post_quantity' : row[12], 'post_price' : row[13], 'grade_name' : row[14],
+                   'area_number' : row[15], 'post_desc' : row[16], 'post_seq' : row[17],
+                    'post_create_date' : row[18]
+                   } for row in rows]
         return {'results' : result}
     except Exception as ex:
         print("Error :", ex)
