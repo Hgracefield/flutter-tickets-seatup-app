@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seatup_app/util/color.dart';
 import 'package:seatup_app/util/text_form.dart';
 import 'package:seatup_app/view/user/category.dart';
 import 'package:seatup_app/view/user/curtain_search.dart';
@@ -42,7 +43,7 @@ class _MainPageState extends State<MainPage>
     final List<Widget> titles = [
       TextForm.suAppText(text: '카테고리'),
       TextForm.suAppText(text: '카테고리'),
-      Image.asset('images/su_app_icon.png', width: 65),
+      Image.asset('images/su_app_icon.png', width: 110),
       TextForm.suAppText(text: '검색'),
       TextForm.suAppText(text: 'MY티켓'),
     ];
@@ -53,7 +54,7 @@ class _MainPageState extends State<MainPage>
       backgroundColor: Colors.white,
       toolbarHeight: 70,
       elevation: 0,
-      iconTheme: IconThemeData(color: Colors.black),
+      iconTheme: IconThemeData(color: AppColors.sublack),
       automaticallyImplyLeading: false,
       actions: [
         IconButton(
@@ -89,9 +90,9 @@ class _MainPageState extends State<MainPage>
         height: 80,
         child: TabBar(
           controller: mainTabController,
-          labelColor: const Color.fromARGB(255, 0, 0, 0),
+          labelColor: AppColors.suyellow,
           labelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-          indicatorColor: const Color.fromARGB(255, 0, 0, 0),
+          indicatorColor: AppColors.suyellow,
           indicatorSize: TabBarIndicatorSize.label,
           indicatorWeight: 2,
           tabs: [

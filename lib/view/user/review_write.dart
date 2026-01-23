@@ -9,7 +9,7 @@ import 'package:seatup_app/vm/curtain_reviews_notifier.dart';
 import 'package:seatup_app/vm/image_handler.dart';
 
 class ReviewWrite extends ConsumerStatefulWidget {
-  ReviewWrite({super.key});
+  const ReviewWrite({super.key});
 
   @override
   ConsumerState<ReviewWrite> createState() => _ReviewWriteState();
@@ -53,50 +53,57 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 5),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
                       Text(
                         '문의 내용',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Text(' *', style: TextStyle(color: Colors.red)),
+                      Text(
+                        ' *',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: 16),
                   child: TextField(
                     controller: titleController,
                     decoration: InputDecoration(
                       hintText: '제목을 입력해 주세요.',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(fontSize: 15, color: Colors.grey.shade400),
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.suyellow),
+                        borderSide: BorderSide(color: Colors.grey.shade300, width: 2),
                       ),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: TextField(
                     controller: contentController,
                     decoration: InputDecoration(
                       hintText: '문의하실 내용을 입력해 주세요.',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(fontSize: 15, color: Colors.grey.shade400),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: AppColors.suyellow),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300, width: 2),
                       ),
                     ),
                     maxLength: 5000,
@@ -104,7 +111,7 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: Row(
                     children: [
                       _buildImagePicker(ref),
@@ -113,30 +120,38 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
                     ],
                   ),
                 ),
-          
+
                 _text('• 업로드한 이미지 저작권 및 초상권 관련 책임은 게시자 본인에게 있습니다.'),
                 _text('• 사진은 최대 1장까지 등록 가능합니다.'),
                 // _text('• 사진은 최대 3장까지 등록 가능합니다.'),
                 _text('• 10MB 이하의 jpg, png, gif, pdf 이미지가 업로드 가능합니다.'),
                 _text('• 상품과 무관한 내용이거나 음란 및 불법적인 내용은 통보 없이 삭제될 수 있습니다.'),
-          
+
                 Padding(
-                  padding: const EdgeInsets.only(top: 20),
+                  padding: const EdgeInsets.only(top: 24),
                   child: Row(
                     children: [
                       Expanded(
                         flex: 1,
                         child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () {
+                            ref
+                                .read(imageNotifierProvider.notifier)
+                                .clearImage();
+                            Navigator.pop(context);
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.sublack,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(10),
+                              borderRadius: BorderRadiusGeometry.circular(8),
                             ),
-                            minimumSize: Size(10, 50),
+                            minimumSize: Size(10, 48),
                           ),
-                          child: Text("취소"),
+                          child: Text(
+                            "취소",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
                       SizedBox(width: 10),
@@ -152,23 +167,32 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
                               );
                               titleController.clear();
                               contentController.clear();
-                               ref.read(imageNotifierProvider.notifier).clearImage();
+                              ref
+                                  .read(imageNotifierProvider.notifier)
+                                  .clearImage();
                               if (!context.mounted) return;
                               _snackBar(context, "후기가 등록되었습니다.", Colors.blue);
                             } else {
                               if (!context.mounted) return;
-                              _snackBar(context, "제목과 내용을 모두 입력해 주세요.", Colors.red);
+                              _snackBar(
+                                context,
+                                "제목과 내용을 모두 입력해 주세요.",
+                                Colors.red,
+                              );
                             }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.suyellow,
                             foregroundColor: AppColors.textColor,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(10),
+                              borderRadius: BorderRadiusGeometry.circular(8),
                             ),
-                            minimumSize: Size(10, 50),
+                            minimumSize: Size(10, 48),
                           ),
-                          child: Text("등록하기"),
+                          child: Text(
+                            "등록하기",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
                     ],
@@ -201,7 +225,7 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
           border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: image == null
             ? Center(
@@ -224,7 +248,7 @@ class _ReviewWriteState extends ConsumerState<ReviewWrite> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(str),
-        duration: Duration(seconds: 1),
+        duration: Duration(seconds: 2),
         backgroundColor: color,
       ),
     );

@@ -63,13 +63,12 @@ class MainPageHome extends ConsumerWidget {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          // padding: const EdgeInsetsGeometry.all(0),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           child: Center(
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: SizedBox(
                     width: double.infinity,
                     height: 550,
@@ -78,7 +77,7 @@ class MainPageHome extends ConsumerWidget {
                       itemBuilder: (BuildContext context, int index) {
                         return Card(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(20),
+                            borderRadius: BorderRadiusGeometry.circular(8),
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: Image.asset(
@@ -98,7 +97,7 @@ class MainPageHome extends ConsumerWidget {
                 ),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.only(bottom: 20),
+                  padding: EdgeInsets.only(bottom: 24),
                   child: Row(
                     children: [
                       CategoryButton(
@@ -155,7 +154,7 @@ class MainPageHome extends ConsumerWidget {
                   ),
                 ),
                 _title('장르별 랭킹'),
-          
+
                 // --- 가로 카테고리 탭 ---
                 SizedBox(
                   height: 80,
@@ -176,20 +175,15 @@ class MainPageHome extends ConsumerWidget {
                         child: Container(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 4,
-                            vertical: 14,
+                            vertical: 20,
                           ),
                           width: 100,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            // border: Border.all(
-                            //   color: isSelected
-                            //       ? AppColors.suyellow
-                            //       : AppColors.sublack,
-                            // ),
                             color: isSelected
                                 ? AppColors.suyellow
                                 : AppColors.sublack,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             item.label,
@@ -197,7 +191,7 @@ class MainPageHome extends ConsumerWidget {
                               color: isSelected
                                   ? AppColors.textColor
                                   : Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -205,19 +199,19 @@ class MainPageHome extends ConsumerWidget {
                     }).toList(),
                   ),
                 ),
-          
+
                 // --- 필터된 공연 목록 ---
                 SizedBox(
-                  height: 340,
+                  height: 345,
                   child: curtainAsync.when(
                     data: (list) => ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: list.length > 9 ? 9 : list.length,
                       itemBuilder: (context, index) {
                         final item = list[index];
-          
+
                         return Container(
-                          width: 160,
+                          width: 165,
                           margin: const EdgeInsets.symmetric(horizontal: 8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +228,7 @@ class MainPageHome extends ConsumerWidget {
                                       fit: BoxFit.cover,
                                       alignment: AlignmentGeometry.topCenter,
                                     ),
-          
+
                                     // 순위 표시용 숫자 뱃지
                                     Positioned(
                                       top: 8,
@@ -249,13 +243,15 @@ class MainPageHome extends ConsumerWidget {
                                           border: Border.all(
                                             color: Colors.white30,
                                           ),
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
                                         ),
                                         child: Text(
                                           '${index + 1}',
                                           style: const TextStyle(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w600,
                                             fontSize: 18,
                                           ),
                                         ),
@@ -264,16 +260,8 @@ class MainPageHome extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                              _titleEllipsis(
-                                item.title_contents,
-                                16,
-                                FontWeight.w700,
-                              ),
-                              _titleEllipsis(
-                                item.place_name,
-                                14,
-                                FontWeight.w400,
-                              ),
+                              _text(item.title_contents, 16, FontWeight.w600),
+                              _text(item.place_name, 12, FontWeight.w400),
                             ],
                           ),
                         );
@@ -283,19 +271,19 @@ class MainPageHome extends ConsumerWidget {
                     loading: () => const CircularProgressIndicator(),
                   ),
                 ),
-          
+
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: Image.asset('images/main_banner1.jpg'),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: 16),
                   child: Stack(
                     children: [
                       Center(child: _title('베스트 관람후기')),
                       Positioned(
                         right: 0,
-                        bottom: -10,
+                        bottom: -10, // 버튼 수직 중앙 정렬
                         child: IconButton(
                           onPressed: () => Navigator.push(
                             context,
@@ -309,38 +297,45 @@ class MainPageHome extends ConsumerWidget {
                     ],
                   ),
                 ),
-                reviewAsync.when(
-                  data: (reviewList) {
-                    return reviewList.isEmpty
-                        ? Center(child: Text("작성된 리뷰가 없습니다."))
-                        : ListView.builder(
-                            shrinkWrap: true, // 내용만큼 높이 차지
-                            physics:
-                                const NeverScrollableScrollPhysics(), // 자체 스크롤 기능 비활성화
-                            itemCount: reviewList.length > 5
-                                ? 5
-                                : reviewList.length,
-                            itemBuilder: (context, index) {
-                              CurtainReview review = reviewList[index];
-                              return ListTile(
-                                title: Text(review.title),
-                                subtitle: Text(review.content),
-                              );
-                            },
-                          );
-                  },
-                  error: (error, stackTrace) =>
-                      Center(child: Text('오류 : $error')),
-                  loading: () => Center(child: CircularProgressIndicator()),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: reviewAsync.when(
+                    data: (reviewList) {
+                      return reviewList.isEmpty
+                          ? Center(child: Text("작성된 리뷰가 없습니다."))
+                          : ListView.builder(
+                              shrinkWrap: true, // 내용만큼 높이 차지
+                              physics:
+                                  const NeverScrollableScrollPhysics(), // 자체 스크롤 기능 비활성화
+                              itemCount: reviewList.length > 5
+                                  ? 5
+                                  : reviewList.length,
+                              itemBuilder: (context, index) {
+                                CurtainReview review = reviewList[index];
+                                return ListTile(
+                                  title: _text(review.title, 14, FontWeight.w500),
+                                  subtitle: _text(
+                                    review.content,
+                                    12,
+                                    FontWeight.w400,
+                                  ),
+                                );
+                              },
+                            );
+                    },
+                    error: (error, stackTrace) =>
+                        Center(child: Text('오류 : $error')),
+                    loading: () => Center(child: CircularProgressIndicator()),
+                  ),
                 ),
                 weatherAsync.when(
                   data: (weather) {
                     return Column(
                       children: [
                         _title('오늘의 날씨'),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         _mainWeatherCard(weather),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         // _minMaxTempCard(weather!),
                         // const SizedBox(height: 20),
                         _weatherInfoGrid(weather),
@@ -348,7 +343,8 @@ class MainPageHome extends ConsumerWidget {
                     );
                   },
                   error: (error, _) => const Text('날씨 정보를 불러오지 못했어요'),
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                 ),
               ],
             ),
@@ -363,12 +359,12 @@ class MainPageHome extends ConsumerWidget {
   Widget _title(String title) {
     return Text(
       title,
-      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
     );
   }
 
-  // 타이틀 위젯 (말줄임 효과)
-  Widget _titleEllipsis(String title, double fontSize, FontWeight fontWeight) {
+  // 텍스트 위젯
+  Widget _text(String title, double fontSize, FontWeight fontWeight) {
     return Text(
       title,
       style: TextStyle(
@@ -386,7 +382,7 @@ class MainPageHome extends ConsumerWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: _skyColor(weather.sky),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
@@ -395,9 +391,9 @@ class MainPageHome extends ConsumerWidget {
           Text(
             '${weather.tmp ?? "-"}°C',
             style: const TextStyle(
-              fontSize: 28,
+              fontSize: 24,
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ),
           Text(
@@ -433,7 +429,7 @@ class MainPageHome extends ConsumerWidget {
   //       const SizedBox(height: 4),
   //       Text(
   //         '${value ?? "-"}°C',
-  //         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
   //       ),
   //       Text(label, style: const TextStyle(color: Colors.grey)),
   //     ],
@@ -460,13 +456,13 @@ class MainPageHome extends ConsumerWidget {
 
   Widget _infoTile(String title, String value, IconData icon) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 26, color: Colors.blue),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text(
             title,
@@ -579,7 +575,8 @@ class CategoryButton extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: AppColors.textColor,
-                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

@@ -34,7 +34,7 @@ class _ReviewListState extends ConsumerState<ReviewList> {
                 data: (reviewList) {
                   return reviewList.isEmpty
                       ? Center(child: Text("작성된 리뷰가 없습니다."))
-                      : ListView.builder(
+                      : ListView.separated(
                           itemCount: reviewList.length,
                           itemBuilder: (context, index) {
                             CurtainReview review = reviewList[index];
@@ -58,6 +58,7 @@ class _ReviewListState extends ConsumerState<ReviewList> {
                               ),
                             );
                           },
+                          separatorBuilder: (context, index) => Divider(),
                         );
                 },
                 error: (error, stackTrace) =>
@@ -76,7 +77,7 @@ class _ReviewListState extends ConsumerState<ReviewList> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(str),
-        duration: Duration(seconds: 1),
+        duration: Duration(seconds: 2),
         backgroundColor: color,
       ),
     );
