@@ -251,8 +251,8 @@ class _CategoryTile extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontSize: 16, //
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -285,7 +285,7 @@ class _MenuLine extends StatelessWidget {
               child: Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 16, //
                   fontWeight: FontWeight.w600,
                 ),
               ),

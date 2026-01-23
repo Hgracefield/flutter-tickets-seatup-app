@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seatup_app/view/user/map_view.dart';
 import 'package:seatup_app/view/user/purchase_history.dart';
 import 'package:seatup_app/view/user/review_list.dart';
 import 'package:seatup_app/view/user/sell_history.dart';
 import 'package:seatup_app/view/user/sell_register.dart';
 import 'package:seatup_app/view/user/seller_to_admin_chat.dart';
-import 'package:seatup_app/view/user/transaction_review_list.dart';
 import 'package:seatup_app/view/user/user_chat_list.dart';
 import 'package:seatup_app/view/user/user_login.dart';
-import 'package:seatup_app/view/user/user_to_user_chat.dart';
-import 'package:seatup_app/view/widgets/logout_button.dart';
 import 'package:seatup_app/view/widgets/my_greeting_banner.dart';
 import 'package:seatup_app/view/widgets/my_page_menu.dart';
-import 'package:seatup_app/vm/route_vm.dart';
 import 'package:seatup_app/vm/storage_provider.dart';
 
 class UserMypage extends ConsumerStatefulWidget {
@@ -127,29 +122,48 @@ class _UserMypageState extends ConsumerState<UserMypage> {
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: LogoutButton(
-              onTap: () {
-                final box = ref.read(storageProvider);
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () {
+                  final box = ref.read(storageProvider);
 
-                box.remove('userIsLogin');
-                box.remove('user_id');
-                box.remove('user_name');
-                box.remove('user_email');
+                  box.remove('userIsLogin');
+                  box.remove('user_id');
+                  box.remove('user_name');
+                  box.remove('user_email');
 
-                // 로그인 페이지로 이동 뒤로가기 방지
-                Navigator.pushAndRemoveUntil(
-                  context, MaterialPageRoute(builder: (_) => const UserLogin()),
-                (route) => false,);
-              },
+                  // 로그인 페이지로 이동 뒤로가기 방지
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const UserLogin(),
+                    ),
+                    (route) => false,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  backgroundColor: const Color(0xFF39393F),
+                  foregroundColor: const Color(0xFFF8DE7D),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  "로그아웃",
+                  style: TextStyle(
+                    fontSize: 14, //
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ),
            const SizedBox(height: 10),
-        
-         
-          
-          
 
-          const SizedBox(height: 20),
           Container(
             width: double.infinity,
             color: Colors.white,
